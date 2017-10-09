@@ -29,6 +29,7 @@ require_once 'Services/MediaObjects/classes/class.ilObjMediaObject.php';
  * @ilCtrl_Calls ilObjForumGUI: ilPermissionGUI, ilForumExportGUI, ilInfoScreenGUI
  * @ilCtrl_Calls ilObjForumGUI: ilColumnGUI, ilPublicUserProfileGUI, ilForumModeratorsGUI, ilRepositoryObjectSearchGUI
  * @ilCtrl_Calls ilObjForumGUI: ilObjectCopyGUI, ilExportGUI, ilCommonActionDispatcherGUI, ilRatingGUI
+ * @ilCtrl_Calls ilObjForumGUI: ilObjectMetaDataGUI              
  * @ilCtrl_Calls ilObjForumGUI: ilForumSettingsGUI
  *
  * @ingroup ModulesForum
@@ -288,7 +289,14 @@ class ilObjForumGUI extends ilObjectGUI implements ilDesktopItemHandling
 				);
 				$this->ctrl->forwardCommand($search_gui);
 				break;
-
+			case 'ilobjectmetadatagui';
+				$this->checkPermission("write");
+				$this->addHeaderAction();
+				$this->tabs->activateTab("advmd");
+				include_once 'Services/Object/classes/class.ilObjectMetaDataGUI.php';
+				$md_gui = new ilObjectMetaDataGUI($this->object, 'frmp');
+				$this->ctrl->forwardCommand($md_gui);
+				break;
 			case 'ilpermissiongui':
 				require_once 'Services/AccessControl/classes/class.ilPermissionGUI.php';
 				$perm_gui = new ilPermissionGUI($this);
@@ -1087,7 +1095,21 @@ class ilObjForumGUI extends ilObjectGUI implements ilDesktopItemHandling
 				// We can be sure, that there are not html tags
 				$node->setMessage(nl2br($node->getMessage()));
 			}
+
+			$key_value = $this->getMetadataAsKeyValue();
 			
+			if(count($key_value) > 0)
+			{
+				global $DIC;
+				$f = $DIC->ui()->factory();
+				$renderer = $DIC->ui()->renderer();
+				$list_item1 = $f->item()->standard("Metadata")
+								->withProperties($key_value);
+
+			}
+
+			$this->tpl->setVariable('META_DATA', $renderer->render($list_item1));
+
 			if($spanClass != "")
 			{
 				$this->tpl->setVariable('POST', "<span class=\"" . $spanClass . "\">" . ilRTE::_replaceMediaObjectImageSrc($node->getMessage(), 1) . "</span>");
@@ -1246,6 +1268,16 @@ class ilObjForumGUI extends ilObjectGUI implements ilDesktopItemHandling
 		if($this->access->checkAccess('write', '', $this->object->getRefId()))
 		{
 			$this->tabs->addTarget('export', $this->ctrl->getLinkTargetByClass('ilexportgui', ''), '', 'ilexportgui');
+		}
+
+		include_once "Services/Object/classes/class.ilObjectMetaDataGUI.php";
+		$mdgui = new ilObjectMetaDataGUI($this->object, 'frmp');
+		$mdtab = $mdgui->getTab();
+		if($mdtab)
+		{
+			$this->tabs_gui->addTab("advmd",
+				$this->lng->txt("meta_data"),
+				$mdtab);
 		}
 
 		if($this->access->checkAccess('edit_permission', '', $this->ref_id))
@@ -1970,6 +2002,8 @@ class ilObjForumGUI extends ilObjectGUI implements ilDesktopItemHandling
 		$hidden_draft_id->setValue($auto_save_draft_id);
 		$this->replyEditForm->addItem($hidden_draft_id);
 
+		$this->replyEditForm = $this->appendAdvancedMetaDataForm($this->replyEditForm);
+
 		if($_GET['action'] == 'showreply' || $_GET['action'] == 'ready_showreply' || $_GET['action'] == 'editdraft')
 		{
 			include_once 'Services/RTE/classes/class.ilRTE.php';
@@ -2500,6 +2534,15 @@ class ilObjForumGUI extends ilObjectGUI implements ilDesktopItemHandling
 	
 					ilUtil::sendSuccess($this->lng->txt('forums_post_modified'), true);
 				}
+
+				$form = $this->appendAdvancedMetaDataForm();
+
+				$form->checkInput();
+				$record_gui = new ilAdvancedMDRecordGUI(ilAdvancedMDRecordGUI::MODE_EDITOR,'frm',$this->object->getId(), 'frmp', $this->objCurrentPost->getId());
+				$record_gui->setPropertyForm($form);
+				$record_gui->parse();
+				$record_gui->importEditFormPostValues();
+				$record_gui->writeEditForm();
 
 				$this->ctrl->setParameter($this, 'pos_pk', $this->objCurrentPost->getId());
 				$this->ctrl->setParameter($this, 'thr_pk', $this->objCurrentPost->getThreadId());
@@ -3083,7 +3126,7 @@ class ilObjForumGUI extends ilObjectGUI implements ilDesktopItemHandling
 												'notify' => $this->objCurrentPost->isNotificationEnabled() ? true : false,
 												'userfile' => '',
 												'del_file' => array()
-											));
+											),true);
 										}
 										break;
 
@@ -3108,7 +3151,7 @@ class ilObjForumGUI extends ilObjectGUI implements ilDesktopItemHandling
 													'notify'   => $draftObject->getNotify() ? true : false,
 													'userfile' => '',
 													'del_file' => array()
-												));
+												),true);
 												//											$edit_draft_id = $this->objCurrentPost->getId();
 												$edit_draft_id = $draftObject->getDraftId();
 											}
@@ -5900,5 +5943,70 @@ $this->doCaptchaCheck();
 		{
 			$this->user->setCaptchaVerified(true);
 		}
+	}
+
+
+	protected function appendAdvancedMetaDataForm($form = null)
+	{
+		if($form==null)
+		{
+			include_once "Services/Form/classes/class.ilPropertyFormGUI.php";
+			$form = new ilPropertyFormGUI();
+		}
+
+		include_once('Services/AdvancedMetaData/classes/class.ilAdvancedMDRecordGUI.php');
+		$record_gui = new ilAdvancedMDRecordGUI(ilAdvancedMDRecordGUI::MODE_EDITOR,'frm',$this->object->getId(), 'frmp', $this->objCurrentPost->getId());
+		$record_gui->setPropertyForm($form);
+		$record_gui->parse();
+
+		return $form;
+	}
+
+	/**
+	 * @return array
+	 */
+	protected function getMetadataAsKeyValue()
+	{
+		include_once "Services/AdvancedMetaData/classes/class.ilAdvancedMDRecord.php";
+		include_once "Services/AdvancedMetaData/classes/class.ilAdvancedMDValues.php";
+		$old_dt = ilDatePresentation::useRelativeDates();
+		ilDatePresentation::setUseRelativeDates(false);
+		$key_value = array();
+		foreach(ilAdvancedMDRecord::_getSelectedRecordsByObject('frm', $this->ref_id, 'frmp') as $record)
+		{
+			$vals = new ilAdvancedMDValues($record->getRecordId(), $this->ref_id, $this->sub_type, $this->sub_id);
+
+			include_once('Services/AdvancedMetaData/classes/class.ilAdvancedMDValues.php');
+			include_once('Services/ADT/classes/class.ilADTFactory.php');
+
+			// this correctly binds group and definitions
+			$vals->read();
+
+			$defs      = $vals->getDefinitions();
+			$key_value = array();
+			foreach($vals->getADTGroup()->getElements() as $element_id => $element)
+			{
+				if($element instanceof ilADTLocation)
+				{
+					continue;
+				}
+
+				if($element->isNull())
+				{
+					$value = "-";
+				}
+				else
+				{
+					$value = ilADTFactory::getInstance()->getPresentationBridgeForInstance($element);
+
+					$value = $value->getHTML();
+				}
+				$key_value[$defs[$element_id]->getTitle()] = $value;
+			}
+
+		}
+
+		ilDatePresentation::setUseRelativeDates($old_dt);
+		return $key_value;
 	}
 }

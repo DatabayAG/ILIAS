@@ -136,6 +136,21 @@ class ilForumSettingsGUI
 			$frm_upload->setInfo($this->lng->txt('allow_file_upload_desc'));
 			$a_form->addItem($frm_upload);
 		}
+
+		$feat = new ilFormSectionHeaderGUI();
+		$feat->setTitle($this->lng->txt('obj_features'));
+		$a_form->addItem($feat);
+
+		include_once './Services/Container/classes/class.ilContainer.php';
+		include_once './Services/Object/classes/class.ilObjectServiceSettingsGUI.php';
+		ilObjectServiceSettingsGUI::initServiceSettingsForm(
+			$this->parent_obj->object->getId(),
+			$a_form,
+			array(
+				ilObjectServiceSettingsGUI::CUSTOM_METADATA
+			)
+		);
+
 	}
 	
 	/**
@@ -192,6 +207,12 @@ class ilForumSettingsGUI
 		$a_values['default_view'] = $default_view;
 		$a_values['default_view_sort_dir'] = $default_view_sort_dir;
 		$a_values['file_upload_allowed']   = (bool)$this->parent_obj->objProperties->getFileUploadAllowed();
+
+		$a_values['cont_custom_md']   =  ilContainer::_lookupContainerSetting(
+			$this->parent_obj->object->getId(),
+			'cont_custom_md',
+			false
+		);
 	}
 	
 	/**
@@ -236,6 +257,15 @@ class ilForumSettingsGUI
 			$this->parent_obj->objProperties->setFileUploadAllowed((bool)$a_form->getInput('file_upload_allowed'));
 		}
 		$this->parent_obj->objProperties->update();
+
+		include_once './Services/Object/classes/class.ilObjectServiceSettingsGUI.php';
+		ilObjectServiceSettingsGUI::updateServiceSettingsForm(
+			$this->parent_obj->object->getId(),
+			$a_form,
+			array(
+				ilObjectServiceSettingsGUI::CUSTOM_METADATA
+			)
+		);
 	}
 
 	public function showMembers()

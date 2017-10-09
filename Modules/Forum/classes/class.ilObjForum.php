@@ -5,6 +5,7 @@ require_once 'Services/Object/classes/class.ilObject.php';
 require_once 'Modules/Forum/classes/class.ilForum.php';
 require_once 'Modules/Forum/classes/class.ilFileDataForum.php';
 require_once 'Modules/Forum/classes/class.ilForumProperties.php';
+include_once 'Services/AdvancedMetaData/interfaces/interface.ilAdvancedMetaDataSubItems.php';
 
 /** @defgroup ModulesForum Modules/Forum
  */
@@ -15,7 +16,7 @@ require_once 'Modules/Forum/classes/class.ilForumProperties.php';
  * @version $Id$
  * @ingroup ModulesForum
  */
-class ilObjForum extends ilObject
+class ilObjForum extends ilObject implements ilAdvancedMetaDataSubItems
 {
 	/**
 	 * Forum object
@@ -1142,5 +1143,16 @@ class ilObjForum extends ilObject
 		$ilDB->update('frm_user_read',
 			array('thread_id' => array('integer', $merge_target_thread_id)),
 			array('thread_id' => array('integer',$merge_source_thread_id)));
+	}
+
+	public static function getAdvMDSubItemTitle($a_obj_id, $a_sub_type, $a_sub_id)
+	{
+		global $DIC;
+
+		$lng = $DIC->language();
+
+		$lng->loadLanguageModule("frm");
+		include_once "./Modules/Forum/classes/class.ilForumTopic.php";
+		return $lng->txt("frm_topic").' "'.ilForumTopic::_lookupTitle($a_obj_id).'"';
 	}
 }
