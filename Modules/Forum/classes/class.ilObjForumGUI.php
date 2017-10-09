@@ -1948,6 +1948,7 @@ class ilObjForumGUI extends ilObjectGUI implements ilDesktopItemHandling
 			$this->replyEditForm->addItem($oExistingAttachmentsGUI);
 		}
 
+		$draft = false;
 		if(ilForumPostDraft::isAutoSavePostDraftAllowed())
 		{
 			if($_GET['action'] == 'showdraft' || $_GET['action'] == 'editdraft')
@@ -1955,6 +1956,7 @@ class ilObjForumGUI extends ilObjectGUI implements ilDesktopItemHandling
 				$draftInfoGUI = new ilNonEditableValueGUI('','autosave_info', true);
 				$draftInfoGUI->setValue(sprintf($this->lng->txt('autosave_draft_info'), ilForumPostDraft::lookupAutosaveInterval()));
 				$this->replyEditForm->addItem($draftInfoGUI);
+				$draft = true;
 			}
 			else if($_GET['action'] != 'showedit' && $_GET['action'] != 'ready_showedit')
 			{
@@ -2002,7 +2004,10 @@ class ilObjForumGUI extends ilObjectGUI implements ilDesktopItemHandling
 		$hidden_draft_id->setValue($auto_save_draft_id);
 		$this->replyEditForm->addItem($hidden_draft_id);
 
-		$this->replyEditForm = $this->appendAdvancedMetaDataForm($this->replyEditForm);
+		if( ! $draft)
+		{
+			$this->replyEditForm = $this->appendAdvancedMetaDataForm($this->replyEditForm);
+		}
 
 		if($_GET['action'] == 'showreply' || $_GET['action'] == 'ready_showreply' || $_GET['action'] == 'editdraft')
 		{
@@ -3151,7 +3156,7 @@ class ilObjForumGUI extends ilObjectGUI implements ilDesktopItemHandling
 													'notify'   => $draftObject->getNotify() ? true : false,
 													'userfile' => '',
 													'del_file' => array()
-												),true);
+												));
 												//											$edit_draft_id = $this->objCurrentPost->getId();
 												$edit_draft_id = $draftObject->getDraftId();
 											}
