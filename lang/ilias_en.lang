@@ -94,6 +94,7 @@ forum#:#publish#:#Publish
 forum#:#frm_my_posting_drafts#:#My Posting Drafts
 forum#:#frm_posting_draft#:#Draft
 forum#:#frm_posting_drafts#:#Drafts
+forum#:#frm_frmp#:#Post
 forum#:#enable_send_attachments#:#Send attachments with forum notifications
 forum#:#enable_send_attachments_desc#:#Please note that file attachments must be stored separately for each notified user. This can cause a high usage of server disk space.
 forum#:#adm_save_drafts#:#Save drafts   
