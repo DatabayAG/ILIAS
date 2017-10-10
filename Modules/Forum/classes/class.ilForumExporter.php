@@ -82,5 +82,60 @@ class ilForumExporter extends ilXmlExporter
 			)
 		);
 	}
+
+	/**
+	 * @param $a_id
+	 * @return array
+	 */
+	protected function getActiveAdvMDRecords($a_id)
+	{
+		include_once('Services/AdvancedMetaData/classes/class.ilAdvancedMDRecord.php');
+		$active = array();
+		$sel_globals = ilAdvancedMDRecord::getObjRecSelection($a_id, ilForumMetaData::FORUM_TYPE_POST);
+
+		foreach(ilAdvancedMDRecord::_getActivatedRecordsByObjectType("frm", ilForumMetaData::FORUM_TYPE_POST) as $record_obj)
+		{
+			if ($record_obj->getParentObject() == $a_id || in_array($record_obj->getRecordId(), $sel_globals))
+			{
+				$active[] = $record_obj->getRecordId();
+			}
+		}
+
+		return $active;
+	}
+
+	/**
+	 * @param $a_entity
+	 * @param $a_target_release
+	 * @param $a_ids
+	 * @return array
+	 */
+	public function getXmlExportTailDependencies($a_entity, $a_target_release, $a_ids)
+	{
+		$adv_meta_data_ids = array();
+		$dependencies = array();
+
+		foreach($a_ids as $id)
+		{
+			$rec_ids = $this->getActiveAdvMDRecords($id);
+			if(sizeof($rec_ids))
+			{
+				foreach($rec_ids as $rec_id)
+				{
+					$adv_meta_data_ids[] = $id.":".$rec_id;
+				}
+			}
+		}
+		if(sizeof($adv_meta_data_ids))
+		{
+			$dependencies[] = array(
+				"component" => "Services/AdvancedMetaData",
+				"entity" => "advmd",
+				"ids" => $adv_meta_data_ids
+			);
+		}
+
+		return $dependencies;
+	}
 }
 ?>
