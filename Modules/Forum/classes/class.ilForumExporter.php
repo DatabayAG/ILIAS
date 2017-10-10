@@ -1,7 +1,8 @@
 <?php
 /* Copyright (c) 1998-2010 ILIAS open source, Extended GPL, see docs/LICENSE */
 
-include_once("./Services/Export/classes/class.ilXmlExporter.php");
+require_once 'Services/Export/classes/class.ilXmlExporter.php';
+require_once 'Services/AdvancedMetaData/classes/class.ilAdvancedMDRecord.php';
 
 /**
  * Exporter class for sessions
@@ -89,13 +90,13 @@ class ilForumExporter extends ilXmlExporter
 	 */
 	protected function getActiveAdvMDRecords($a_id)
 	{
-		include_once('Services/AdvancedMetaData/classes/class.ilAdvancedMDRecord.php');
-		$active = array();
-		$sel_globals = ilAdvancedMDRecord::getObjRecSelection($a_id, ilForumMetaData::FORUM_TYPE_POST);
+		$active            = array();
+		$selected_globals  = ilAdvancedMDRecord::getObjRecSelection($a_id, ilForumMetaData::FORUM_TYPE_POST);
+		$activated_records = ilAdvancedMDRecord::_getActivatedRecordsByObjectType('frm', ilForumMetaData::FORUM_TYPE_POST);
 
-		foreach(ilAdvancedMDRecord::_getActivatedRecordsByObjectType("frm", ilForumMetaData::FORUM_TYPE_POST) as $record_obj)
+		foreach($activated_records as $record_obj)
 		{
-			if ($record_obj->getParentObject() == $a_id || in_array($record_obj->getRecordId(), $sel_globals))
+			if ($record_obj->getParentObject() == $a_id || in_array($record_obj->getRecordId(), $selected_globals))
 			{
 				$active[] = $record_obj->getRecordId();
 			}
@@ -122,16 +123,16 @@ class ilForumExporter extends ilXmlExporter
 			{
 				foreach($rec_ids as $rec_id)
 				{
-					$adv_meta_data_ids[] = $id.":".$rec_id;
+					$adv_meta_data_ids[] = $id.':'.$rec_id;
 				}
 			}
 		}
 		if(sizeof($adv_meta_data_ids))
 		{
 			$dependencies[] = array(
-				"component" => "Services/AdvancedMetaData",
-				"entity" => "advmd",
-				"ids" => $adv_meta_data_ids
+				'component' => 'Services/AdvancedMetaData',
+				'entity' => 'advmd',
+				'ids' => $adv_meta_data_ids
 			);
 		}
 
