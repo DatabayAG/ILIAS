@@ -1098,7 +1098,7 @@ class ilObjForumGUI extends ilObjectGUI implements ilDesktopItemHandling
 				$node->setMessage(nl2br($node->getMessage()));
 			}
 
-			$key_value = ilForumMetaData::getMetadataAsKeyValue($this->ref_id, $node->getId());
+			$key_value = ilForumMetaData::getMetadataAsKeyValue($this->object->getId(), $this->ref_id, $node->getId());
 			
 			if(count($key_value) > 0)
 			{

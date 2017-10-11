@@ -7,13 +7,14 @@ require_once 'Services/AdvancedMetaData/classes/class.ilAdvancedMDValues.php';
 class ilForumMetaData
 {
 	const FORUM_TYPE_POST = 'frmp';
-	
+
 	/**
-	 * @param $ref_id
-	 * @param $sub_id
+	 * @param integer $obj_id
+	 * @param integer $ref_id
+	 * @param integer $sub_id
 	 * @return array
 	 */
-	public static function getMetadataAsKeyValue($ref_id, $sub_id)
+	public static function getMetadataAsKeyValue($obj_id, $ref_id, $sub_id)
 	{
 
 		$old_dt = ilDatePresentation::useRelativeDates();
@@ -22,7 +23,7 @@ class ilForumMetaData
 		/** @var ilAdvancedMDRecord $record */
 		foreach(ilAdvancedMDRecord::_getSelectedRecordsByObject('frm', $ref_id, self::FORUM_TYPE_POST) as $record)
 		{
-			$val = new ilAdvancedMDValues($record->getRecordId(), $ref_id, self::FORUM_TYPE_POST, $sub_id);
+			$val = new ilAdvancedMDValues($record->getRecordId(), $obj_id, self::FORUM_TYPE_POST, $sub_id);
 			$val->read();
 
 			/** @var ilAdvancedMDFieldDefinition[] $def */
