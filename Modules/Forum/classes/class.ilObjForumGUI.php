@@ -20,6 +20,7 @@ require_once './Modules/Forum/classes/class.ilForumDraftsHistory.php';
 require_once './Modules/Forum/classes/class.ilForumMetaData.php';
 require_once 'Services/MediaObjects/classes/class.ilObjMediaObject.php';
 require_once 'Services/AdvancedMetaData/classes/class.ilAdvancedMDRecordGUI.php';
+require_once  './Services/Accordion/classes/class.ilAccordionGUI.php';
 
 /**
  * Class ilObjForumGUI
@@ -1252,11 +1253,6 @@ class ilObjForumGUI extends ilObjectGUI implements ilDesktopItemHandling
 			$force_active = ($this->ctrl->getCmd() == 'edit') ? true	: false;
 			$this->tabs->addTarget('settings', $this->ctrl->getLinkTarget($this, 'edit'), 'edit', get_class($this), '', $force_active);
 		}
-		
-		if($this->access->checkAccess('write', '', $this->ref_id))
-		{
-			$this->tabs->addTarget('frm_moderators', $this->ctrl->getLinkTargetByClass('ilForumModeratorsGUI', 'showModerators'), 'showModerators', get_class($this));			
-		}
 
 		require_once 'Services/Object/classes/class.ilObjectMetaDataGUI.php';
 		$md_gui = new ilObjectMetaDataGUI($this->object, ilForumMetaData::FORUM_TYPE_POST);
@@ -1266,6 +1262,11 @@ class ilObjForumGUI extends ilObjectGUI implements ilDesktopItemHandling
 			$this->tabs_gui->addTab("advmd",
 				$this->lng->txt("meta_data"),
 				$md_tab);
+		}
+
+		if($this->access->checkAccess('write', '', $this->ref_id))
+		{
+			$this->tabs->addTarget('frm_moderators', $this->ctrl->getLinkTargetByClass('ilForumModeratorsGUI', 'showModerators'), 'showModerators', get_class($this));			
 		}
 
 		if($this->settings->get('enable_fora_statistics', false) &&
@@ -5904,7 +5905,6 @@ $this->doCaptchaCheck();
 				$modal->setHeading($this->lng->txt('restore_draft_from_autosave'));
 				$modal->setId('frm_autosave_restore');
 				$form_tpl = new ilTemplate('tpl.restore_thread_draft.html', true, true, 'Modules/Forum');
-				include_once  './Services/Accordion/classes/class.ilAccordionGUI.php';
 
 				foreach($history_instances as $key => $history_instance)
 				{
