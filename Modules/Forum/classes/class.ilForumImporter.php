@@ -36,12 +36,14 @@ class ilForumImporter extends ilXmlImporter
 
 		include_once 'Modules/Forum/classes/class.ilForumXMLParser.php';
 		$parser = new ilForumXMLParser($newObj, $a_xml);
-		$parser->setImportDirectory($this->getImportDirectory());
-		$parser->setImportInstallId($this->getInstallId());
-		$parser->setSchemaVersion($this->getSchemaVersion());
-		$parser->startParsing();
+		$parser
+			->withMapper($a_mapping)
+			->withImportDirectory($this->getImportDirectory())
+			->withImportInstallId($this->getInstallId())
+			->withSchemaVersion($this->getSchemaVersion())
+			->startParsing();
 
 		$a_mapping->addMapping("Modules/Forum", "frm", $a_id, $newObj->getId());
+		$a_mapping->addMapping("Services/AdvancedMetaData", "parent", $a_id, $newObj->getId());
 	}
 }
-?>

@@ -25,6 +25,46 @@ class ilForumXMLParser extends ilSaxParser
 	protected $mediaObjects = array();
 
 	/**
+	 * @var string
+	 */
+	protected $importDirectory = '';
+
+	/**
+	 * @var ilImportMapping
+	 */
+	protected $mapper;
+
+	/**
+	 * @var string
+	 */
+	protected $cdata = '';
+
+	/**
+	 * @var integer|null
+	 */
+	protected $lastHandledPostId = null;
+	
+	/**
+	 * @var integer|null
+	 */
+	protected $lastHandledThreadId = null;
+
+	/**
+	 * @var ilObjUser
+	 */
+	protected $aobject;
+
+	/**
+	 * @var ilForumPost
+	 */
+	protected $forumPost;
+
+	/**
+	 * @var ilForumTopic
+	 */
+	protected $forumThread;
+
+	/**
 	 * @var null|string
 	 */
 	protected $schema_version = null;
@@ -49,13 +89,29 @@ class ilForumXMLParser extends ilSaxParser
 	}
 
 	/**
-	 * Set import directory
-	 *
-	 * @param	string	import directory
+	 * @param ilImportMapping $mapper
+	 * @return self
 	 */
-	public function setImportDirectory($a_val)
+	public function withMapper(ilImportMapping $mapper)
 	{
-		$this->importDirectory = $a_val;
+		$clone = clone $this;
+
+		$clone->mapper = $mapper;
+
+		return $clone;
+	}
+
+	/**
+	 * @param string $a_val
+	 * @return self
+	 */
+	public function withImportDirectory($a_val)
+	{
+		$clone = clone $this;
+
+		$clone->importDirectory = $a_val;
+
+		return $clone;
 	}
 
 	/**
@@ -77,17 +133,22 @@ class ilForumXMLParser extends ilSaxParser
 	}
 
 	/**
-	 * @param null|string $schema_version
+	 * @param string $schema_version
+	 * @return self
 	 */
-	public function setSchemaVersion($schema_version)
+	public function withSchemaVersion($schema_version)
 	{
-		$this->schema_version = $schema_version;
+		$clone = clone $this;
+
+		$clone->schema_version = $schema_version;
+
+		return $clone;
 	}
 
 	/**
 	* set event handlers
 	*
-	* @param	resource	reference to the xml parser
+	* @param	resource	$a_xml_parser to the xml parser
 	* @access	private
 	*/
 	public function setHandlers($a_xml_parser)
@@ -515,6 +576,13 @@ class ilForumXMLParser extends ilSaxParser
 					$this->mapping['pos'][$this->postArray['Id']] = $this->forumPost->getId();
 					$this->lastHandledPostId = $this->forumPost->getId();
 
+					$this->mapper->addMapping(
+						"Services/AdvancedMetaData",
+						"advmd_sub_item",
+						"advmd:frmp:" . $this->postArray['Id'],
+						$this->forumPost->getId()
+					);
+
 					$media_objects_found = false;
 					foreach($this->mediaObjects as $mob_attr)
 					{
@@ -737,9 +805,17 @@ class ilForumXMLParser extends ilSaxParser
 		}
 	}
 
-	public function setImportInstallId($id)
+	/**
+	 * @param string $id
+	 * @return self
+	 */
+	public function withImportInstallId($id)
 	{
-		$this->import_install_id = $id;
+		$clone = clone $this;
+
+		$clone->import_install_id = $id;
+
+		return $clone;
 	}
 
 	private function getNewForumPk()
@@ -782,4 +858,3 @@ class ilForumXMLParser extends ilSaxParser
 	    return $this->result > 0;
 	}
 }
-?>

@@ -1098,7 +1098,7 @@ class ilObjForumGUI extends ilObjectGUI implements ilDesktopItemHandling
 				$node->setMessage(nl2br($node->getMessage()));
 			}
 
-			$key_value = ilForumMetaData::getMetadataAsKeyValue($this->ref_id, $this->objCurrentPost->getId());
+			$key_value = ilForumMetaData::getMetadataAsKeyValue($this->ref_id, $node->getId());
 			
 			if(count($key_value) > 0)
 			{
@@ -1258,6 +1258,16 @@ class ilObjForumGUI extends ilObjectGUI implements ilDesktopItemHandling
 			$this->tabs->addTarget('frm_moderators', $this->ctrl->getLinkTargetByClass('ilForumModeratorsGUI', 'showModerators'), 'showModerators', get_class($this));			
 		}
 
+		require_once 'Services/Object/classes/class.ilObjectMetaDataGUI.php';
+		$md_gui = new ilObjectMetaDataGUI($this->object, ilForumMetaData::FORUM_TYPE_POST);
+		$md_tab = $md_gui->getTab();
+		if($md_tab)
+		{
+			$this->tabs_gui->addTab("advmd",
+				$this->lng->txt("meta_data"),
+				$md_tab);
+		}
+
 		if($this->settings->get('enable_fora_statistics', false) &&
 		   ($this->objProperties->isStatisticEnabled() || $this->access->checkAccess('write', '', $this->ref_id))) 
 		{
@@ -1268,16 +1278,6 @@ class ilObjForumGUI extends ilObjectGUI implements ilDesktopItemHandling
 		if($this->access->checkAccess('write', '', $this->object->getRefId()))
 		{
 			$this->tabs->addTarget('export', $this->ctrl->getLinkTargetByClass('ilexportgui', ''), '', 'ilexportgui');
-		}
-
-		require_once 'Services/Object/classes/class.ilObjectMetaDataGUI.php';
-		$md_gui = new ilObjectMetaDataGUI($this->object, ilForumMetaData::FORUM_TYPE_POST);
-		$md_tab = $md_gui->getTab();
-		if($md_tab)
-		{
-			$this->tabs_gui->addTab("advmd",
-				$this->lng->txt("meta_data"),
-				$md_tab);
 		}
 
 		if($this->access->checkAccess('edit_permission', '', $this->ref_id))
