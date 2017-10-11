@@ -16,10 +16,11 @@ class ilForumMetaData
 	 */
 	public static function getMetadataAsKeyValue($obj_id, $ref_id, $sub_id)
 	{
+		$key_value = array();
 
 		$old_dt = ilDatePresentation::useRelativeDates();
 		ilDatePresentation::setUseRelativeDates(false);
-		$key_value = array();
+
 		/** @var ilAdvancedMDRecord $record */
 		foreach(ilAdvancedMDRecord::_getSelectedRecordsByObject('frm', $ref_id, self::FORUM_TYPE_POST) as $record)
 		{
@@ -27,7 +28,7 @@ class ilForumMetaData
 			$val->read();
 
 			/** @var ilAdvancedMDFieldDefinition[] $def */
-			$def      = $val->getDefinitions();
+			$def = $val->getDefinitions();
 			/** @var $element ilADT */
 			foreach($val->getADTGroup()->getElements() as $element_id => $element)
 			{

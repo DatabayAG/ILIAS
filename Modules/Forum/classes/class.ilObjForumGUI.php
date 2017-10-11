@@ -1105,7 +1105,7 @@ class ilObjForumGUI extends ilObjectGUI implements ilDesktopItemHandling
 				global $DIC;
 				$f = $DIC->ui()->factory();
 				$renderer = $DIC->ui()->renderer();
-				$list_item = $f->item()->standard("Metadata")
+				$list_item = $f->item()->standard($this->lng->txt('meta_data'))
 								->withProperties($key_value);
 				$this->tpl->setVariable('META_DATA', $renderer->render($list_item));
 			}
