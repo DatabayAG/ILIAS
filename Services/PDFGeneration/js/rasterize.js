@@ -60,7 +60,6 @@ var ilPhantomJsWrapper =  (function () {
 			'path'     : sess_obj.path,
 			'domain'   : '.' + sess_obj.host
 		});
-		console.log(sess_obj.session_id, sess_obj.host, sess_obj.client_id, sess_obj.path)
 
 		pro.phantom_page.open(src_file, function (status)
 		{
