@@ -112,8 +112,10 @@
 							e.preventDefault();
 							e.stopPropagation();
 
-							let messagePaster = new MessagePaster($(this));
-							messagePaster.pasteHtml('<br>');
+							let messagePaster = new MessagePaster($(this)), numBreaks = $(this).find("br").size();
+							for (let i = 1; i <= (numBreaks > 0 ? 1 : 2); i++) {
+								messagePaster.pasteHtml("<br>");
+							}
 							$scope.il.OnScreenChatJQueryTriggers.triggers.updatePlaceholder.call($(this).get(0), e);
 						}
 					}
