@@ -106,6 +106,18 @@
 					$scope.il.OnScreenChatJQueryTriggers.triggers.resizeChatWindow.call(this, e);
 					$scope.il.OnScreenChatJQueryTriggers.triggers.updatePlaceholder.call(this, e);
 				})
+				.on('keydown', '[data-onscreenchat-message]', function(e) {
+					if (e.keyCode === 13) {
+						if (e.altKey || e.shiftKey) {
+							e.preventDefault();
+							e.stopPropagation();
+
+							let messagePaster = new MessagePaster($(this));
+							messagePaster.pasteHtml('<br>');
+							$scope.il.OnScreenChatJQueryTriggers.triggers.updatePlaceholder.call($(this).get(0), e);
+						}
+					}
+				})
 				.on('paste', '[data-onscreenchat-message]', $scope.il.OnScreenChatJQueryTriggers.triggers.messageContentPasted)
 				.on('keyup click', '[data-onscreenchat-message]', $scope.il.OnScreenChatJQueryTriggers.triggers.messageInput)
 				.on('focusout', '[data-onscreenchat-window]', $scope.il.OnScreenChatJQueryTriggers.triggers.focusOut)
@@ -521,9 +533,9 @@
 		},
 
 		handleSubmit: function(e) {
-			if ((e.keyCode === 13 && !e.shiftKey) || e.type === 'click') {
+			if ((e.keyCode === 13 && !e.shiftKey && !e.altKey) || e.type === 'click') {
 				e.preventDefault();
-				var conversationId = $(this).closest('[data-onscreenchat-window]').attr('data-onscreenchat-window');
+				let  conversationId = $(this).closest('[data-onscreenchat-window]').attr('data-onscreenchat-window');
 				getModule().send(conversationId);
 				getModule().historyBlocked = true;
 			}
@@ -782,7 +794,7 @@
 			var $this = $(this),
 				placeholder = $this.parent().find('[data-onscreenchat-message-placeholder]');
 
-			if ($.trim($this.html()).length > 0 ) {
+			if ($.trim($this.text()).length > 0 ) {
 				placeholder.addClass('ilNoDisplay');
 			} else {
 				placeholder.removeClass('ilNoDisplay');
@@ -1449,6 +1461,33 @@
 				sel.addRange(range);
 			} else {
 				_message.focus();
+			}
+		};
+
+		this.pasteHtml = function(html) {
+			//document.execCommand("insertHTML", false, html);
+			let sel = window.getSelection();
+
+			if (sel.getRangeAt && sel.rangeCount) {
+				let range = sel.getRangeAt(0);
+				range.deleteContents();
+
+				let el = document.createElement("div");
+				el.innerHTML = html;
+
+				let frag = document.createDocumentFragment(), node, lastNode;
+				while ( (node = el.firstChild) ) {
+					lastNode = frag.appendChild(node);
+				}
+				range.insertNode(frag);
+
+				if (lastNode) {
+					range = range.cloneRange();
+					range.setStartAfter(lastNode);
+					range.collapse(true);
+					sel.removeAllRanges();
+					sel.addRange(range);
+				}
 			}
 		};
 	};
