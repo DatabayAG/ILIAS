@@ -116,6 +116,7 @@
 							for (let i = 1; i <= (numBreaks > 0 ? 1 : 2); i++) {
 								messagePaster.pasteHtml("<br>");
 							}
+							$scope.il.OnScreenChatJQueryTriggers.triggers.resizeChatWindow.call(this, e);
 							$scope.il.OnScreenChatJQueryTriggers.triggers.updatePlaceholder.call($(this).get(0), e);
 						}
 					}
@@ -384,7 +385,7 @@
 			var inputHeight = $(inputWrapper).outerHeight();
 			var bodyHeight = wrapperHeight - inputHeight - headingHeight;
 
-			if($(this).html() === "<br>") {
+			if ($(this).html() === "<div>><br></div>" || $(this).html() === "<br>") {
 				$(this).html("");
 			}
 
