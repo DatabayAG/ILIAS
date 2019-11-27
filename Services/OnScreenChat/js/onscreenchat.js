@@ -112,8 +112,11 @@
 							e.preventDefault();
 							e.stopPropagation();
 
-							let messagePaster = new MessagePaster($(this)), numBreaks = $(this).find("br").size();
-							for (let i = 1; i <= (numBreaks > 0 ? 1 : 2); i++) {
+							let messagePaster = new MessagePaster($(this)),
+								numBreaks = $(this).find("br").size(),
+								hasContent = !($(this).html() === "<div><br></div>" || $(this).html() === "<br>");
+
+							for (let i = 1; i <= (numBreaks > 0 || hasContent ? 1 : 2); i++) {
 								messagePaster.pasteHtml("<br>");
 							}
 							$scope.il.OnScreenChatJQueryTriggers.triggers.resizeChatWindow.call(this, e);
@@ -385,7 +388,7 @@
 			var inputHeight = $(inputWrapper).outerHeight();
 			var bodyHeight = wrapperHeight - inputHeight - headingHeight;
 
-			if ($(this).html() === "<div><br></div>" || $(this).html() === "<br>") {
+			if ($(this).html() === "<br>") {
 				$(this).html("");
 			}
 
@@ -751,14 +754,17 @@
 		},
 
 		onEmoticonClicked: function(e) {
-			var conversationWindow = $(this).closest('[data-onscreenchat-window]'),
+			let conversationWindow = $(this).closest('[data-onscreenchat-window]'),
 				messageField = conversationWindow.find('[data-onscreenchat-message]'),
 				messagePaster = new MessagePaster(messageField);
 
 			e.preventDefault();
 			e.stopPropagation();
-	
-			messagePaster.paste($(this).find('img').data('emoticon'));
+
+			let node = messageField.get(0);
+			node.focus(); // TODO: Guido: We have to finde the exact position (last caret)
+
+			messagePaster.pasteHtml($(this).find('img').data('emoticon'));
 			messageField.popover('hide');
 
 			$scope.il.OnScreenChatJQueryTriggers.triggers.updatePlaceholder.call(messageField.get(0), e);
@@ -1003,7 +1009,7 @@
 		},
 
 		onMessageInput: function() {
-			var $this = $(this);
+			let $this = $(this);
 
 			$this.attr("data-onscreenchat-last-caret-pos", getModule().getCaretPosition($this.get(0)));
 		},
@@ -1478,7 +1484,7 @@
 				el.innerHTML = html;
 
 				let frag = document.createDocumentFragment(), node, lastNode;
-				while ( (node = el.firstChild) ) {
+				while ((node = el.firstChild)) {
 					lastNode = frag.appendChild(node);
 				}
 				range.insertNode(frag);
