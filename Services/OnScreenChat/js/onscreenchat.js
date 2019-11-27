@@ -549,10 +549,13 @@
 
 		send: function(conversationId) {
 			let input = $('[data-onscreenchat-window=' + conversationId + ']').find('[data-onscreenchat-message]'),
-				message = input.text();
-			// TODO Guido: Convert <br> to \n here and try
+				message = input.html();
 
-			if(message !== "") {
+			// TODO Guido: Please check if this is sufficient, in both, security and validity
+			message = message.replace(/<br>/g, '\n');
+			message = $("<div></div>").html(message).text(); // Security
+
+			if (message !== '') {
 				$chat.sendMessage(conversationId, message);
 				input.html('');
 				getModule().onMessageInput.call(input);
