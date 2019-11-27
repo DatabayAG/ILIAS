@@ -765,14 +765,12 @@
 			e.preventDefault();
 			e.stopPropagation();
 
-			let node = messageField.get(0);
-			node.focus(); 
 			/**
 			 * TODO: Guido: We have to find the exact position (last caret / DOMNode in the messageField element)
 			 * Check the code in messagePaster.paste() (not pasteHtml() and the getCaretPosition() function )
 			 */
 
-			messagePaster.pasteHtml($(this).find('img').data('emoticon'));
+			messagePaster.pasteHtml($(this).find('img').data('emoticon'), true);
 			messageField.popover('hide');
 
 			$scope.il.OnScreenChatJQueryTriggers.triggers.updatePlaceholder.call(messageField.get(0), e);
@@ -1481,8 +1479,13 @@
 			}
 		};
 
-		this.pasteHtml = function(html) {
+		this.pasteHtml = function(html, focus = false) {
 			let sel = window.getSelection();
+			
+			if (focus) {
+				let node = _message.get(0);
+				node.focus();
+			}
 
 			if (sel.getRangeAt && sel.rangeCount) {
 				let range = sel.getRangeAt(0);
