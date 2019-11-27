@@ -1,13 +1,13 @@
 (function($, $scope, $chat, dateTimeFormatter){
 	'use strict';
 
-	var TYPE_CONSTANT	= 'osc';
-	var PREFIX_CONSTANT	= TYPE_CONSTANT + '_';
-	var ACTION_SHOW_CONV = "show";
-	var ACTION_HIDE_CONV = "hide";
-	var ACTION_REMOVE_CONV = "remove";
-	var ACTION_STORE_CONV = "store";
-	var ACTION_DERIVED_FROM_CONV_OPEN_STATUS = "derivefromopen";
+	const TYPE_CONSTANT	= 'osc';
+	const PREFIX_CONSTANT	= TYPE_CONSTANT + '_';
+	const ACTION_SHOW_CONV = "show";
+	const ACTION_HIDE_CONV = "hide";
+	const ACTION_REMOVE_CONV = "remove";
+	const ACTION_STORE_CONV = "store";
+	const ACTION_DERIVED_FROM_CONV_OPEN_STATUS = "derivefromopen";
 
 	$.widget("custom.iloscautocomplete", $.ui.autocomplete, {
 		more: false,
@@ -103,6 +103,15 @@
 				.on('click', '[data-onscreenchat-window]', $scope.il.OnScreenChatJQueryTriggers.triggers.windowClicked)
 				.on('keydown', '[data-onscreenchat-window]', $scope.il.OnScreenChatJQueryTriggers.triggers.submitEvent)
 				.on('input', '[data-onscreenchat-message]', function(e) {
+					let editor = new Editor($(this));
+
+					if (editor.isEmpty(true)) {
+						editor.init();
+
+						e.preventDefault();
+						e.stopPropagation();
+					}
+
 					$scope.il.OnScreenChatJQueryTriggers.triggers.resizeChatWindow.call(this, e);
 					$scope.il.OnScreenChatJQueryTriggers.triggers.updatePlaceholder.call(this, e);
 				})
@@ -112,12 +121,9 @@
 							e.preventDefault();
 							e.stopPropagation();
 
-							let messagePaster = new MessagePaster($(this)),
-								numBreaks = $(this).find("br").size();
+							let editor = new Editor($(this));
+							editor.addNewLine();
 
-							for (let i = 1; i <= (numBreaks > 0 ? 1 : 2); i++) {
-								messagePaster.pasteHtml("<br>");
-							}
 							$scope.il.OnScreenChatJQueryTriggers.triggers.resizeChatWindow.call(this, e);
 							$scope.il.OnScreenChatJQueryTriggers.triggers.updatePlaceholder.call($(this).get(0), e);
 						}
@@ -326,7 +332,10 @@
 				});
 
 				let emoticonPanel = conversationWindow.find('[data-onscreenchat-emoticons-panel]'),
-					messageField = conversationWindow.find('[data-onscreenchat-message]');
+					messageField = conversationWindow.find('[data-onscreenchat-message]'),
+					editor = new Editor(messageField);
+
+				editor.init();
 
 				emoticonPanel.find('[data-onscreenchat-emoticons-flyout-trigger]').on('click', function(e) {
 					e.preventDefault();
@@ -380,12 +389,12 @@
 		},
 
 		resizeMessageInput: function(e){
-			var inputWrapper = $(this).closest('.panel-footer');
-			var parent = $(inputWrapper).closest('[data-onscreenchat-window]');
-			var wrapperHeight = parent.outerHeight();
-			var headingHeight = parent.find('.panel-heading').outerHeight();
-			var inputHeight = $(inputWrapper).outerHeight();
-			var bodyHeight = wrapperHeight - inputHeight - headingHeight;
+			let inputWrapper = $(this).closest('.panel-footer'),
+				parent = $(inputWrapper).closest('[data-onscreenchat-window]'),
+				wrapperHeight = parent.outerHeight(),
+				headingHeight = parent.find('.panel-heading').outerHeight(),
+				inputHeight = $(inputWrapper).outerHeight(),
+				bodyHeight = wrapperHeight - inputHeight - headingHeight;
 
 			parent.find('.panel-body').css('height', bodyHeight + "px");
 		},
@@ -544,15 +553,11 @@
 
 		send: function(conversationId) {
 			let input = $('[data-onscreenchat-window=' + conversationId + ']').find('[data-onscreenchat-message]'),
-				message = input.html();
+				editor = new Editor(input);
 
-			// TODO Guido: Please check if this is sufficient, in both, security and validity
-			message = message.replace(/<br>/g, '\n');
-			message = $("<div></div>").html(message).text(); // Security
-
-			if (message !== '') {
-				$chat.sendMessage(conversationId, message);
-				input.html('');
+			if (!editor.isEmpty()) {
+				$chat.sendMessage(conversationId, editor.getMessage());
+				editor.clear();
 				getModule().onMessageInput.call(input);
 				getModule().resizeMessageInput.call(input);
 
@@ -755,17 +760,12 @@
 		onEmoticonClicked: function(e) {
 			let conversationWindow = $(this).closest('[data-onscreenchat-window]'),
 				messageField = conversationWindow.find('[data-onscreenchat-message]'),
-				messagePaster = new MessagePaster(messageField);
+				editor = new Editor(messageField);
 
 			e.preventDefault();
 			e.stopPropagation();
 
-			/**
-			 * TODO: Guido: We have to find the exact position (last caret / DOMNode in the messageField element)
-			 * Check the code in messagePaster.paste() (not pasteHtml() and the getCaretPosition() function )
-			 */
-
-			messagePaster.pasteHtml($(this).find('img').data('emoticon'), true);
+			editor.pastAtLastCaretPosition($(this).find('img').data('emoticon'));
 			messageField.popover('hide');
 
 			$scope.il.OnScreenChatJQueryTriggers.triggers.updatePlaceholder.call(messageField.get(0), e);
@@ -773,12 +773,12 @@
 
 		onMessageContentPasted: function(e) {
 			let text = (e.originalEvent || e).clipboardData.getData('text/plain'),
-				messagePaster = new MessagePaster($(this));
+				editor = new Editor($(this));
 
 			e.stopPropagation();
 			e.preventDefault();
 
-			messagePaster.pasteHtml(text);
+			editor.pasteText(text);
 
 			$scope.il.OnScreenChatJQueryTriggers.triggers.resizeChatWindow.call(this, e);
 			$scope.il.OnScreenChatJQueryTriggers.triggers.updatePlaceholder.call(this, e);
@@ -801,13 +801,14 @@
 		},
 
 		updatePlaceholder: function(e) {
-			var $this = $(this),
-				placeholder = $this.parent().find('[data-onscreenchat-message-placeholder]');
+			let $this = $(this),
+				placeholder = $this.parent().find('[data-onscreenchat-message-placeholder]'),
+				editor = new Editor($this);
 
-			if ($.trim($this.text()).length > 0 ) {
-				placeholder.addClass('ilNoDisplay');
-			} else {
+			if (editor.isEmpty()) {
 				placeholder.removeClass('ilNoDisplay');
+			} else {
+				placeholder.addClass('ilNoDisplay');
 			}
 		},
 
@@ -983,36 +984,29 @@
 			});
 		},
 
-		getCaretPosition: function(elm) {
-			var caretPos = 0,
+		storeSelection: function($elm) {
+			let caretPos = 0,
 				sel, range;
+
+			let domElm = $elm.get(0);
 
 			if (window.getSelection) {
 				sel = window.getSelection();
 				if (sel.rangeCount) {
 					range = sel.getRangeAt(0);
-					if (range.commonAncestorContainer.parentNode == elm) {
+					if (range.commonAncestorContainer.parentNode === domElm) {
 						caretPos = range.endOffset;
+						$elm.attr("data-onscreenchat-last-caret-pos", caretPos);
+						$elm.data("last-range", range);
 					}
 				}
-			} else if (document.selection && document.selection.createRange) {
-				range = document.selection.createRange();
-				if (range.parentElement() == elm) {
-					var tempEl = document.createElement("span");
-					elm.insertBefore(tempEl, elm.firstChild);
-					var tempRange = range.duplicate();
-					tempRange.moveToElementText(tempEl);
-					tempRange.setEndPoint("EndToEnd", range);
-					caretPos = tempRange.text.length;
-				}
 			}
-			return caretPos;
 		},
 
 		onMessageInput: function() {
 			let $this = $(this);
 
-			$this.attr("data-onscreenchat-last-caret-pos", getModule().getCaretPosition($this.get(0)));
+			getModule().storeSelection($this);
 		},
 
 		addMessage: function(messageObject, prepend) {
@@ -1445,54 +1439,75 @@
 		return "";
 	};
 
-	const MessagePaster = function(message) {
-		let _message = message, getLastCaretPosition = function() {
+	/**
+	 * A simple helper for handling the message input area of a conversation windows
+	 * If we get some funding, we should use https://github.com/facebook/draft-js/ instead
+	 * 
+	 * Concept:
+	 * - The input area is contenteditale="true" DOM element
+	 * - The input area MUST be expandable to at most 4 lines vertically
+	 * - If there is no printable character (e.g. on init), the content MUST be: <div><span data-text="true"><br data-text="true"></span></div>
+	 * - If there is no content (printable character or some line breaks) in the input area, a placeholder MUST be used (not handled in this class, but could be in future)
+	 * - Every line with printable characters MUST be: <div><span data-text="true">[TEXT]</span></div>
+	 * - Shift/Alt + Enter MUST result in a new line: <div><span data-text="true"><br data-text="true"></span></div>
+	 * -- The current selection/range MUST be respected, e.g. content after the selection MUST be put in the new line element
+	 * - Pasting contents from the clipboard (as text/plain) or adding emoticons MUST respect the current/last selection/range
+	 * 
+	 * @param $element
+	 * @constructor
+	 */
+	const Editor = function($element) {
+		const EMPTY_LINE = '<div><span data-text="true"><br data-text="true"></span></div>';
+
+		let _message = $element, getLastCaretPosition = function() {
 			return _message.attr("data-onscreenchat-last-caret-pos") || 0;
+		}, getLastRange = function() {
+			return _message.data("last-range") || null;
 		};
 
-		this.paste = function(text) {
-			let lastCaretPosition = parseInt(getLastCaretPosition(), 10),
-				pre  = _message.text().substr(0, lastCaretPosition),
-				post = _message.text().substr(lastCaretPosition);
-
-			_message.text(pre + text  + post);
-
-			if (window.getSelection) {
-				let node = _message.get(0);
-				node.focus();
-
-				let textNode = node.firstChild;
-				let range = document.createRange();
-				range.setStart(textNode, lastCaretPosition + text.length);
-				range.setEnd(textNode, lastCaretPosition + text.length);
-
-				let sel = window.getSelection();
-				sel.removeAllRanges();
-				sel.addRange(range);
-			} else {
-				_message.focus();
-			}
-		};
-
-		this.pasteHtml = function(html, focus = false) {
+		/**
+		 * 
+		 * @param tree
+		 * @param asNewRoot
+		 */
+		const pasteTree = function pasteTree(tree, asNewRoot = false) {
 			let sel = window.getSelection();
-			
-			if (focus) {
-				let node = _message.get(0);
-				node.focus();
-			}
 
 			if (sel.getRangeAt && sel.rangeCount) {
 				let range = sel.getRangeAt(0);
 				range.deleteContents();
 
-				let el = document.createElement("div");
-				el.innerHTML = html;
-
 				let frag = document.createDocumentFragment(), node, lastNode;
-				while ((node = el.firstChild)) {
+				while ((node = tree.firstChild)) {
 					lastNode = frag.appendChild(node);
 				}
+
+				if (asNewRoot) {
+					/**
+					 * TODO Guido: We need (for this case) to find a way to close the DOM elements of the current range/caret, and append
+					 * frag as new sub-tree to our root element (_message.get(0)), with placing the cursor behind 
+					 * 
+					 * We need the data-text="true" attribute because of spellcheck fixes in the browsers
+					 * 
+					 * Example/Scenario:
+					 * 
+					 * <div contenteditable="true">
+					 *     <div><span data-text="true">First line of [CURSOR HERE, now press ALT + ENTER]content</span></div>
+					 *     <div><span data-text="true">Another existing line in the message field </span></div>
+					 * </div>
+					 * 
+					 * Expected Result:
+					 * 
+					 * <div contenteditable="true">
+					 *     <div><span data-text="true">First line of</span></div>
+					 *     <div><span data-text="true">content</span></div>
+					 *     <div><span data-text="true">Another existing line in the message field </span></div>
+					 * </div>
+					 * 
+					 * Maybe this helps: https://javascript.info/selection-range
+					 */
+				}
+
 				range.insertNode(frag);
 
 				if (lastNode) {
@@ -1503,6 +1518,129 @@
 					sel.addRange(range);
 				}
 			}
+		};
+
+		/**
+		 * This method handles pasting a content without have the focus() on the input area (used only for emoticons)
+		 * @param text
+		 */
+		this.pastAtLastCaretPosition = function(text) {
+			let el = document.createElement("div");
+			el.appendChild(document.createTextNode($("<div></div>").html(text).text()));
+
+			/**
+			 * TODO Guido: We have to find the exact position (last caret / range in the messageField element)
+			 * Problem: The input "contenteditable=true" is not in focus() anymore when this method is called, but we have
+			 * stored the last range which could be retrieved by calling getLastRange();
+			 * 
+			 * The implementation below works, exception for some corner cases:
+			 * - The caret position was at pos. 0 in an arbitrary row of the input are before pasting the emoticon
+			 * 
+			 *  Maybe this helps: https://javascript.info/selection-range
+			 */
+
+			let range = getLastRange();
+
+			console.log(range);
+
+			if (null === range || this.isEmpty()) {
+				// Special case for adding an emoticon without any content given in the input area
+				// TODO Guido: This needs some work, as you may see when using the input area and using the emoticon picker
+				_message.find("span").first().html(el.firstChild);
+				_message.focus();
+				return;
+			}
+
+			let frag = document.createDocumentFragment(), node, lastNode;
+			while ((node = el.firstChild)) {
+				lastNode = frag.appendChild(node);
+			}
+
+			range.deleteContents();
+			range.insertNode(frag);
+
+			let inputNode = _message.get(0);
+			inputNode.focus();
+
+			if (lastNode) {
+				range = range.cloneRange();
+				range.setStartAfter(lastNode);
+				range.collapse(true);
+
+				let sel = window.getSelection();
+				sel.removeAllRanges();
+				sel.addRange(range);
+			}
+		};
+
+		this.clear = function() {
+			_message.html(EMPTY_LINE);
+		};
+
+		this.init = function() {
+			_message.html(EMPTY_LINE);
+		};
+
+		this.addNewLine = function() {
+			let el = document.createElement('div');
+			el.innerHTML = EMPTY_LINE;
+			pasteTree(el, true);
+		};
+
+		this.isEmpty = function(raw = false) {
+			if (raw) {
+				let message = this.getMessage(true);
+				return message === "" || message === "<br>";
+			}
+
+			return this.getMessage() === '';
+		};
+
+		/**
+		 * @param raw A boolean flag whether or not the raw HTML input is returned or the desired text string for the server
+		 * @returns {*|jQuery|string}
+		 */
+		this.getMessage = function(raw = false) {
+			let message = _message.html();
+
+			if (raw) {
+				return message;
+			}
+
+			// TODO Guido: Please check if this is sufficient, for both, security and validity
+			// Instead of using html() or text(), we iterate over all span elements and extract the text
+			let text = [];
+			_message.find("span").each(function() {
+				text.push($.trim($(this).text()));
+			});
+
+			message = text.join('\n');
+
+			return $.trim(message);
+		};
+
+		/**
+		 * Call this method if you want to paste contents of the user's clipboard etc.
+		 * @param text
+		 */
+		this.pasteText = function(text) {
+			text = text.replace(/<br[^>]*>/g, '\n');
+
+			let el = document.createElement("div");
+			el.appendChild(document.createTextNode($("<div></div>").html(text).text()));
+
+			pasteTree(el);
+		};
+
+		/**
+		 * Call this method if the content to be pasted is trusted
+		 * @param html
+		 */
+		this.pasteHtml = function(html) {
+			let el = document.createElement("div");
+			el.innerHTML = html;
+
+			pasteTree(el);
 		};
 	};
 
