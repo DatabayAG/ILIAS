@@ -113,10 +113,9 @@
 							e.stopPropagation();
 
 							let messagePaster = new MessagePaster($(this)),
-								numBreaks = $(this).find("br").size(),
-								hasContent = ($(this).text() !== "");
+								numBreaks = $(this).find("br").size();
 
-							for (let i = 1; i <= (numBreaks > 0 || hasContent ? 1 : 2); i++) {
+							for (let i = 1; i <= (numBreaks > 0 ? 1 : 2); i++) {
 								messagePaster.pasteHtml("<br>");
 							}
 							$scope.il.OnScreenChatJQueryTriggers.triggers.resizeChatWindow.call(this, e);
