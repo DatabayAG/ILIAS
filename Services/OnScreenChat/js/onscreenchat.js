@@ -752,12 +752,12 @@
 
 		onEmoticonClicked: function(e) {
 			var conversationWindow = $(this).closest('[data-onscreenchat-window]'),
-				messageField = conversationWindow.find('[data-onscreenchat-message]');
+				messageField = conversationWindow.find('[data-onscreenchat-message]'),
+				messagePaster = new MessagePaster(messageField);
 
 			e.preventDefault();
 			e.stopPropagation();
 	
-			var messagePaster = new MessagePaster(messageField);
 			messagePaster.paste($(this).find('img').data('emoticon'));
 			messageField.popover('hide');
 
@@ -1468,7 +1468,6 @@
 		};
 
 		this.pasteHtml = function(html) {
-			//document.execCommand("insertHTML", false, html);
 			let sel = window.getSelection();
 
 			if (sel.getRangeAt && sel.rangeCount) {
