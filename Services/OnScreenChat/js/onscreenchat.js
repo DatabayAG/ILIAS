@@ -385,7 +385,7 @@
 			var inputHeight = $(inputWrapper).outerHeight();
 			var bodyHeight = wrapperHeight - inputHeight - headingHeight;
 
-			if ($(this).html() === "<div>><br></div>" || $(this).html() === "<br>") {
+			if ($(this).html() === "<div><br></div>" || $(this).html() === "<br>") {
 				$(this).html("");
 			}
 
