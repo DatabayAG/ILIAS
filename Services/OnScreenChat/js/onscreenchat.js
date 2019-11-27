@@ -548,8 +548,9 @@
 		},
 
 		send: function(conversationId) {
-			var input = $('[data-onscreenchat-window=' + conversationId + ']').find('[data-onscreenchat-message]');
-			var message = input.text();
+			let input = $('[data-onscreenchat-window=' + conversationId + ']').find('[data-onscreenchat-message]'),
+				message = input.text();
+			// TODO Guido: Convert <br> to \n here and try
 
 			if(message !== "") {
 				$chat.sendMessage(conversationId, message);
@@ -557,7 +558,7 @@
 				getModule().onMessageInput.call(input);
 				getModule().resizeMessageInput.call(input);
 
-				var e = $.Event('click');
+				let e = $.Event('click');
 				$scope.il.OnScreenChatJQueryTriggers.triggers.updatePlaceholder.call(input, e);
 			}
 		},
@@ -762,7 +763,7 @@
 			e.stopPropagation();
 
 			let node = messageField.get(0);
-			node.focus(); // TODO: Guido: We have to finde the exact position (last caret)
+			node.focus(); // TODO: Guido: We have to find the exact position (last caret / DOMNode in the messageField element)
 
 			messagePaster.pasteHtml($(this).find('img').data('emoticon'));
 			messageField.popover('hide');
