@@ -771,7 +771,7 @@
 			e.preventDefault();
 
 			var messagePaster = new MessagePaster($(this));
-			messagePaster.paste(text);
+			messagePaster.pasteHtml(text);
 
 			$scope.il.OnScreenChatJQueryTriggers.triggers.resizeChatWindow.call(this, e);
 			$scope.il.OnScreenChatJQueryTriggers.triggers.updatePlaceholder.call(this, e);
