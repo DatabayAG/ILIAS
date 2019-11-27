@@ -765,12 +765,12 @@
 		},
 
 		onMessageContentPasted: function(e) {
-			var text = (e.originalEvent || e).clipboardData.getData('text/plain');
+			let text = (e.originalEvent || e).clipboardData.getData('text/plain'),
+				messagePaster = new MessagePaster($(this));
 
 			e.stopPropagation();
 			e.preventDefault();
 
-			var messagePaster = new MessagePaster($(this));
 			messagePaster.pasteHtml(text);
 
 			$scope.il.OnScreenChatJQueryTriggers.triggers.resizeChatWindow.call(this, e);
