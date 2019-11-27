@@ -766,7 +766,11 @@
 			e.stopPropagation();
 
 			let node = messageField.get(0);
-			node.focus(); // TODO: Guido: We have to find the exact position (last caret / DOMNode in the messageField element)
+			node.focus(); 
+			/**
+			 * TODO: Guido: We have to find the exact position (last caret / DOMNode in the messageField element)
+			 * Check the code in messagePaster.paste() (not pasteHtml() and the getCaretPosition() function )
+			 */
 
 			messagePaster.pasteHtml($(this).find('img').data('emoticon'));
 			messageField.popover('hide');
