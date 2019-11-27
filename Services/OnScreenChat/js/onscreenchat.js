@@ -114,7 +114,7 @@
 
 							let messagePaster = new MessagePaster($(this)),
 								numBreaks = $(this).find("br").size(),
-								hasContent = !($(this).html() === "<div><br></div>" || $(this).html() === "<br>");
+								hasContent = ($(this).text() !== "");
 
 							for (let i = 1; i <= (numBreaks > 0 || hasContent ? 1 : 2); i++) {
 								messagePaster.pasteHtml("<br>");
@@ -387,10 +387,6 @@
 			var headingHeight = parent.find('.panel-heading').outerHeight();
 			var inputHeight = $(inputWrapper).outerHeight();
 			var bodyHeight = wrapperHeight - inputHeight - headingHeight;
-
-			if ($(this).html() === "<br>") {
-				$(this).html("");
-			}
 
 			parent.find('.panel-body').css('height', bodyHeight + "px");
 		},
