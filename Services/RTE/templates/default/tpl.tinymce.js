@@ -71,7 +71,7 @@
 	tinyMCE.init({
 		mode : "textareas",
 		editor_deselector : "noRTEditor",
-		theme : "advanced",
+		theme : "{THEME}",
 		language : "{LANG}",
 		plugins : "safari,{ADDITIONAL_PLUGINS}",
         <!-- BEGIN initial_width -->

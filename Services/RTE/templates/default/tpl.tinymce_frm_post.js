@@ -45,7 +45,7 @@
 	tinyMCE.init({
 		mode : "textareas",
 		editor_deselector : "noRTEditor",
-		theme : "advanced",
+		theme : "{THEME}",
 		language : "{LANG}",
 		plugins : "safari,{ADDITIONAL_PLUGINS}",
 		fix_list_elements : true,
@@ -70,7 +70,7 @@
 		<!-- BEGIN forced_root_block -->forced_root_block : '{FORCED_ROOT_BLOCK}',<!-- END forced_root_block -->
 		font_size_style_values : "8pt,10pt,12pt,14pt,18pt,24pt,36pt",
 		setup: function (ed) {
-			ed.onInit.add(ilTinyMceInitCallback);
+			//ed.onInit.add(ilTinyMceInitCallback);
 		}
 	});
 <!-- END tinymce -->

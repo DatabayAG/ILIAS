@@ -17,6 +17,8 @@ class ilTinyMCE extends ilRTE
     protected $mode = 'textareas';
     protected $version = ''; // set default version here
     protected $vd = ''; // version directory suffix
+    protected $file = '';
+    protected $theme = '';
 
     protected static $renderedToGlobalTemplate = false;
 
@@ -40,12 +42,22 @@ class ilTinyMCE extends ilRTE
             $a_version = '3.5.11';
         }
 
+        //Todo Remove
+        $a_version = '5.5.1';
         parent::__construct($a_version);
 
         switch ($a_version) {
             case '3.4.7':
             case '3.5.11':
                 $this->version = $a_version;
+                $this->vd = '_' . str_replace('.', '_', $a_version);
+                $this->file = 'tiny_mce.js';
+                $this->theme = 'advanded';
+                break;#
+            case '5.5.1':
+                $this->version = $a_version;
+                $this->file = 'tinymce.min.js';
+                $this->theme = 'silver';
                 $this->vd = '_' . str_replace('.', '_', $a_version);
                 break;
 
@@ -199,6 +211,7 @@ class ilTinyMCE extends ilRTE
             $tpl->setVariable("OBJ_TYPE", $obj_type);
             $tpl->setVariable("CLIENT_ID", CLIENT_ID);
             $tpl->setVariable("SESSION_ID", $_COOKIE[session_name()]);
+            $tpl->setVariable("THEME", $this->theme);
             $tpl->setVariable("BLOCKFORMATS", $this->_buildAdvancedBlockformatsFromHTMLTags($tags));
             $tpl->setVariable("VALID_ELEMENTS", $this->_getValidElementsFromHTMLTags($tags));
 
@@ -224,7 +237,7 @@ class ilTinyMCE extends ilRTE
             $tpl->parseCurrentBlock();
 
             if (!self::$renderedToGlobalTemplate) {
-                $this->tpl->addJavaScript("./Services/RTE/tiny_mce" . $this->vd . "/tiny_mce.js");
+                $this->tpl->addJavaScript("./Services/RTE/tiny_mce" . $this->vd . "/" . $this->file);
                 $this->tpl->addOnLoadCode($tpl->get());
                 self::$renderedToGlobalTemplate = true;
             }
@@ -282,7 +295,7 @@ class ilTinyMCE extends ilRTE
         $tpl->parseCurrentBlock();
 
         if (!self::$renderedToGlobalTemplate) {
-            $this->tpl->addJavaScript("./Services/RTE/tiny_mce" . $this->vd . "/tiny_mce.js");
+            $this->tpl->addJavaScript("./Services/RTE/tiny_mce" . $this->vd . "/" . $this->file);
             $this->tpl->addOnLoadCode($tpl->get());
             self::$renderedToGlobalTemplate = true;
         }
@@ -313,7 +326,7 @@ class ilTinyMCE extends ilRTE
         $template->setVariable("LANG", $this->_getEditorLanguage());
         $template->parseCurrentBlock();
         
-        $this->tpl->addJavaScript("./Services/RTE/tiny_mce" . $this->vd . "/tiny_mce.js");
+        $this->tpl->addJavaScript("./Services/RTE/tiny_mce" . $this->vd . "/" . $this->file);
         $this->tpl->addOnLoadCode($template->get());
     }
 
