@@ -87,10 +87,8 @@ class ilForumThreadFormGUI extends \ilPropertyFormGUI
         $message->setRows(15);
         $message->setRequired(true);
         $message->setUseRte(true);
-        $message->addPlugin('latex');
-        $message->addButton('latex');
-        /*$message->addButton('pastelatex');
-        $message->addPlugin('ilfrmquote');*/
+        /*$message->addButton('pastelatex');*/
+        $message->addPlugin('ilfrmquote');
        // $message->addPlugin('ilimgupload');
 
         $message->removePlugin('advlink');

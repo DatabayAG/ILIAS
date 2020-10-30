@@ -54,7 +54,7 @@
 		menubar: false,
 		toolbar1: 'undo redo styleselect bold italic alignleft aligncenter alignright alignjustify | bullist numlist outdent indent',
 		//Todo: make custom toolbar config
-		toolbar2: 'mathjax',
+		toolbar2: 'mathjax ilFrmQuoteAjaxCall',
 		mathjax: {
 			//Todo: add lib to npm
 			lib: 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js', //required path to mathjax

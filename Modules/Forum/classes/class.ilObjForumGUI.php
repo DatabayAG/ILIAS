@@ -1957,8 +1957,9 @@ class ilObjForumGUI extends \ilObjectGUI implements \ilDesktopItemHandling
         $oPostGUI->setRequired(true);
         $oPostGUI->setRows(15);
         $oPostGUI->setUseRte(true);
-        $oPostGUI->addPlugin('latex');
-        $oPostGUI->addButton('latex');
+        //Todo: Check this
+       # $oPostGUI->addPlugin('latex');
+       # $oPostGUI->addButton('latex');
         $oPostGUI->addButton('pastelatex');
         $oPostGUI->addPlugin('ilfrmquote');
 
