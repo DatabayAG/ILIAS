@@ -47,7 +47,8 @@
 		editor_deselector : "noRTEditor",
 		theme : "{THEME}",
 		language : "{LANG}",
-		plugins : "safari,{ADDITIONAL_PLUGINS}",
+		//plugins : "safari,{ADDITIONAL_PLUGINS}",
+		plugins : "{ADDITIONAL_PLUGINS}",
 		fix_list_elements : true,
 		theme_advanced_blockformats : "{BLOCKFORMATS}",
 		theme_advanced_toolbar_location : "top",
@@ -56,6 +57,7 @@
 		theme_advanced_buttons1 : "{BUTTONS_1}",
 		theme_advanced_buttons2 : "{BUTTONS_2}",
 		theme_advanced_buttons3 : "{BUTTONS_3}",
+		toolbar: 'latex | undo redo ',
 		valid_elements : "{VALID_ELEMENTS}",
 <!-- BEGIN formelements -->
 		extended_valid_elements : "form[name|id|action|method|enctype|accept-charset|onsubmit|onreset|target],input[id|name|type|value|size|maxlength|checked|accept|s rc|width|height|disabled|readonly|tabindex|accessk ey|onfocus|onblur|onchange|onselect],textarea[id|name|rows|cols|disabled|readonly|tabindex|acces skey|onfocus|onblur|onchange|onselect],option[name|id|value],select[id|name|type|value|size|maxlength|checked|accept|s rc|width|height|disabled|readonly|tabindex|accessk ey|onfocus|onblur|onchange|onselect|length|options |selectedIndex]",

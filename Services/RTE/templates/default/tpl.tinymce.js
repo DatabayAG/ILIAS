@@ -73,7 +73,8 @@
 		editor_deselector : "noRTEditor",
 		theme : "{THEME}",
 		language : "{LANG}",
-		plugins : "safari,{ADDITIONAL_PLUGINS}",
+		//plugins : "safari,{ADDITIONAL_PLUGINS}",
+		plugins : "{ADDITIONAL_PLUGINS}",
         <!-- BEGIN initial_width -->
         width: "{INITIAL_WIDTH}",
         <!-- END initial_width -->

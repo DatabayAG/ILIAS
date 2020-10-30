@@ -67,26 +67,26 @@ class ilTinyMCE extends ilRTE
         }
 
         $this->plugins = array(
-            'xhtmlxtras',
-            'style',
-            'layer',
+            //'xhtmlxtras', in core
+            //'style', block style plugin?
+            //'layer', This plugin adds some layer controls. It only works on some browsers and will probably be removed in the future. https://www.tiny.cloud/docs-4x/plugins/layer/
             'table',
             'save',
-            'advhr',
+            //'advhr', Removed in TinyMCE 4 https://www.tiny.cloud/docs-4x/advanced/migration-guide-from-3.x/#removedplugins
             'advlink',
-            'emotions',
-            'iespell',
+            'emoticons', //emotion Removed in TinyMCE 4 https://www.tiny.cloud/docs-4x/advanced/migration-guide-from-3.x/#removedplugins
+            //'iespell', spellchecker? Removed in TinyMCE 4 https://www.tiny.cloud/docs-4x/advanced/migration-guide-from-3.x/#removedplugins
             'insertdatetime',
             'preview',
             'searchreplace',
             'print',
-            'contextmenu',
+            //'contextmenu', // in core
             'paste',
             'directionality',
             'fullscreen',
             'nonbreaking',
             'noneditable',
-            'style'
+            //'style' // Removed in TinyMCE 4 https://www.tiny.cloud/docs-4x/advanced/migration-guide-from-3.x/#removedplugins
         );
 
         $this->setStyleSelect(false);
@@ -99,8 +99,8 @@ class ilTinyMCE extends ilRTE
     protected function addInternalTinyMCEImageManager()
     {
         if (!$this->client_init->readVariable('tinymce', 'use_advanced_img_mng')) {
-            parent::addPlugin('ilimgupload');
-            parent::addButton('ilimgupload');
+           // parent::addPlugin('ilimgupload');
+           // parent::addButton('ilimgupload');
             parent::removePlugin('ibrowser');
             parent::removePlugin('image');
 
@@ -112,7 +112,7 @@ class ilTinyMCE extends ilRTE
             $this->setRemoveImgContextMenuItem(true);
         } else {
             parent::addPlugin('ibrowser');
-            parent::removePlugin('ilimgupload');
+           // parent::removePlugin('ilimgupload');
             $this->disableButtons('ilimgupload');
 
             $this->setRemoveImgContextMenuItem(false);
@@ -126,7 +126,7 @@ class ilTinyMCE extends ilRTE
     {
         if (!in_array('img', $tags)) {
             $this->setRemoveImgContextMenuItem(true);
-            parent::removePlugin('ilimgupload');
+            //parent::removePlugin('ilimgupload');
             parent::removePlugin('ibrowser');
             parent::removePlugin('image');
             $this->disableButtons(array(
@@ -492,7 +492,7 @@ class ilTinyMCE extends ilRTE
                 //array_push($theme_advanced_buttons, "advimage");
                 array_push($theme_advanced_buttons, "image");
                 array_push($theme_advanced_buttons, "ibrowser");
-                array_push($theme_advanced_buttons, "ilimgupload");
+               // array_push($theme_advanced_buttons, "ilimgupload");
             }
             if (in_array("a", $a_html_tags)) {
                 array_push($theme_advanced_buttons, "link");
@@ -607,7 +607,7 @@ class ilTinyMCE extends ilRTE
             //array_push($theme_advanced_buttons, "advimage");
             array_push($theme_advanced_buttons, "image");
             array_push($theme_advanced_buttons, "ibrowser");
-            array_push($theme_advanced_buttons, "ilimgupload");
+            //array_push($theme_advanced_buttons, "ilimgupload");
         }
         if (in_array("a", $a_html_tags)) {
             array_push($theme_advanced_buttons, "link");
