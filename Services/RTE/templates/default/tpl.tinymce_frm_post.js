@@ -51,12 +51,14 @@
 		plugins : "{ADDITIONAL_PLUGINS}",
 		fix_list_elements : true,
 		external_plugins: {'mathjax': 'plugins/tinymce-mathjax/plugin.min.js'},
-		toolbar: 'mathjax',
+		menubar: false,
+		toolbar1: 'undo redo styleselect bold italic alignleft aligncenter alignright alignjustify | bullist numlist outdent indent',
+		//Todo: make custom toolbar config
+		toolbar2: 'mathjax',
 		mathjax: {
+			//Todo: add lib to npm
 			lib: 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js', //required path to mathjax
 			symbols: {start: '\\(', end: '\\)'}, //optional: mathjax symbols
-			//className: "math-tex", //optional: mathjax element class
-			//configUrl: '/your-path-to-plugin/@dimakorotkov/tinymce-mathjax/config.js' //optional: mathjax config js
 		},
 		theme_advanced_blockformats : "{BLOCKFORMATS}",
 		theme_advanced_toolbar_location : "top",
