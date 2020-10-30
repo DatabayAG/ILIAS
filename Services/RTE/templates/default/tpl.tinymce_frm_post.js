@@ -50,6 +50,14 @@
 		//plugins : "safari,{ADDITIONAL_PLUGINS}",
 		plugins : "{ADDITIONAL_PLUGINS}",
 		fix_list_elements : true,
+		external_plugins: {'mathjax': 'plugins/tinymce-mathjax/plugin.min.js'},
+		toolbar: 'mathjax',
+		mathjax: {
+			lib: 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js', //required path to mathjax
+			symbols: {start: '\\(', end: '\\)'}, //optional: mathjax symbols
+			//className: "math-tex", //optional: mathjax element class
+			//configUrl: '/your-path-to-plugin/@dimakorotkov/tinymce-mathjax/config.js' //optional: mathjax config js
+		},
 		theme_advanced_blockformats : "{BLOCKFORMATS}",
 		theme_advanced_toolbar_location : "top",
 		theme_advanced_toolbar_align : "left",
@@ -57,7 +65,6 @@
 		theme_advanced_buttons1 : "{BUTTONS_1}",
 		theme_advanced_buttons2 : "{BUTTONS_2}",
 		theme_advanced_buttons3 : "{BUTTONS_3}",
-		toolbar: 'latex | undo redo ',
 		valid_elements : "{VALID_ELEMENTS}",
 <!-- BEGIN formelements -->
 		extended_valid_elements : "form[name|id|action|method|enctype|accept-charset|onsubmit|onreset|target],input[id|name|type|value|size|maxlength|checked|accept|s rc|width|height|disabled|readonly|tabindex|accessk ey|onfocus|onblur|onchange|onselect],textarea[id|name|rows|cols|disabled|readonly|tabindex|acces skey|onfocus|onblur|onchange|onselect],option[name|id|value],select[id|name|type|value|size|maxlength|checked|accept|s rc|width|height|disabled|readonly|tabindex|accessk ey|onfocus|onblur|onchange|onselect|length|options |selectedIndex]",
