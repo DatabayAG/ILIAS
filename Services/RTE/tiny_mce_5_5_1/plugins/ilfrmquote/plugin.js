@@ -6,29 +6,28 @@
 	tinymce.PluginManager.add('ilfrmquote', function (editor, url) {
 		var that = this;
 
-		editor.addButton('ilFrmQuoteAjaxCall', {
+		editor.ui.registry.addButton('ilFrmQuoteAjaxCall', {
 			title: editor.editorManager.i18n.translate('quote'),
-			cmd:   'ilFrmQuoteAjaxCall',
-			image: url + '/images/quote.gif'
-		});
+			onAction:   function () {
+				if (ilFrmQuoteAjaxHandler) {
+					ilFrmQuoteAjaxHandler(function(html) {
+						var uid = 'frm_quote_' + new Date().getTime();
 
-		editor.addCommand('ilFrmQuoteAjaxCall', function () {
-			if (ilFrmQuoteAjaxHandler) {
-				ilFrmQuoteAjaxHandler(function(html) {
-					var uid = 'frm_quote_' + new Date().getTime();
+						html = that.ilfrmquote2html(html.toString()) + '<p id="' + uid + '">&nbsp;</p>';
 
-					html = that.ilfrmquote2html(html.toString()) + '<p id="' + uid + '">&nbsp;</p>';
+						if (!self.isWindow && tinymce.isIE) {
+							self.editor.selection.moveToBookmark(self.editor.windowManager.bookmark);
+						}
 
-					if (!self.isWindow && tinymce.isIE) {
-						self.editor.selection.moveToBookmark(self.editor.windowManager.bookmark);
-					}
-
-					editor.execCommand('mceInsertRawHTML', false, html, {
-						skip_focus: 1
+						editor.execCommand('mceInsertRawHTML', false, html, {
+							skip_focus: 1
+						});
 					});
-				});
-			}
+				}
+			},
+			icon: 'quote',
 		});
+
 
 		editor.on('GetContent', function(e) {
 			e.content = that.html2ilfrmquote(e.content);
