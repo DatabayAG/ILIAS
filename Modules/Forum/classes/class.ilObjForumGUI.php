@@ -2979,7 +2979,7 @@ class ilObjForumGUI extends \ilObjectGUI implements \ilDesktopItemHandling
             $draftsObjects = $sortedDrafts = ilForumPostDraft::readSortedDrafts(
                 (int) $this->user->getId(),
                 (int) $this->objCurrentTopic->getId(),
-                $currentViewMode
+                $currentSortation
             );
             
             $pagedPostings = array_slice($subtree_nodes, $pageIndex * $pageSize, $pageSize);
