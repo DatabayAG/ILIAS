@@ -1277,6 +1277,14 @@ class ilObjForumGUI extends \ilObjectGUI implements \ilDesktopItemHandling
             );
         }
 
+        if (ilLearningProgressAccess::checkAccess($this->object->getRefId())) {
+            $this->tabs->addTab(
+                'learning_progress',
+                $this->lng->txt('learning_progress'),
+                $this->ctrl->getLinkTargetByClass(ilLearningProgressGUI::class)
+            );
+        }
+
         if ($this->settings->get('enable_fora_statistics', false)) {
             $hasStatisticsAccess = $this->access->checkAccess('write', '', $this->ref_id);
             if (!$hasStatisticsAccess) {
@@ -1297,14 +1305,6 @@ class ilObjForumGUI extends \ilObjectGUI implements \ilDesktopItemHandling
                     $force_active
                 );
             }
-        }
-
-        if (ilLearningProgressAccess::checkAccess($this->object->getRefId())) {
-            $this->tabs->addTab(
-                'learning_progress',
-                $this->lng->txt('learning_progress'),
-                $this->ctrl->getLinkTargetByClass(ilLearningProgressGUI::class)
-            );
         }
 
         if ($this->access->checkAccess('write', '', $this->object->getRefId())) {
