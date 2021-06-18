@@ -6633,3 +6633,18 @@ if ($rp_ops_id && $ep_ops_id && $w_ops_id) {
     }
 }
 ?>
+<#5793>
+<?php
+if (!$ilDB->tableColumnExists('frm_settings', 'lp_req_num_postings')) {
+    $ilDB->addTableColumn(
+        'frm_settings',
+        'lp_req_num_postings',
+        [
+            'type' => 'integer',
+            'notnull' => false,
+            'length' => 4,
+            'default' => null
+        ]
+    );
+}
+?>
