@@ -120,6 +120,8 @@ class ilForumProperties
 
     /** @var bool */
     private $exists = false;
+    
+    private ?int $lp_req_num_postings;
 
     protected function __construct($a_obj_id = 0)
     {
@@ -165,16 +167,19 @@ class ilForumProperties
                 $this->anonymized = $row->anonymized;// == 1 ? true : false;
                 $this->statistics_enabled = $row->statistics_enabled;// == 1 ? true : false;
                 $this->post_activation_enabled = $row->post_activation;// == 1 ? true : false;
-                $this->admin_force_noti = $row->admin_force_noti == 1 ? true : false;
-                $this->user_toggle_noti = $row->user_toggle_noti == 1 ? true : false;
+                $this->admin_force_noti = $row->admin_force_noti == 1;
+                $this->user_toggle_noti = $row->user_toggle_noti == 1;
                 $this->preset_subject = $row->preset_subject;
                 $this->add_re_subject = $row->add_re_subject;
 
-                $this->notification_type = $row->notification_type == null ? 'default' : $row->notification_type;
-                $this->mark_mod_posts = $row->mark_mod_posts == 1 ? true : false;
-                $this->thread_sorting = $row->thread_sorting == 1 ? true : false;
+                $this->notification_type = $row->notification_type ?? 'default';
+                $this->mark_mod_posts = $row->mark_mod_posts == 1;
+                $this->thread_sorting = $row->thread_sorting == 1;
                 $this->setIsThreadRatingEnabled((bool) $row->thread_rating);
-                $this->file_upload_allowed = $row->file_upload_allowed == 1 ? true : false;
+                $this->file_upload_allowed = $row->file_upload_allowed == 1;
+                if (is_numeric($row->lp_req_num_postings)) {
+                    $this->lp_req_num_postings = (int) $row->lp_req_num_postings;
+                }
 
                 $this->exists = true;
                 return true;
@@ -191,22 +196,23 @@ class ilForumProperties
         if ($this->obj_id && !$this->exists) {
             $this->db->insert(
                 'frm_settings',
-                array(
-                    'obj_id' => array('integer', $this->obj_id),
-                    'default_view' => array('integer', $this->default_view),
-                    'anonymized' => array('integer', $this->anonymized),
-                    'statistics_enabled' => array('integer', $this->statistics_enabled),
-                    'post_activation' => array('integer', $this->post_activation_enabled),
-                    'admin_force_noti' => array('integer', $this->admin_force_noti),
-                    'user_toggle_noti' => array('integer', $this->user_toggle_noti),
-                    'preset_subject' => array('integer', $this->preset_subject),
-                    'add_re_subject' => array('integer', $this->add_re_subject),
-                    'notification_type' => array('text', $this->notification_type),
-                    'mark_mod_posts' => array('integer', $this->mark_mod_posts),
-                    'thread_sorting' => array('integer', $this->thread_sorting),
-                    'thread_rating' => array('integer', $this->isIsThreadRatingEnabled()),
-                    'file_upload_allowed' => array('integer', $this->file_upload_allowed)
-                )
+                [
+                    'obj_id' => ['integer', $this->obj_id],
+                    'default_view' => ['integer', $this->default_view],
+                    'anonymized' => ['integer', $this->anonymized],
+                    'statistics_enabled' => ['integer', $this->statistics_enabled],
+                    'post_activation' => ['integer', $this->post_activation_enabled],
+                    'admin_force_noti' => ['integer', $this->admin_force_noti],
+                    'user_toggle_noti' => ['integer', $this->user_toggle_noti],
+                    'preset_subject' => ['integer', $this->preset_subject],
+                    'add_re_subject' => ['integer', $this->add_re_subject],
+                    'notification_type' => ['text', $this->notification_type],
+                    'mark_mod_posts' => ['integer', $this->mark_mod_posts],
+                    'thread_sorting' => ['integer', $this->thread_sorting],
+                    'lp_req_num_postings' => ['integer', $this->lp_req_num_postings],
+                    'thread_rating' => ['integer', $this->isIsThreadRatingEnabled()],
+                    'file_upload_allowed' => ['integer', $this->file_upload_allowed]
+                ]
             );
 
             $this->exists = true;
@@ -237,6 +243,7 @@ class ilForumProperties
                     'notification_type' => array('text', $this->notification_type),
                     'mark_mod_posts' => array('integer', $this->mark_mod_posts),
                     'thread_sorting' => array('integer', $this->thread_sorting),
+                    'lp_req_num_postings' => array('integer', $this->lp_req_num_postings),
                     'thread_rating' => array('integer', $this->isIsThreadRatingEnabled()),
                     'file_upload_allowed' => array('integer', $this->file_upload_allowed)
                 ),
@@ -265,6 +272,7 @@ class ilForumProperties
                     'add_re_subject' => array('integer', $this->add_re_subject),
                     'notification_type' => array('text', $this->notification_type),
                     'mark_mod_posts' => array('integer', $this->mark_mod_posts),
+                    'lp_req_num_postings' => array('integer', $this->lp_req_num_postings),
                     'thread_sorting' => array('integer', $this->thread_sorting),
                     'thread_rating' => array('integer', $this->isIsThreadRatingEnabled()),
                     'file_upload_allowed' => array('integer', $this->file_upload_allowed)
@@ -575,5 +583,15 @@ class ilForumProperties
     {
         global $DIC;
         return $DIC->settings()->get('send_attachments_by_mail') == true ? true : false;
+    }
+
+    public function getLpReqNumPostings() : ?int
+    {
+        return $this->lp_req_num_postings;
+    }
+
+    public function setLpReqNumPostings(?int $lp_req_num_postings) : void
+    {
+        $this->lp_req_num_postings = $lp_req_num_postings;
     }
 }
