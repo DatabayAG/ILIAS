@@ -1598,10 +1598,11 @@ class ilObjForumGUI extends \ilObjectGUI implements \ilDesktopItemHandling
         $GLOBALS['ilAppEventHandler']->raise(
             'Modules/Forum',
             'activatedPost',
-            array(
+            [
+                'object' => $this->object,
                 'ref_id' => $this->object->getRefId(),
                 'post' => $this->objCurrentPost
-            )
+            ]
         );
         ilUtil::sendInfo($this->lng->txt('forums_post_was_activated'), true);
 
@@ -2325,11 +2326,12 @@ class ilObjForumGUI extends \ilObjectGUI implements \ilDesktopItemHandling
             $GLOBALS['ilAppEventHandler']->raise(
                 'Modules/Forum',
                 'createdPost',
-                array(
+                [
+                    'object' => $this->object,
                     'ref_id' => $this->object->getRefId(),
                     'post' => new ilForumPost($newPost),
                     'notify_moderators' => (bool) $send_activation_mail
-                )
+                ]
             );
 
             $message = '';
@@ -2483,11 +2485,12 @@ class ilObjForumGUI extends \ilObjectGUI implements \ilDesktopItemHandling
                 $GLOBALS['ilAppEventHandler']->raise(
                     'Modules/Forum',
                     'createdPost',
-                    array(
+                    [
+                        'object' => $this->object,
                         'ref_id' => $this->object->getRefId(),
                         'post' => new ilForumPost($newPost),
                         'notify_moderators' => (bool) $send_activation_mail
-                    )
+                    ]
                 );
 
                 $message = '';
@@ -3466,17 +3469,15 @@ class ilObjForumGUI extends \ilObjectGUI implements \ilDesktopItemHandling
 
         if (isset($_POST['frm_ref_id']) && (int) $_POST['frm_ref_id']) {
             $errorMessages = $this->object->Forum->moveThreads(
-                (array) $_SESSION['threads2move'],
-                $this->object->getRefId(),
-                $this->ilObjDataCache->lookupObjId($_POST['frm_ref_id'])
+                (array) ($_SESSION['threads2move'] ?? []),
+                $this->object,
+                (int) $this->ilObjDataCache->lookupObjId($_POST['frm_ref_id'])
             );
 
-            if (array() !== $errorMessages) {
-                \ilUtil::sendFailure(
-                    implode("<br><br>", $errorMessages),
-                    true
-                );
-                return $this->ctrl->redirectByClass('ilObjForumGUI', 'showThreads');
+            if ([] !== $errorMessages) {
+                ilUtil::sendFailure(implode("<br><br>", $errorMessages), true);
+                $this->ctrl->redirect($this, 'showThreads');
+                return;
             }
 
             unset($_SESSION['threads2move']);
@@ -3821,6 +3822,7 @@ class ilObjForumGUI extends \ilObjectGUI implements \ilDesktopItemHandling
                 'Modules/Forum',
                 'createdPost',
                 [
+                    'object' => $this->object,
                     'ref_id' => $this->object->getRefId(),
                     'post' => new \ilForumPost($newPost),
                     'notify_moderators' => !$status
@@ -4410,7 +4412,7 @@ class ilObjForumGUI extends \ilObjectGUI implements \ilDesktopItemHandling
         }
 
         $threadIds = array_values(
-            array_filter(array_map('intval', (array) $this->httpRequest->getParsedBody()['thread_ids'] ?? []))
+            array_filter(array_map('intval', (array) ($this->httpRequest->getParsedBody()['thread_ids'] ?? [])))
         );
         if (2 !== count($threadIds)) {
             ilUtil::sendFailure($this->lng->txt('select_one'));
