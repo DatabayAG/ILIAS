@@ -6648,3 +6648,7 @@ if (!$ilDB->tableColumnExists('frm_settings', 'lp_req_num_postings')) {
     );
 }
 ?>
+<#5794>
+<?php
+$ilCtrlStructureReader->getStructure();
+?>
