@@ -5,6 +5,7 @@
 use ILIAS\Setup;
 use ILIAS\Refinery;
 use ILIAS\UI;
+use ILIAS\Mail\Setup\Objective\MetricsCollectedObjective;
 
 class ilMailSetupAgent implements Setup\Agent
 {
@@ -42,7 +43,7 @@ class ilMailSetupAgent implements Setup\Agent
 
     public function getStatusObjective(Setup\Metrics\Storage $storage) : Setup\Objective
     {
-        return new Setup\Objective\NullObjective();
+        return new MetricsCollectedObjective($storage);
     }
 
     public function getMigrations() : array
