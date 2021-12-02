@@ -42,21 +42,14 @@ class ilMailSetupObjectiveMetricsCollectedObjectiveTest extends TestCase // \ilM
             $result = [$key, $metric];
         });
         $mockDatabase = $this->getMockBuilder(\ilDBInterface::class)->getMock();
-        $mockDatabase->expects(self::exactly(12))->method('query')->willReturn($mockStatement);
-        $mockDatabase->expects(self::exactly(12))->method('fetchAssoc')->willReturnOnConsecutiveCalls(
-            ['count(1)' => 2],
-            ['count(1)' => 2],
-            ['count(1)' => 2],
-            ['count(1)' => 2],
-            ['count(1)' => 2],
-            ['count(1)' => 2],
-            ['count(1)' => 0], // <- this one should not produce a metric
-            ['count(1)' => 2],
-            ['count(1)' => 2],
-            ['count(1)' => 2],
-            ['count(1)' => 2],
-            ['count(1)' => 2],
-
+        $mockDatabase->expects(self::exactly(6))->method('query')->willReturn($mockStatement);
+        $mockDatabase->expects(self::exactly(6))->method('fetchAssoc')->willReturnOnConsecutiveCalls(
+            ['violations' => 2],
+            ['violations' => 2],
+            ['violations' => 2],
+            ['violations' => 0], // <- this one should not produce a metric
+            ['violations' => 2],
+            ['violations' => 2],
         );
         $mockEnvironment = $this->getMockBuilder(Environment::class)->getMock();
         $mockEnvironment->expects(self::once())->method('getResource')->with(Environment::RESOURCE_DATABASE)->willReturn($mockDatabase);
@@ -64,10 +57,10 @@ class ilMailSetupObjectiveMetricsCollectedObjectiveTest extends TestCase // \ilM
         $this->assertEquals($mockEnvironment, $objective->achieve($mockEnvironment));
         $this->assertEquals('Database FK Violations', $result[0]);
         $this->assertInstanceOf(Metric::class, $result[1]);
-        $this->assertEquals(Metric::STABILITY_STABLE, $result[1]->getStability());
+        $this->assertEquals(Metric::STABILITY_VOLATILE, $result[1]->getStability());
         $this->assertEquals(Metric::TYPE_COLLECTION, $result[1]->getType());
         $this->assertTrue(\is_array($result[1]->getValue()));
-        $this->assertEquals(11, \count($result[1]->getValue()));
+        $this->assertEquals(5, \count($result[1]->getValue()));
 
         foreach ($result[1]->getValue() as $key => $metric) {
             $this->assertTrue(\is_string($key));

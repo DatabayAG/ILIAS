@@ -4,31 +4,60 @@ namespace ILIAS\Mail\Setup\Objective;
 
 class Definition
 {
-    public const NULLABLE = true;
-
-    private Field $field;
-    private Field $referenceField;
+    /**
+     * @var Association[]
+     */
+    private array $associations;
     private bool $nullable;
+    private Ignore $ignore;
 
-    public function __construct(Field $field, Field $referenceField, bool $nullable = false)
+    public function __construct(array $associations, ?Ignore $ignore = null)
     {
-        $this->field = $field;
-        $this->referenceField = $referenceField;
-        $this->nullable = $nullable;
+        $this->associations = $associations;
+        $this->ignore = null === $ignore ? new Ignore() : $ignore;
+        $this->validate();
     }
 
-    public function field() : Field
+    /**
+     * @return Association[]
+     */
+    public function associations() : array
     {
-        return $this->field;
+        return $this->associations;
     }
 
-    public function referenceField() : Field
+    /**
+     * @return string[]
+     */
+    public function ignoreValues() : array
     {
-        return $this->referenceField;
+        return $this->ignore->values();
     }
 
-    public function nullable() : bool
+    public function tableName() : string
     {
-        return $this->nullable;
+        return $this->associations[0]->field()->tableName();
+    }
+
+    public function referenceTableName() : string
+    {
+        return $this->associations[0]->referenceField()->tableName();
+    }
+
+    private function validate() : void
+    {
+        if (\count($this->associations) === 0) {
+            throw new \InvalidArgumentException('associations must not be empty');
+        }
+
+        $first = $this->associations[0];
+
+        foreach ($this->associations as $association) {
+            if ($association->field()->tableName() !== $first->field()->tableName() ||
+                $association->referenceField()->tableName() !== $first->referenceField()->tableName()
+            ) {
+                throw new \InvalidArgumentException('All fields must have the same table');
+            }
+        }
     }
 }

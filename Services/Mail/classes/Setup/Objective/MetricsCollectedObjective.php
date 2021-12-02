@@ -40,7 +40,7 @@ class MetricsCollectedObjective extends CollectedObjective
         foreach ($this->definitions() as $definition) {
             $metric = $this->metric($definition);
             if ($metric->getValue() > 0) {
-                $metrics[$definition->field()->fieldName()] = $metric;
+                $metrics[$this->buildField($definition)] = $metric;
             }
         }
 
@@ -53,25 +53,41 @@ class MetricsCollectedObjective extends CollectedObjective
             Metric::STABILITY_VOLATILE,
             Metric::TYPE_GAUGE,
             $this->query($definition),
-            'Number of violations for the intended FK on field ' . $definition->field()->fieldName()
+            'Number of violations for the intended FK on field ' . $this->buildField($definition)
         );
+    }
+
+    private function buildField(Definition $definition) : string
+    {
+        return join('|', array_map(static function (Association $association) {
+            return $association->field()->fieldName();
+        }, $definition->associations()));
     }
 
     private function query(Definition $definition) : int
     {
+        $on = [];
+        $where = [];
+        // $definition->associations() always returns a non empty array
+        foreach ($definition->associations() as $association) {
+            $on[] = sprintf('%s = %s', $association->field()->fieldName(), $association->referenceField()->fieldName());
+            $where[] = sprintf('%s IS NULL', $association->referenceField()->fieldName());
+            foreach ($definition->ignoreValues() as $valueToIgnore) {
+                $where[] = sprintf('%s %s', $association->field()->fieldName(), $valueToIgnore);
+            }
+        }
+
         $result = $this->database->query(sprintf(
-            'select count(1) from %s left join %s on %s = %s where %s is NULL%s',
-            $definition->field()->tableName(),
-            $definition->referenceField()->tableName(),
-            $definition->field()->fieldName(),
-            $definition->referenceField()->fieldName(),
-            $definition->referenceField()->fieldName(),
-            $definition->nullable() ? ' and ' . $definition->field()->fieldName() . ' is not null and ' . $definition->field()->fieldName() . ' != 0' : ''
+            'SELECT COUNT(1) as violations FROM %s LEFT JOIN %s ON %s WHERE %s',
+            $definition->tableName(),
+            $definition->referenceTableName(),
+            join(' AND ', $on),
+            join(' AND ', $where),
         ));
 
         $result = $this->database->fetchAssoc($result);
 
-        return (int) $result['count(1)'];
+        return (int) $result['violations'];
     }
 
     /**
@@ -79,23 +95,16 @@ class MetricsCollectedObjective extends CollectedObjective
      */
     private function definitions() : array
     {
-        $userId = new Field('usr_data', 'usr_id');
         $mailId = new Field('mail', 'mail_id');
         $mailObjDataId = new Field('mail_obj_data', 'obj_id');
 
         return [
-            new Definition(new Field('mail', 'user_id'), $userId),
-            new Definition(new Field('mail', 'folder_id'), $mailObjDataId),
-            new Definition(new Field('mail', 'sender_id'), $userId, Definition::NULLABLE),
-            new Definition(new Field('mail_attachment', 'mail_id'), $mailId),
-            new Definition(new Field('mail_cron_orphaned', 'mail_id'), $mailId),
-            new Definition(new Field('mail_cron_orphaned', 'folder_id'), $mailObjDataId),
-            new Definition(new Field('mail_obj_data', 'user_id'), $userId),
-            new Definition(new Field('mail_options', 'user_id'), $userId),
-            new Definition(new Field('mail_saved', 'user_id'), $userId),
-            new Definition(new Field('mail_tree', 'child'), $mailObjDataId),
-            new Definition(new Field('mail_tree', 'parent'), new Field('mail_tree', 'child', 'parent'), Definition::NULLABLE),
-            new Definition(new Field('mail_tree', 'tree'), $userId),
+            new Definition([new Association(new Field('mail', 'folder_id'), $mailObjDataId)]),
+            new Definition([new Association(new Field('mail_attachment', 'mail_id'), $mailId)]),
+            new Definition([new Association(new Field('mail_cron_orphaned', 'mail_id'), $mailId)]),
+            new Definition([new Association(new Field('mail_cron_orphaned', 'folder_id'), $mailObjDataId)]),
+            new Definition([new Association(new Field('mail_tree', 'child'), $mailObjDataId)]),
+            new Definition([new Association(new Field('mail_tree', 'parent'), new Field('mail_tree', 'child', 'parent'))], new Ignore(null, '0')),
         ];
     }
 }
