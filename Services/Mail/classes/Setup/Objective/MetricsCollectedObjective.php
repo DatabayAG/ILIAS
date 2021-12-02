@@ -24,7 +24,7 @@ class MetricsCollectedObjective extends CollectedObjective
     {
         $this->database = $environment->getResource(Environment::RESOURCE_DATABASE);
         $storage->store('Database FK Violations', new Metric(
-            Metric::STABILITY_STABLE,
+            Metric::STABILITY_VOLATILE,
             Metric::TYPE_COLLECTION,
             $this->collectMetrics(),
             'Holds information about the number of violations for intended foreign keys'
@@ -66,7 +66,7 @@ class MetricsCollectedObjective extends CollectedObjective
             $definition->field()->fieldName(),
             $definition->referenceField()->fieldName(),
             $definition->referenceField()->fieldName(),
-            $definition->nullable() ? ' and ' . $definition->field()->fieldName() . ' is not null' : ''
+            $definition->nullable() ? ' and ' . $definition->field()->fieldName() . ' is not null and ' . $definition->field()->fieldName() . ' != 0' : ''
         ));
 
         $result = $this->database->fetchAssoc($result);
