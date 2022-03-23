@@ -42,7 +42,6 @@ class ilObjDashboardSettingsGUI extends ilObjectGUI
         $this->access = $DIC->access();
         $this->ctrl = $DIC->ctrl();
         $this->settings = $DIC->settings();
-        $lng = $DIC->language();
         $this->ui_factory = $DIC->ui()->factory();
         $this->ui_renderer = $DIC->ui()->renderer();
         $this->request = $DIC->http()->request();
@@ -51,7 +50,7 @@ class ilObjDashboardSettingsGUI extends ilObjectGUI
         $this->type = 'dshs';
         parent::__construct($a_data, $a_id, $a_call_by_reference, $a_prepare_output);
 
-        $lng->loadLanguageModule("dash");
+        $this->lng->loadLanguageModule("dash");
 
         $this->viewSettings = new ilPDSelectedItemsBlockViewSettings($GLOBALS['DIC']->user());
 

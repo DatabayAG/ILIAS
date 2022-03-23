@@ -20,6 +20,8 @@
  */
 class ilDashObjectsTableGUI extends ilTable2GUI
 {
+    //Todo-PHP8-Review Begin:
+    // Is the out commented code really necessary?
     public function __construct(
         object $a_parent_obj,
         string $a_parent_cmd,
@@ -61,7 +63,7 @@ class ilDashObjectsTableGUI extends ilTable2GUI
 
         return $items;
     }*/
-
+    //Todo-PHP8-Review End
     /**
      * Fill table row
      */

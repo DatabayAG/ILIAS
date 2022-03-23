@@ -466,8 +466,9 @@ class ilPDSelectedItemsBlockGUI extends ilBlockGUI implements ilDesktopItemHandl
 
 
         $item_groups = [];
+        //Todo-PHP8-Review Begin: unused/directly overwritten variable
         $list_items = [];
-
+        //Todo-PHP8-Review End
         foreach ($groupedItems as $group) {
             $list_items = [];
 

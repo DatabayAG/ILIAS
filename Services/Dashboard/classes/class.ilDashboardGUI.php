@@ -58,13 +58,11 @@ class ilDashboardGUI implements ilCtrlBaseClassInterface
         $this->settings = $DIC->settings();
         $this->rbacsystem = $DIC->rbac()->system();
         $this->help = $DIC["ilHelp"];
-        $tpl = $DIC["tpl"];
-        $lng = $DIC->language();
         $ilCtrl = $DIC->ctrl();
         $ilUser = $DIC->user();
 
-        $this->tpl = $tpl;
-        $this->lng = $lng;
+        $this->tpl = $DIC["tpl"];
+        $this->lng = $DIC->language();
         $this->ctrl = $ilCtrl;
 
         $ilCtrl->setContextObject(
@@ -230,7 +228,18 @@ class ilDashboardGUI implements ilCtrlBaseClassInterface
                 $this->ctrl->forwardCommand($gui);
                 break;
             case "ilstudyprogrammedashboardviewgui":
+                //Todo-PHP8-Review Begin: This seems broken constructer looks like this __construct(
+                //        ilLanguage $lng,
+                //        ilObjUser $user,
+                //        ilAccess $access,
+                //        ilSetting $setting,
+                //        ILIAS\UI\Factory $factory,
+                //        ILIAS\UI\Renderer $renderer,
+                //        ilCtrl $ctrl,
+                //        ilLogger $log
+                //    )
                 $gui = new ilStudyProgrammeDashboardViewGUI();
+                //Todo-PHP8-Review End
                 $this->ctrl->forwardCommand($gui);
                 break;
             default:
