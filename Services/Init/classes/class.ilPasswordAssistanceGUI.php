@@ -13,8 +13,8 @@
  * us at:
  * https://www.ilias.de
  * https://github.com/ILIAS-eLearning
- */
-
+ *
+ *********************************************************************/
 use ILIAS\Refinery\Factory as RefineryFactory;
 use ILIAS\HTTP\Services as HTTPServices;
 
@@ -204,7 +204,7 @@ class ilPasswordAssistanceGUI
             $defaultAuth = $GLOBALS['DIC']['ilSetting']->get('auth_mode');
         }
 
-        $assistance_callback = function () use ($form, $defaultAuth) : void {
+        $assistance_callback = function () use ($form, $defaultAuth): void {
             $username = $form->getInput('username');
             $email = $form->getInput('email');
 
@@ -322,7 +322,7 @@ class ilPasswordAssistanceGUI
         );
 
         /** @var ilMailMimeSenderFactory $senderFactory */
-        $senderFactory = $DIC["mail.mime.sender.factory"];
+        $senderFactory = $DIC->mail()->mime()->senderFactory();
         $sender = $senderFactory->system();
 
         $mm = new ilMimeMail();
@@ -594,7 +594,7 @@ class ilPasswordAssistanceGUI
             return;
         }
 
-        $assistance_callback = function () use ($form) : void {
+        $assistance_callback = function () use ($form): void {
             $email = $form->getInput('email');
             $logins = ilObjUser::getUserLoginsByEmail($email);
 
@@ -642,8 +642,7 @@ class ilPasswordAssistanceGUI
             ]
         );
 
-        /** @var ilMailMimeSenderFactory $senderFactory */
-        $senderFactory = $DIC["mail.mime.sender.factory"];
+        $senderFactory = $DIC->mail()->mime()->senderFactory();
         $sender = $senderFactory->system();
 
         $mm = new ilMimeMail();
