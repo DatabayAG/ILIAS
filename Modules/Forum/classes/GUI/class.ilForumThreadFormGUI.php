@@ -110,7 +110,7 @@ class ilForumThreadFormGUI extends ilPropertyFormGUI
             if ($this->isDraftContext && $this->draftId > 0) {
                 $threadDraft = ilForumPostDraft::newInstanceByDraftId($this->draftId);
                 if ($threadDraft->getDraftId() > 0) {
-                    $draftFileData = new ilFileDataForumDrafts(0, $threadDraft->getDraftId());
+                    $draftFileData = new ilFileDataForumDrafts(0, $threadDraft);
                     if ($draftFileData->getFilesOfPost() !== []) {
                         $existingFileSelection = new ilCheckboxGroupInputGUI(
                             $this->lng->txt('forums_delete_file'),

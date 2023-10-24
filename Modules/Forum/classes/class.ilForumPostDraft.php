@@ -415,7 +415,8 @@ class ilForumPostDraft
     public function deleteDraftsByPostIds(array $post_ids = []): void
     {
         $draft_ids = [];
-        $res = $this->db->query('SELECT draft_id FROM frm_posts_drafts WHERE ' . $this->db->in(
+        $rcids = [];
+        $res = $this->db->query('SELECT draft_id, rcid FROM frm_posts_drafts WHERE ' . $this->db->in(
             'post_id',
             $post_ids,
             false,
@@ -423,14 +424,15 @@ class ilForumPostDraft
         ));
         while ($row = $this->db->fetchAssoc($res)) {
             $draft_ids[] = (int) $row['draft_id'];
+            $rcids[] = $row['rcid'];
         }
+        $objFileDataForumDrafts = new ilFileDataForumDrafts(0,  new ilForumPostDraft((int) current($draft_ids)));
+        $objFileDataForumDrafts->delete($rcids);
 
         foreach ($draft_ids as $draft_id) {
             self::deleteMobsOfDraft($draft_id);
-
-            $objFileDataForumDrafts = new ilFileDataForumDrafts(0, $draft_id);
-            $objFileDataForumDrafts->delete();
         }
+
         $this->db->manipulate('DELETE FROM frm_drafts_history WHERE ' . $this->db->in(
             'draft_id',
             $draft_ids,
@@ -450,12 +452,20 @@ class ilForumPostDraft
      */
     public function deleteDraftsByDraftIds(array $draft_ids = []): void
     {
+        $objFileDataForumDrafts = new ilFileDataForumDrafts(0, ilForumPostDraft::newInstanceByDraftId(current($draft_ids)));
+        $res = $this->db->query('SELECT rcid FROM frm_posts_drafts WHERE '. $this->db->in('draft_id', $draft_ids));
+        $draft_ids = [];
+        $rcids = [];
+
+        while ($row = $this->db->fetchAssoc($res)) {
+            $rcids[] = $row['rcid'];
+        }
+       $objFileDataForumDrafts->delete($rcids);
+
         foreach ($draft_ids as $draft_id) {
             self::deleteMobsOfDraft($draft_id);
-
-            $objFileDataForumDrafts = new ilFileDataForumDrafts(0, $draft_id);
-            $objFileDataForumDrafts->delete();
         }
+
         $this->db->manipulate('DELETE FROM frm_drafts_history WHERE ' . $this->db->in(
             'draft_id',
             $draft_ids,
@@ -476,21 +486,23 @@ class ilForumPostDraft
         $ilDB = $DIC->database();
 
         $res = $ilDB->queryF(
-            'SELECT draft_id FROM frm_posts_drafts WHERE post_author_id = %s',
+            'SELECT draft_id, rcid FROM frm_posts_drafts WHERE post_author_id = %s',
             ['integer'],
             [$user_id]
         );
 
         $draft_ids = [];
+        $rcids = [];
         while ($row = $ilDB->fetchAssoc($res)) {
             $draft_ids[] = (int) $row['draft_id'];
+            $rcids[] = $row['rcid'];
         }
+
+        $objFileDataForumDrafts = new ilFileDataForumDrafts(0, current($draft_ids));
+        $objFileDataForumDrafts->delete($rcids);
 
         foreach ($draft_ids as $draft_id) {
             self::deleteMobsOfDraft($draft_id);
-
-            $objFileDataForumDrafts = new ilFileDataForumDrafts(0, $draft_id);
-            $objFileDataForumDrafts->delete();
         }
 
         $ilDB->manipulate('DELETE FROM frm_drafts_history WHERE ' . $ilDB->in(

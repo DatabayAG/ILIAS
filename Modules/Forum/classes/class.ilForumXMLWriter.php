@@ -178,7 +178,7 @@ class ilForumXMLWriter extends ilXmlWriter
 
                 $tmp_file_obj = new ilFileDataForum(
                     (int) $this->forum_id,
-                    (int) $rowPost->pos_pk
+                    new ilForumPost((int)$rowPost->pos_pk)
                 );
 
                 foreach ($tmp_file_obj->getFilesOfPost() as $file) {

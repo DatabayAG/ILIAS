@@ -37,11 +37,13 @@ class ilFileDataForumRCImplementation implements ilFileDataForumInterface
     private array $collection_cache = [];
     private array $posting_cache = [];
     private ilForumPostingFileStakeholder $stakeholder;
+    private int $pos_id;
 
-
-    public function __construct(private int $obj_id = 0, private int $pos_id = 0)
+    public function __construct(private int $obj_id = 0, private ilForumPost $post)
     {
         global $DIC;
+        $this->writeToPostingCache($post);
+        $this->pos_id = $post->getId();
         $this->irss = $DIC->resourceStorage();
         $this->upload = $DIC->upload();
         $this->stakeholder = new ilForumPostingFileStakeholder();
@@ -52,6 +54,12 @@ class ilFileDataForumRCImplementation implements ilFileDataForumInterface
         return $this->getPostingById($this->pos_id);
     }
 
+    private function writeToPostingCache(ilForumPost $post): void
+    {
+        if ($post->getId() > 0 && !isset($this->posting_cache[$post->getId()])) {
+            $this->posting_cache[$post->getId()] = $post;
+        }
+    }
     private function getPostingById(int $posting_id): ilForumPost
     {
         if (isset($this->posting_cache[$posting_id])) {
@@ -145,13 +153,11 @@ class ilFileDataForumRCImplementation implements ilFileDataForumInterface
         return true;
     }
 
-    public function delete(array $posting_ids_to_delete = null): bool
+    public function delete(array $rcids_to_delete = null): bool
     {
-        foreach ($posting_ids_to_delete as $post_id) {
+        foreach ($rcids_to_delete as $rcid) {
             $this->irss->collection()->remove(
-                $this->irss->collection()->id(
-                    $this->getPostingById($post_id)->getRCID()
-                ),
+                $this->irss->collection()->id($rcid),
                 $this->stakeholder,
                 true
             );

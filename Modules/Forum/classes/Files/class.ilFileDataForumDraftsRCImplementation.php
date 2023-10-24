@@ -36,19 +36,32 @@ class ilFileDataForumDraftsRCImplementation implements ilFileDataForumInterface
     private array $posting_cache = [];
     private ilForumPostingFileStakeholder $stakeholder;
     private int $draft_id = 0;
+    private int $pos_id;
 
-    public function __construct(private int $obj_id = 0, private int $pos_id = 0)
+    public function __construct(private int $obj_id = 0, private ilForumPostDraft $draft)
     {
         global $DIC;
         $this->irss = $DIC->resourceStorage();
         $this->upload = $DIC->upload();
         $this->stakeholder = new ilForumPostingFileStakeholder();
-        $this->draft_id = $this->pos_id;
+        $this->draft_id = $draft->getDraftId();
+
+        $this->writeToPostingCache($draft);
+
+        $this->pos_id = $this->draft->getDraftId();
     }
 
     private function getCurrentDraft(): ilForumPostDraft
     {
-        return $this->getDraftById($this->draft_id);
+//        return $this->getDraftById($this->draft_id);
+        return $this->draft;
+    }
+
+    private function writeToPostingCache(ilForumPostDraft $draft): void
+    {
+        if ($draft->getDraftId() > 0 && !isset($this->posting_cache[$draft->getDraftId()])) {
+            $this->posting_cache[$draft->getDraftId()] = $draft;
+        }
     }
 
     private function getDraftById(int $draft_id): ilForumPostDraft
@@ -66,7 +79,7 @@ class ilFileDataForumDraftsRCImplementation implements ilFileDataForumInterface
         }
         return $this->collection_cache[$this->pos_id] = $this->irss->collection()->get(
             $this->irss->collection()->id(
-                $this->getCurrentDraft()->getRCID()
+                $this->draft->getRCID()
             )
         );
     }
@@ -144,16 +157,14 @@ class ilFileDataForumDraftsRCImplementation implements ilFileDataForumInterface
         return true;
     }
 
-    public function delete(array $posting_ids_to_delete = null): bool
+    public function delete(array $rcids_to_delete = null): bool
     {
-        if ($posting_ids_to_delete == null) {
+        if ($rcids_to_delete == null) {
             return true;
         }
-        foreach ($posting_ids_to_delete as $post_id) {
+        foreach ($rcids_to_delete as $rcid) {
             $this->irss->collection()->remove(
-                $this->irss->collection()->id(
-                    $this->getDraftById($post_id)->getRCID()
-                ),
+                $this->irss->collection()->id($rcid),
                 $this->stakeholder,
                 true
             );
@@ -253,23 +264,23 @@ class ilFileDataForumDraftsRCImplementation implements ilFileDataForumInterface
         return true;
     }
 
-    public function importFileToCollection(string $path_to_file, ilForumPostDraft $post): void
-    {
-        if ($post->getRCID() === ilForumPost::NO_RCID || empty($post->getRCID())) {
-            $rcid = $this->irss->collection()->id();
-            $post->setRCID($rcid->serialize());
-            $post->update();
-        } else {
-            $rcid = $this->irss->collection()->id($post->getRCID());
-        }
-
-        $collection = $this->irss->collection()->get($rcid);
-        $rid = $this->irss->manage()->stream(
-            Streams::ofResource(fopen($path_to_file, 'rb')),
-            $this->stakeholder,
-            md5(basename($path_to_file))
-        );
-        $collection->add($rid);
-        $this->irss->collection()->store($collection);
-    }
+//    public function importFileToCollection(string $path_to_file, ilForumPostDraft $post): void
+//    {
+//        if ($post->getRCID() === ilForumPost::NO_RCID || empty($post->getRCID())) {
+//            $rcid = $this->irss->collection()->id();
+//            $post->setRCID($rcid->serialize());
+//            $post->update();
+//        } else {
+//            $rcid = $this->irss->collection()->id($post->getRCID());
+//        }
+//
+//        $collection = $this->irss->collection()->get($rcid);
+//        $rid = $this->irss->manage()->stream(
+//            Streams::ofResource(fopen($path_to_file, 'rb')),
+//            $this->stakeholder,
+//            md5(basename($path_to_file))
+//        );
+//        $collection->add($rid);
+//        $this->irss->collection()->store($collection);
+//    }
 }

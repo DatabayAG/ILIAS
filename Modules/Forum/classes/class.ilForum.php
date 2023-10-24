@@ -1468,14 +1468,21 @@ class ilForum
      */
     private function deletePostFiles(array $a_ids): void
     {
-        $forumFiles = new ilFileDataForum($this->getForumId());
-        foreach ($a_ids as $pos_id) {
-            $forumFiles->setPosId($pos_id);
-            $files = $forumFiles->getFilesOfPost();
-            foreach ($files as $file) {
-                $forumFiles->unlinkFile($file['name']);
-            }
+        $res  = $this->db->query('SELECT rcid FROM frm_posts WHERE '.$this->db->in('pos_pk', $a_ids, false, 'integer'));
+        $rcids = [];
+        while ($row = $this->db->fetchAssoc($res)) {
+            $rcids[] = $row['rcid'];
         }
+        $forumFiles = new ilFileDataForum($this->getForumId(), new ilForumPost());
+        $forumFiles->delete($rcids);
+
+//        foreach ($a_ids as $pos_id) {
+//            $forumFiles->setPosId($pos_id);
+//            $files = $forumFiles->getFilesOfPost();
+//            foreach ($files as $file) {
+//                $forumFiles->unlinkFile($file['name']);
+//            }
+//        }
     }
 
     public function getImportName(): string

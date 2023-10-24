@@ -577,7 +577,7 @@ class ilForumXMLParser extends ilSaxParser
                 break;
 
             case 'Attachment':
-                $filedata = new ilFileDataForum($this->forum->getId(), $this->lastHandledPostId);
+                $filedata = new ilFileDataForum($this->forum->getId(), new ilForumPost($this->lastHandledPostId));
 
                 $import_path = $this->contentArray['content'];
                 if ($import_path !== '') {

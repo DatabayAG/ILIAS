@@ -29,13 +29,15 @@ class ilFileDataForumLegacyImplementation extends ilFileData implements ilFileDa
     private string $forum_path;
     private ilErrorHandling $error;
     private ilGlobalTemplateInterface $main_tpl;
+    private int $pos_id;
 
-    public function __construct(private int $obj_id = 0, private int $pos_id = 0)
+    public function __construct(private int $obj_id = 0, private ilForumPost $post)
     {
         global $DIC;
         $this->main_tpl = $DIC->ui()->mainTemplate();
 
         $this->error = $DIC['ilErr'];
+        $this->pos_id = $post->getId();
 
         parent::__construct();
         $this->forum_path = $this->getPath() . '/' . self::FORUM_PATH;
@@ -165,7 +167,7 @@ class ilFileDataForumLegacyImplementation extends ilFileData implements ilFileDa
         return true;
     }
 
-    public function delete(array $posting_ids_to_delete = null): bool
+    public function delete(array $rcids_to_delete = null): bool
     {
         foreach ($this->getFiles() as $file) {
             if (is_file($this->getForumPath() . '/' . $this->getObjId() . '_' . $file['name'])) {
@@ -290,7 +292,7 @@ class ilFileDataForumLegacyImplementation extends ilFileData implements ilFileDa
             return false;
         }
 
-        $post = new ilForumPost($this->getPosId());
+        $post = $this->post;
         ilFileDelivery::deliverFileLegacy($zip_file, $post->getSubject() . '.zip', '', false, true, false);
         ilFileUtils::delDir($this->getForumPath() . '/zip/' . $this->getObjId() . '_' . $this->getPosId());
         $DIC->http()->close();

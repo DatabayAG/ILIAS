@@ -508,6 +508,8 @@ class ilForumTopic
         $postsMoved = [];
         try {
             foreach ($post_ids as $post_id) {
+                // todo @mjansen das wird ausschliesslich für die legacy methode gebraucht, da sich für irss die rcid auch beim Verschieben eines Posts nicht ändert
+                // man sollte hier überprüfen, ob eine rcid am Post gespeichert ist, wenn nicht und nur DANN muss moveFilesOfPost ausgeführt werden
                 $file_obj = new ilFileDataForum($old_obj_id, $post_id);
                 $moved = $file_obj->moveFilesOfPost($new_obj_id);
 
@@ -521,7 +523,7 @@ class ilForumTopic
 
                 unset($file_obj);
             }
-        } catch (ilFileUtilsException $exception) {
+        } catch (ilFileUtilsException $exception) { // @todo Exception 'ilFileUtilsException' is never thrown in the corresponding try block
             foreach ($postsMoved as $postedInformation) {
                 $file_obj = new ilFileDataForum($postedInformation['to'], $postedInformation['position_id']);
                 $file_obj->moveFilesOfPost($postedInformation['from']);

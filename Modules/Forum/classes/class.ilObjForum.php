@@ -361,7 +361,7 @@ class ilObjForum extends ilObject
                 (bool) ($old_thread->getNumPosts() - 1)
             );
 
-            $old_forum_files = new ilFileDataForum($this->getId(), $top_pos->getId());
+            $old_forum_files = new ilFileDataForum($this->getId(), $top_pos);
             $old_forum_files->ilClone($new_obj->getId(), $newPostId);
         }
 
@@ -471,30 +471,34 @@ class ilObjForum extends ilObject
         // Get All posting IDs
         $posting_ids = [];
         $res = $this->db->query(
-            'SELECT pos_pk FROM frm_posts WHERE  '
+            'SELECT pos_pk, rcid FROM frm_posts WHERE  '
             . $this->db->in('pos_thr_fk', $thread_ids_to_delete)
         );
 
         while ($row = $res->fetchObject()) {
             $posting_ids[] = (int) $row->pos_pk;
+            $rcids[] = $row->rcid;
         }
 
-        $tmp_file_obj = new ilFileDataForum($this->getId());
-        $tmp_file_obj->delete($posting_ids);
+        $tmp_file_obj = new ilFileDataForum($this->getId(), new ilForumPost(0, false, true));
+        $tmp_file_obj->delete($rcids);
 
         // Get All draft IDs
         $posting_ids = [];
         $res = $this->db->query(
-            'SELECT draft_id FROM frm_posts_drafts WHERE  '
+            'SELECT draft_id, rcid FROM frm_posts_drafts WHERE  '
             . $this->db->in('thread_id', $thread_ids_to_delete)
         );
 
+        $draft_ids = [];
+        $rcids = [];
         while ($row = $res->fetchObject()) {
             $draft_ids[] = (int) $row->draft_id;
+            $rcids[] = $row->rcid;
         }
 
-        $tmp_file_obj = new ilFileDataForumDrafts($this->getId());
-        $tmp_file_obj->delete($draft_ids);
+        $tmp_file_obj = new ilFileDataForumDrafts($this->getId(), new ilForumPost(0, false, true));
+        $tmp_file_obj->delete($rcids);
 
         $this->db->manipulate(
             'DELETE FROM frm_posts_tree WHERE ' . $this->db->in(
@@ -544,14 +548,16 @@ class ilObjForum extends ilObject
     private function deleteDraftsByForumId(int $forum_id): void
     {
         $res = $this->db->queryF(
-            'SELECT draft_id FROM frm_posts_drafts WHERE forum_id = %s',
+            'SELECT draft_id, rcid FROM frm_posts_drafts WHERE forum_id = %s',
             ['integer'],
             [$forum_id]
         );
 
         $draft_ids = [];
+        $rcids = [];
         while ($row = $this->db->fetchAssoc($res)) {
             $draft_ids[] = (int) $row['draft_id'];
+            $rcids[] = $row['rcid'];
         }
 
         if ($draft_ids !== []) {

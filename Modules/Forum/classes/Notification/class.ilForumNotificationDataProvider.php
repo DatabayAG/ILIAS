@@ -315,7 +315,7 @@ class ilForumNotificationDataProvider implements ilForumNotificationMailData
     private function readAttachments(): void
     {
         if (ilForumProperties::isSendAttachmentsByMailEnabled()) {
-            $fileDataForum = new ilFileDataForum($this->getObjId(), $this->objPost->getId());
+            $fileDataForum = new ilFileDataForum($this->getObjId(), $this->objPost);
             $filesOfPost = $fileDataForum->getFilesOfPost();
 
             $fileDataMail = new ilFileDataMail(ANONYMOUS_USER_ID);

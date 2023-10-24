@@ -39,7 +39,7 @@ interface ilFileDataForumInterface
 
     public function ilClone(int $new_obj_id, int $new_posting_id): bool;
 
-    public function delete(array $posting_ids_to_delete = null): bool;
+    public function delete(array $rcids_to_delete = null): bool;
 
     public function storeUploadedFiles(): bool;
 

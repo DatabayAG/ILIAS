@@ -30,19 +30,28 @@ class ilFileDataForum implements ilFileDataForumInterface
     private array $posting_cache = [];
     private ilFileDataForumInterface $legacy_implementation;
     private ilFileDataForumInterface $rc_implementation;
+    private int $pos_id;
 
     public function __construct(
         private int $obj_id = 0,
-        private int $pos_id = 0
+        private ilForumPost $post
     ) {
+        $this->writeToPostingCache($post);
+        $this->pos_id = $post->getId();
         $this->legacy_implementation = new ilFileDataForumLegacyImplementation(
             $this->obj_id,
-            $this->pos_id
+            $post
         );
         $this->rc_implementation = new ilFileDataForumRCImplementation(
             $this->obj_id,
-            $this->pos_id
+            $post
         );
+    }
+    private function writeToPostingCache(ilForumPost $post): void
+    {
+        if ($post->getId() > 0 && !isset($this->posting_cache[$post->getId()])) {
+            $this->posting_cache[$post->getId()] = $post;
+        }
     }
 
     private function getCurrentPosting(): ilForumPost
@@ -101,9 +110,9 @@ class ilFileDataForum implements ilFileDataForumInterface
         return $this->getImplementation()->ilClone($new_obj_id, $new_posting_id);
     }
 
-    public function delete(array $posting_ids_to_delete = null): bool
+    public function delete(array $rcids_to_delete = null): bool
     {
-        return $this->getImplementation()->delete($posting_ids_to_delete);
+        return $this->getImplementation()->delete($rcids_to_delete);
     }
 
     public function storeUploadedFiles(): bool

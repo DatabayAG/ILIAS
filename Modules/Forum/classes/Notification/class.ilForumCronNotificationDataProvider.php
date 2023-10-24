@@ -54,6 +54,7 @@ class ilForumCronNotificationDataProvider implements ilForumNotificationMailData
     private ?string $post_user_name = null;
     private ?string $update_user_name = null;
     private ilForumNotificationCache $notificationCache;
+    private string $rcid = '';
 
     public function __construct(
         array $row,
@@ -68,6 +69,8 @@ class ilForumCronNotificationDataProvider implements ilForumNotificationMailData
         $this->forum_id = (int) ($row['pos_top_fk'] ?? 0);
         $this->forum_title = $row['top_name'];
         $this->post_id = (int) ($row['pos_pk'] ?? 0);
+        $this->rcid = $row['rcid'] ?? '-';
+
         $this->post_title = $row['pos_subject'];
         $this->post_message = $row['pos_message'];
         $this->post_date = $row['pos_date'];
@@ -106,7 +109,9 @@ class ilForumCronNotificationDataProvider implements ilForumNotificationMailData
     private function readAttachments(): void
     {
         if (ilForumProperties::isSendAttachmentsByMailEnabled()) {
-            $fileDataForum = new ilFileDataForum($this->getObjId(), $this->getPostId());
+            $tmp_post_obj = new ilForumPost($this->getPostId(),false, true);
+            $tmp_post_obj->setRCID($this->rcid);
+            $fileDataForum = new ilFileDataForum($this->getObjId(), $tmp_post_obj);
             $filesOfPost = $fileDataForum->getFilesOfPost();
 
             foreach ($filesOfPost as $attachment) {

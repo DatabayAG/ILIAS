@@ -30,19 +30,30 @@ class ilFileDataForumDrafts implements ilFileDataForumInterface
     private array $posting_cache = [];
     private ilFileDataForumInterface $legacy_implementation;
     private ilFileDataForumInterface $rc_implementation;
+    private int $draft_id;
 
     public function __construct(
         private int $obj_id = 0,
-        private int $draft_id = 0
+        private ?ilForumPostDraft $draft
     ) {
+        $this->draft_id = $this->draft->getDraftId();
+        $this->writeToPostingCache($draft);
+        
         $this->legacy_implementation = new ilFileDataForumDraftsLegacyImplementation(
             $this->obj_id,
-            $this->draft_id
+            $this->draft
         );
         $this->rc_implementation = new ilFileDataForumDraftsRCImplementation(
             $this->obj_id,
-            $this->draft_id
+            $this->draft
         );
+    }
+
+    private function writeToPostingCache(ilForumPostDraft $draft): void
+    {
+        if ($draft->getDraftId() > 0 && !isset($this->posting_cache[$draft->getDraftId()])) {
+            $this->posting_cache[$draft->getDraftId()] = $draft;
+        }
     }
 
     private function getCurrentPosting(): ilForumPostDraft
@@ -111,9 +122,9 @@ class ilFileDataForumDrafts implements ilFileDataForumInterface
         return $this->getImplementation()->ilClone($new_obj_id, $new_posting_id);
     }
 
-    public function delete(array $posting_ids_to_delete = null): bool
+    public function delete(array $rcids_to_delete = null): bool
     {
-        return $this->getImplementation()->delete($posting_ids_to_delete);
+        return $this->getImplementation()->delete($rcids_to_delete);
     }
 
     public function storeUploadedFiles(): bool
@@ -153,10 +164,10 @@ class ilFileDataForumDrafts implements ilFileDataForumInterface
         return $this->getImplementation()->deliverZipFile();
     }
 
-    public function importPath(string $path_to_file, int $posting_id): void
-    {
-        // Importing is only possible for IRSS based files
-        $this->setPosId($posting_id);
-        $this->rc_implementation->importFileToCollection($path_to_file, $this->getCurrentDraft());
-    }
+//    public function importPath(string $path_to_file, int $posting_id): void
+//    {
+//        // Importing is only possible for IRSS based files
+//        $this->setPosId($posting_id);
+//        $this->rc_implementation->importFileToCollection($path_to_file, $this->getCurrentDraft());
+//    }
 }

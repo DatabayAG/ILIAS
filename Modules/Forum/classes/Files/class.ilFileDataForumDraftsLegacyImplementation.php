@@ -32,14 +32,16 @@ class ilFileDataForumDraftsLegacyImplementation extends ilFileData implements il
     private ilErrorHandling $error;
     private ilGlobalTemplateInterface $main_tpl;
     private \ILIAS\ResourceStorage\Services $irss;
+    private int $draft_id;
 
-    public function __construct(private int $obj_id, private int $draft_id)
+    public function __construct(private int $obj_id, private ilForumPostDraft $draft)
     {
         global $DIC;
         $this->main_tpl = $DIC->ui()->mainTemplate();
         $this->irss = $DIC->resourceStorage();
         $this->lng = $DIC->language();
         $this->error = $DIC['ilErr'];
+        $this->draft_id = $this->draft->getDraftId();
 
         parent::__construct();
         $this->drafts_path = $this->getPath() . '/forum/drafts';
@@ -127,7 +129,7 @@ class ilFileDataForumDraftsLegacyImplementation extends ilFileData implements il
         return $files;
     }
 
-    public function delete(array $posting_ids_to_delete = null): bool
+    public function delete(array $rcids_to_delete = null): bool
     {
         ilFileUtils::delDir($this->getDraftsPath() . '/' . $this->getDraftId());
         return true;
@@ -281,7 +283,8 @@ class ilFileDataForumDraftsLegacyImplementation extends ilFileData implements il
             return false;
         }
 
-        $post = ilForumPostDraft::newInstanceByDraftId($this->getDraftId());
+        $post = $this->draft;
+
         ilFileDelivery::deliverFileLegacy($zip_file, $post->getPostSubject() . '.zip', '', false, true, false);
         ilFileUtils::delDir($this->getDraftsPath() . '/drafts_zip/' . $this->getDraftId());
         $DIC->http()->close();
