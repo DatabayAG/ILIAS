@@ -31,6 +31,7 @@ class ilBadge
     protected string $title = "";
     protected string $desc = "";
     protected string $image = "";
+    protected ?string $image_rid = null;
     protected string $valid = "";
     protected ?array $config = null;
     protected string $criteria = "";
@@ -408,6 +409,7 @@ class ilBadge
         $this->setDescription($a_row["descr"]);
         $this->setCriteria($a_row["crit"]);
         $this->setImage($a_row["image"]);
+        $this->setImageRid($a_row["image_rid"]);
         $this->setValid($a_row["valid"]);
         $this->setConfiguration($a_row["conf"]
                 ? unserialize($a_row["conf"], ["allowed_classes" => false])
@@ -484,6 +486,7 @@ class ilBadge
             "descr" => ["text", $this->getDescription()],
             "crit" => ["text", $this->getCriteria()],
             "image" => ["text", $this->getImage()],
+            "image_rid" => ["text", $this->getImageRid()],
             "valid" => ["text", $this->getValid()],
             "conf" => [
                 "text", $this->getConfiguration() ? serialize($this->getConfiguration()) : null
@@ -567,5 +570,15 @@ class ilBadge
             ($a_type instanceof ilBadgeAuto
                 ? $lng->txt("badge_subtype_auto")
                 : $lng->txt("badge_subtype_manual")) . ")";
+    }
+
+    public function getImageRid() : ?string
+    {
+        return $this->image_rid;
+    }
+
+    public function setImageRid(?string $image_rid) : void
+    {
+        $this->image_rid = $image_rid;
     }
 }

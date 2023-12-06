@@ -385,7 +385,16 @@ class ilBadgeManagementGUI
             $badge->create();
 
             if ($form->getInput('img_mode') === 'up') {
-                $badge->uploadImage($_FILES['img']);
+              # $badge->uploadImage($_FILES['img']);
+                global $DIC;
+                $upload_service = $DIC->upload();
+                $upload_service->process();
+                $array_result = $upload_service->getResults();
+                $array_result = array_pop($array_result);
+                $stakeholder = new ilBadgeFileStakeholder();
+                $identification = $DIC['resource_storage']->manage()->upload($array_result, $stakeholder);
+                $badge->setImageRid($identification);
+                $badge->update();
             } else {
                 $tmpl = new ilBadgeImageTemplate($form->getInput('tmpl'));
                 $badge->importImage($tmpl->getImage(), $tmpl->getImagePath());

@@ -123,6 +123,7 @@ class ilBadgeTableGUI extends ilTable2GUI
                     ? ilBadge::getExtendedTypeCaption($badge->getTypeInstance())
                     : $badge->getTypeInstance()->getCaption(),
                 "manual" => (!$badge->getTypeInstance() instanceof ilBadgeAuto),
+                "image_rid" => $badge->getImageRid(),
                 "renderer" => fn () => $this->tile->asTitle($this->tile->modalContent($badge)),
             );
         }
@@ -139,7 +140,20 @@ class ilBadgeTableGUI extends ilTable2GUI
             $this->tpl->setVariable("VAL_ID", $a_set["id"]);
         }
 
-        $this->tpl->setVariable("PREVIEW", $this->ui->renderer()->render($a_set["renderer"]()));
+        global $DIC;
+        $rid_string = $a_set['image_rid'];
+
+        if (null !== $rid_string) {
+            $identification  = $DIC['resource_storage']->manage()->find($rid_string);
+            $image_src = $DIC['resource_storage']->consume()->src($identification);
+            $image = $DIC->ui()->factory()->image()->responsive($image_src->getSrc(), $a_set['title']);
+            $image = $this->ui->renderer()->render($image);
+        } else {
+            $image = $this->ui->renderer()->render($a_set["renderer"]());
+        }
+
+
+        $this->tpl->setVariable("PREVIEW", $image);
         $this->tpl->setVariable("TXT_TYPE", $a_set["type"]);
         $this->tpl->setVariable("TXT_ACTIVE", $a_set["active"]
             ? $lng->txt("yes")
