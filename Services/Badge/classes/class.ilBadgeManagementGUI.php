@@ -42,7 +42,7 @@ class ilBadgeManagementGUI
     private int $parent_obj_id;
     private string $parent_obj_type;
 
-    private ?ilBadgeImage $badge_image = null;
+    private ?ilBadgeImage $badge_image_service = null;
     private ?Services $resource_storage = null;
     private ?FileUpload $upload_service = null;
 
@@ -81,7 +81,7 @@ class ilBadgeManagementGUI
         );
 
         $this->session_repo = new ilBadgeManagementSessionRepository();
-        $this->badge_image = new ilBadgeImage($DIC->resourceStorage(), $DIC->upload());
+        $this->badge_image_service = new ilBadgeImage($DIC->resourceStorage(), $DIC->upload());
     }
 
     public function executeCommand(): void
@@ -401,7 +401,7 @@ class ilBadgeManagementGUI
             $badge->create();
 
             if ($form->getInput('img_mode') === 'up') {
-                 $this->badge_image->processImageUpload($badge);
+                 $this->badge_image_service->processImageUpload($badge);
             } else {
                 $tmpl = new ilBadgeImageTemplate($form->getInput('tmpl'));
                 $badge->importImage($tmpl->getImage(), $tmpl->getImagePath());
@@ -457,7 +457,7 @@ class ilBadgeManagementGUI
         $a_form->getItemByPostVar('img')->setValue($a_badge->getImage());
         $a_form->getItemByPostVar('img')->setImage($a_badge->getImagePath());
 
-        $image_src = $this->badge_image->getImageFromBadge($a_badge);
+        $image_src = $this->badge_image_service->getImageFromBadge($a_badge);
         $a_form->getItemByPostVar('img')->setImage($image_src);
 
         $a_form->getItemByPostVar('valid')->setValue($a_badge->getValid());
@@ -506,7 +506,7 @@ class ilBadgeManagementGUI
             }
 
             $badge->update();
-            $this->badge_image->processImageUpload($badge);
+            $this->badge_image_service->processImageUpload($badge);
 
             $this->tpl->setOnScreenMessage('success', $lng->txt('settings_saved'), true);
             $ilCtrl->redirect($this, 'listBadges');

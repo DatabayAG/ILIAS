@@ -40,7 +40,7 @@ class Tile
     /** @var Closure(int): string */
     private readonly Closure $format_date;
 
-    private ilBadgeImage|null $badge_image = null;
+    private ilBadgeImage|null $badge_image_service = null;
 
     /**
      * @param Closure(string): string $sign_file
@@ -64,7 +64,7 @@ class Tile
         }
         $this->format_date = $format_date;
         global $DIC;
-        $this->badge_image = new ilBadgeImage($DIC->resourceStorage(), $DIC->upload());
+        $this->badge_image_service = new ilBadgeImage($DIC->resourceStorage(), $DIC->upload());
     }
 
     /**
@@ -134,7 +134,7 @@ class Tile
 
     private function image(Component $modal, ilBadge $badge): Component
     {
-        $image_src = $this->badge_image->getImageFromBadge($badge);
+        $image_src = $this->badge_image_service->getImageFromBadge($badge);
         return $this->container->ui()
                                ->factory()
                                ->image()

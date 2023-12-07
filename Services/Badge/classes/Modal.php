@@ -33,7 +33,7 @@ class Modal
 {
     /** @var Closure(string): string */
     private readonly Closure $sign_file;
-    private ilBadgeImage|null $badge_image = null;
+    private ilBadgeImage|null $badge_image_service = null;
 
     public function __construct(
         private readonly Container $container,
@@ -41,7 +41,7 @@ class Modal
     ) {
         $this->sign_file = Closure::fromCallable($sign_file);
         global $DIC;
-        $this->badge_image = new ilBadgeImage($DIC->resourceStorage(), $DIC->upload());
+        $this->badge_image_service = new ilBadgeImage($DIC->resourceStorage(), $DIC->upload());
     }
 
     /**
@@ -51,7 +51,7 @@ class Modal
     {
         $modal_content = [];
 
-        $image_src = $this->badge_image->getImageFromBadge($content->badge());
+        $image_src = $this->badge_image_service->getImageFromBadge($content->badge());
 
         $modal_content[] = $this->container->ui()->factory()->image()->responsive(
             ($this->sign_file)($image_src),

@@ -30,7 +30,7 @@ class ilBadgeTableGUI extends ilTable2GUI
     protected array $filter = [];
     private readonly Tile $tile;
     private readonly UIServices $ui;
-    private ilBadgeImage|null $badge_image = null;
+    private ?ilBadgeImage $badge_image_service = null;
 
     public function __construct(
         object $a_parent_obj,
@@ -46,7 +46,7 @@ class ilBadgeTableGUI extends ilTable2GUI
         $this->tile = new Tile($DIC);
         $ilCtrl = $DIC->ctrl();
         $lng = $DIC->language();
-        $this->badge_image = new ilBadgeImage($DIC->resourceStorage(), $DIC->upload());
+        $this->badge_image_service = new ilBadgeImage($DIC->resourceStorage(), $DIC->upload());
 
         $this->setId("bdgbdg");
         $this->parent_type = ilObject::_lookupType($a_parent_obj_id);
@@ -143,7 +143,7 @@ class ilBadgeTableGUI extends ilTable2GUI
             $this->tpl->setVariable('VAL_ID', $a_set['id']);
         }
 
-        $image_src = $this->badge_image->getImageFromResourceId($a_set['id'], $a_set['image_rid']);
+        $image_src = $this->badge_image_service->getImageFromResourceId($a_set['id'], $a_set['image_rid']);
         if (null !== $a_set['image_rid']) {
             global $DIC;
             $image_responsive = $DIC->ui()->factory()->image()->responsive($image_src, $a_set['title']);
