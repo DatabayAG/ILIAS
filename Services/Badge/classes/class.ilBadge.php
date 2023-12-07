@@ -16,6 +16,9 @@
  *
  *********************************************************************/
 
+use ILIAS\ResourceStorage\Services;
+use ILIAS\ResourceStorage\Identification\ResourceIdentification;
+
 /**
  * @author Jörg Lützenkirchen <luetzenkirchen@leifos.com>
  */
@@ -36,6 +39,8 @@ class ilBadge
     protected ?array $config = null;
     protected string $criteria = "";
 
+    private ?Services $resource_storage = null;
+
     public function __construct(
         int $a_id = null
     ) {
@@ -43,6 +48,7 @@ class ilBadge
 
         $this->lng = $DIC->language();
         $this->db = $DIC->database();
+        $this->resource_storage = $DIC->resourceStorage();
         if ($a_id) {
             $this->read($a_id);
         }
@@ -465,6 +471,8 @@ class ilBadge
 
         if (file_exists($this->getImagePath())) {
             unlink($this->getImagePath());
+        } else {
+            $this->resource_storage->manage()->remove($this->getImageRid(), new ilBadgeFileStakeholder());
         }
 
         $this->deleteStaticFiles();
@@ -572,7 +580,10 @@ class ilBadge
                 : $lng->txt("badge_subtype_manual")) . ")";
     }
 
-    public function getImageRid() : ?string
+    /**
+     * @return string|null|ResourceIdentification
+     */
+    public function getImageRid()
     {
         return $this->image_rid;
     }

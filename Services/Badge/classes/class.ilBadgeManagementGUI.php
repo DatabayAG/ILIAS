@@ -17,6 +17,8 @@
  *********************************************************************/
 
 use ILIAS\Badge\ilBadgeImage;
+use ILIAS\ResourceStorage\Services;
+use ILIAS\FileUpload\FileUpload;
 
 /**
  * Class ilBadgeManagementGUI
@@ -40,6 +42,8 @@ class ilBadgeManagementGUI
     private string $parent_obj_type;
 
     private ?ilBadgeImage $badge_image = null;
+    private ?Services $resource_storage = null;
+    private ?FileUpload $upload_service = null;
 
     public function __construct(
         private readonly int $parent_ref_id,
@@ -54,7 +58,9 @@ class ilBadgeManagementGUI
         $this->access = $DIC->access();
         $this->toolbar = $DIC->toolbar();
         $this->ui_factory = $DIC->ui()->factory();
-        $this->tpl = $DIC['tpl'];
+        $this->resource_storage = $DIC->resourceStorage();
+        $this->upload_service = $DIC->upload();
+        $this->tpl = $DIC->ui()->mainTemplate();
         $this->user = $DIC->user();
         $lng = $DIC->language();
         $this->parent_obj_id = $a_parent_obj_id
@@ -391,13 +397,11 @@ class ilBadgeManagementGUI
 
             if ($form->getInput('img_mode') === 'up') {
               # $badge->uploadImage($_FILES['img']);
-                global $DIC;
-                $upload_service = $DIC->upload();
-                $upload_service->process();
-                $array_result = $upload_service->getResults();
+                $this->upload_service->process();
+                $array_result = $this->upload_service->getResults();
                 $array_result = array_pop($array_result);
                 $stakeholder = new ilBadgeFileStakeholder();
-                $identification = $DIC['resource_storage']->manage()->upload($array_result, $stakeholder);
+                $identification = $this->resource_storage->manage()->upload($array_result, $stakeholder);
                 $badge->setImageRid($identification);
                 $badge->update();
             } else {
@@ -501,7 +505,13 @@ class ilBadgeManagementGUI
 
             $badge->update();
 
-            $badge->uploadImage($_FILES['img']);
+            $this->upload_service->process();
+            $array_result = $this->upload_service->getResults();
+            $array_result = array_pop($array_result);
+            $stakeholder = new ilBadgeFileStakeholder();
+            $identification = $this->resource_storage->manage()->upload($array_result, $stakeholder);
+            $badge->setImageRid($identification);
+            $badge->update();
 
             $this->tpl->setOnScreenMessage('success', $lng->txt('settings_saved'), true);
             $ilCtrl->redirect($this, 'listBadges');
