@@ -18,6 +18,7 @@
 
 use ILIAS\DI\UIServices;
 use ILIAS\Badge\Tile;
+use ILIAS\Badge\ilBadgeImage;
 
 /**
  * TableGUI class for badge listing
@@ -29,6 +30,7 @@ class ilBadgeTableGUI extends ilTable2GUI
     protected array $filter = [];
     private readonly Tile $tile;
     private readonly UIServices $ui;
+    private ilBadgeImage|null $badge_image = null;
 
     public function __construct(
         object $a_parent_obj,
@@ -44,6 +46,7 @@ class ilBadgeTableGUI extends ilTable2GUI
         $this->tile = new Tile($DIC);
         $ilCtrl = $DIC->ctrl();
         $lng = $DIC->language();
+        $this->badge_image = new ilBadgeImage($DIC);
 
         $this->setId("bdgbdg");
         $this->parent_type = ilObject::_lookupType($a_parent_obj_id);
@@ -137,49 +140,45 @@ class ilBadgeTableGUI extends ilTable2GUI
         $ilCtrl = $this->ctrl;
 
         if ($this->has_write) {
-            $this->tpl->setVariable("VAL_ID", $a_set["id"]);
+            $this->tpl->setVariable('VAL_ID', $a_set['id']);
         }
 
-        global $DIC;
-        $rid_string = $a_set['image_rid'];
-
-        if (null !== $rid_string) {
-            $identification  = $DIC['resource_storage']->manage()->find($rid_string);
-            $image_src = $DIC['resource_storage']->consume()->src($identification);
-            $image = $DIC->ui()->factory()->image()->responsive($image_src->getSrc(), $a_set['title']);
-            $image = $this->ui->renderer()->render($image);
+        $image_src = $this->badge_image->getImageFromResourceId($a_set['id'], $a_set['image_rid']);
+        if (null !== $a_set['image_rid']) {
+            global $DIC;
+            $image_responsive = $DIC->ui()->factory()->image()->responsive($image_src, $a_set['title']);
+            $image = $this->ui->renderer()->render($image_responsive);
         } else {
-            $image = $this->ui->renderer()->render($a_set["renderer"]());
+            $image = $this->ui->renderer()->render($a_set['renderer']());
         }
-
-
-        $this->tpl->setVariable("PREVIEW", $image);
-        $this->tpl->setVariable("TXT_TYPE", $a_set["type"]);
-        $this->tpl->setVariable("TXT_ACTIVE", $a_set["active"]
-            ? $lng->txt("yes")
-            : $lng->txt("no"));
+        
+        $this->tpl->setVariable('PREVIEW', $image);
+        $this->tpl->setVariable('TXT_TYPE', $a_set['type']);
+        $this->tpl->setVariable('TXT_ACTIVE', $a_set['active']
+            ? $lng->txt('yes')
+            : $lng->txt('no'));
 
         if ($this->has_write) {
             $buttons = [];
 
-            if ($a_set["manual"] && $a_set["active"]) {
-                $ilCtrl->setParameter($this->getParentObject(), "bid", $a_set["id"]);
-                $ilCtrl->setParameter($this->getParentObject(), "tgt", "bdgl");
-                $url = $ilCtrl->getLinkTarget($this->getParentObject(), "awardBadgeUserSelection");
-                $ilCtrl->setParameter($this->getParentObject(), "bid", "");
-                $ilCtrl->setParameter($this->getParentObject(), "tgt", "");
+            if ($a_set['manual'] && $a_set['active']) {
+                $ilCtrl->setParameter($this->getParentObject(), 'bid', $a_set['id']);
+                $ilCtrl->setParameter($this->getParentObject(), 'tgt', 'bdgl');
+                $url = $ilCtrl->getLinkTarget($this->getParentObject(), 'awardBadgeUserSelection');
+                $ilCtrl->setParameter($this->getParentObject(), 'bid', '');
+                $ilCtrl->setParameter($this->getParentObject(), 'tgt', '');
 
-                $buttons[] = $this->ui->factory()->button()->shy($lng->txt("badge_award_badge"), $url);
+                $buttons[] = $this->ui->factory()->button()->shy($lng->txt('badge_award_badge'), $url);
             }
 
-            $ilCtrl->setParameter($this->getParentObject(), "bid", $a_set["id"]);
-            $url = $ilCtrl->getLinkTarget($this->getParentObject(), "editBadge");
-            $ilCtrl->setParameter($this->getParentObject(), "bid", "");
+            $ilCtrl->setParameter($this->getParentObject(), 'bid', $a_set['id']);
+            $url = $ilCtrl->getLinkTarget($this->getParentObject(), 'editBadge');
+            $ilCtrl->setParameter($this->getParentObject(), 'bid', '');
 
-            $buttons[] = $this->ui->factory()->button()->shy($lng->txt("edit"), $url);
-            $actions = $this->ui->factory()->dropdown()->standard($buttons)->withLabel($lng->txt("actions"));
+            $buttons[] = $this->ui->factory()->button()->shy($lng->txt('edit'), $url);
+            $actions = $this->ui->factory()->dropdown()->standard($buttons)->withLabel($lng->txt('actions'));
 
-            $this->tpl->setVariable("ACTIONS", $this->ui->renderer()->render($actions));
+            $this->tpl->setVariable('ACTIONS', $this->ui->renderer()->render($actions));
         }
     }
 }

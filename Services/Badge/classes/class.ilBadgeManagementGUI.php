@@ -16,6 +16,8 @@
  *
  *********************************************************************/
 
+use ILIAS\Badge\ilBadgeImage;
+
 /**
  * Class ilBadgeManagementGUI
  *
@@ -36,6 +38,8 @@ class ilBadgeManagementGUI
     private \ILIAS\UI\Factory $ui_factory;
     private int $parent_obj_id;
     private string $parent_obj_type;
+
+    private ?ilBadgeImage $badge_image = null;
 
     public function __construct(
         private readonly int $parent_ref_id,
@@ -70,6 +74,7 @@ class ilBadgeManagementGUI
         );
 
         $this->session_repo = new ilBadgeManagementSessionRepository();
+        $this->badge_image = new ilBadgeImage($DIC);
     }
 
     public function executeCommand(): void
@@ -449,6 +454,10 @@ class ilBadgeManagementGUI
         $a_form->getItemByPostVar('crit')->setValue($a_badge->getCriteria());
         $a_form->getItemByPostVar('img')->setValue($a_badge->getImage());
         $a_form->getItemByPostVar('img')->setImage($a_badge->getImagePath());
+
+        $image_src = $this->badge_image->getImageFromBadge($a_badge);
+        $a_form->getItemByPostVar('img')->setImage($image_src);
+
         $a_form->getItemByPostVar('valid')->setValue($a_badge->getValid());
 
         $custom = $a_type->getConfigGUIInstance();

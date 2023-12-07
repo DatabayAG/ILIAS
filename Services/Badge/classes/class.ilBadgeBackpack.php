@@ -99,6 +99,7 @@ class ilBadgeBackpack
                     "title" => $badge->name,
                     "description" => $badge->description,
                     "image_url" => $badge->image,
+                    "image_rid" => $badge->image_rid,
                     "criteria_url" => $badge->criteria,
                     "issuer_name" => $badge->issuer->name,
                     "issuer_url" => $badge->issuer->origin,
