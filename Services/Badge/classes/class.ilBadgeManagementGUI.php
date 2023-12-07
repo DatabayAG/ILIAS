@@ -74,7 +74,7 @@ class ilBadgeManagementGUI
         );
 
         $this->session_repo = new ilBadgeManagementSessionRepository();
-        $this->badge_image = new ilBadgeImage($DIC);
+        $this->badge_image = new ilBadgeImage($DIC->resourceStorage());
     }
 
     public function executeCommand(): void

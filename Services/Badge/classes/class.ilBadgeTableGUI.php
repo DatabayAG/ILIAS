@@ -46,7 +46,7 @@ class ilBadgeTableGUI extends ilTable2GUI
         $this->tile = new Tile($DIC);
         $ilCtrl = $DIC->ctrl();
         $lng = $DIC->language();
-        $this->badge_image = new ilBadgeImage($DIC);
+        $this->badge_image = new ilBadgeImage($DIC->resourceStorage());
 
         $this->setId("bdgbdg");
         $this->parent_type = ilObject::_lookupType($a_parent_obj_id);
@@ -151,7 +151,7 @@ class ilBadgeTableGUI extends ilTable2GUI
         } else {
             $image = $this->ui->renderer()->render($a_set['renderer']());
         }
-        
+
         $this->tpl->setVariable('PREVIEW', $image);
         $this->tpl->setVariable('TXT_TYPE', $a_set['type']);
         $this->tpl->setVariable('TXT_ACTIVE', $a_set['active']

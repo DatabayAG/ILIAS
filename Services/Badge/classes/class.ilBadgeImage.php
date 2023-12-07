@@ -3,36 +3,32 @@
 namespace ILIAS\Badge;
 
 use ilBadge;
+use ILIAS\ResourceStorage\Services;
 
 class ilBadgeImage
 {
+    private ?Services $resource_storage = null;
 
-    private $dic;
-    public function __construct($DIC)
+    public function __construct(Services $resourceStorage)
     {
-        $this->dic = $DIC;
-    }
-
-    /**
-     * @param int    $badge_id
-     * @param string $image_rid
-     * @return string
-     */
-    public function getImageFromResourceId(int $badge_id, string $image_rid) : string
-    {
-        if ($image_rid !== null) {
-            $identification = $this->dic['resource_storage']->manage()->find($image_rid);
-            $image_src = $this->dic['resource_storage']->consume()->src($identification)->getSrc();
-        } else {
-            $badge = new ilBadge($badge_id);
-            $image_src = $this->dic['resource_storage']->consume()->src($badge->getImage());
-        }
-        return $image_src;
+        $this->resource_storage = $resourceStorage;
     }
 
     public function getImageFromBadge(ilBadge $badge) : string
     {
         $image_rid = $badge->getImageRid();
         return $this->getImageFromResourceId($badge->getId(), $image_rid);
+    }
+
+    public function getImageFromResourceId(int $badge_id, ?string $image_rid) : string
+    {
+        if ($image_rid !== null) {
+            $identification = $this->resource_storage->manage()->find($image_rid);
+            $image_src = $this->resource_storage->consume()->src($identification)->getSrc();
+        } else {
+            $badge = new ilBadge($badge_id);
+            $image_src = $badge->getImage();
+        }
+        return $image_src;
     }
 }

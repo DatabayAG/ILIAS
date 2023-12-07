@@ -33,12 +33,15 @@ class Modal
 {
     /** @var Closure(string): string */
     private readonly Closure $sign_file;
+    private ilBadgeImage|null $badge_image = null;
 
     public function __construct(
         private readonly Container $container,
         $sign_file = [ilWACSignedPath::class, 'signFile']
     ) {
         $this->sign_file = Closure::fromCallable($sign_file);
+        global $DIC;
+        $this->badge_image = new ilBadgeImage($DIC->resourceStorage());
     }
 
     /**
@@ -48,9 +51,11 @@ class Modal
     {
         $modal_content = [];
 
+        $image_src = $this->badge_image->getImageFromBadge($content->badge());
+
         $modal_content[] = $this->container->ui()->factory()->image()->responsive(
-            ($this->sign_file)($content->badge()->getImagePath()),
-            $content->badge()->getImage()
+            ($this->sign_file)($image_src),
+            $image_src
         );
         $modal_content[] = $this->container->ui()->factory()->divider()->horizontal();
         $modal_content[] = $this->item($content);
