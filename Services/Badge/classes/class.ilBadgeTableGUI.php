@@ -46,7 +46,7 @@ class ilBadgeTableGUI extends ilTable2GUI
         $this->tile = new Tile($DIC);
         $ilCtrl = $DIC->ctrl();
         $lng = $DIC->language();
-        $this->badge_image = new ilBadgeImage($DIC->resourceStorage());
+        $this->badge_image = new ilBadgeImage($DIC->resourceStorage(), $DIC->upload());
 
         $this->setId("bdgbdg");
         $this->parent_type = ilObject::_lookupType($a_parent_obj_id);
