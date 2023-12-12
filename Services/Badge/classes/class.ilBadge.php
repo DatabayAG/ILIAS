@@ -34,7 +34,7 @@ class ilBadge
     protected string $title = "";
     protected string $desc = "";
     protected string $image = "";
-    protected ?string $image_rid = null;
+    protected ?ResourceIdentification $image_rid = null;
     protected string $valid = "";
     protected ?array $config = null;
     protected string $criteria = "";
@@ -580,16 +580,15 @@ class ilBadge
                 : $lng->txt("badge_subtype_manual")) . ")";
     }
 
-    /**
-     * @return string|null|ResourceIdentification
-     */
-    public function getImageRid()
+    public function getImageRid() : ?ResourceIdentification
     {
         return $this->image_rid;
     }
 
     public function setImageRid(?string $image_rid) : void
     {
-        $this->image_rid = $image_rid;
+        if($image_rid !== null) {
+            $this->image_rid = new ResourceIdentification($image_rid);
+        }
     }
 }

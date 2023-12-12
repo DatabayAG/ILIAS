@@ -7,16 +7,21 @@ use ILIAS\ResourceStorage\Services;
 use ilBadgeFileStakeholder;
 use ILIAS\FileUpload\FileUpload;
 use ILIAS\FileUpload\Exception\IllegalStateException;
+use ilGlobalTemplateInterface;
 
 class ilBadgeImage
 {
-    private ?Services $resource_storage = null;
-    private ?FileUpload $upload_service = null;
+    private ?Services $resource_storage;
+    private ?FileUpload $upload_service;
+    private ?ilGlobalTemplateInterface $main_template;
+    private ?\ilLanguage $lng;
 
-    public function __construct(Services $resourceStorage, FileUpload $uploadService)
+    public function __construct(Services $resourceStorage, FileUpload $uploadService, ilGlobalTemplateInterface $main_template, \ilLanguage $lng)
     {
         $this->resource_storage = $resourceStorage;
         $this->upload_service = $uploadService;
+        $this->main_template = $main_template;
+        $this->lng = $lng;
     }
 
     public function getImageFromBadge(ilBadge $badge) : string
@@ -27,29 +32,35 @@ class ilBadgeImage
 
     public function getImageFromResourceId(int $badge_id, ?string $image_rid) : string
     {
+        $image_src = '';
+
         if ($image_rid !== null) {
             $identification = $this->resource_storage->manage()->find($image_rid);
-            $image_src = $this->resource_storage->consume()->src($identification)->getSrc();
+            if ($identification !== null) {
+                $image_src = $this->resource_storage->consume()->src($identification)->getSrc();
+            }
         } else {
             $badge = new ilBadge($badge_id);
             $image_src = $badge->getImage();
         }
+
         return $image_src;
     }
 
-    /**
-     * @param ilBadge $badge
-     * @return void
-     * @throws IllegalStateException
-     */
     public function processImageUpload(ilBadge $badge) : void
     {
-        $this->upload_service->process();
-        $array_result = $this->upload_service->getResults();
-        $array_result = array_pop($array_result);
-        $stakeholder = new ilBadgeFileStakeholder();
-        $identification = $this->resource_storage->manage()->upload($array_result, $stakeholder);
-        $badge->setImageRid($identification);
-        $badge->update();
+        try {
+            $this->upload_service->process();
+            $array_result = $this->upload_service->getResults();
+            $array_result = array_pop($array_result);
+            $stakeholder = new ilBadgeFileStakeholder();
+            $identification = $this->resource_storage->manage()->upload($array_result, $stakeholder);
+            $badge->setImageRid($identification);
+            $badge->update();
+        } catch (IllegalStateException $e) {
+            $this->main_template->setOnScreenMessage('failure', $e->getMessage(), true);
+        }
+
+
     }
 }
