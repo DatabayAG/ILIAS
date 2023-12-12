@@ -14,14 +14,12 @@ class ilBadgeImage
     private ?Services $resource_storage;
     private ?FileUpload $upload_service;
     private ?ilGlobalTemplateInterface $main_template;
-    private ?\ilLanguage $lng;
 
-    public function __construct(Services $resourceStorage, FileUpload $uploadService, ilGlobalTemplateInterface $main_template, \ilLanguage $lng)
+    public function __construct(Services $resourceStorage, FileUpload $uploadService, ilGlobalTemplateInterface $main_template)
     {
         $this->resource_storage = $resourceStorage;
         $this->upload_service = $uploadService;
         $this->main_template = $main_template;
-        $this->lng = $lng;
     }
 
     public function getImageFromBadge(ilBadge $badge) : string

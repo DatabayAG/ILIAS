@@ -64,7 +64,7 @@ class Tile
         }
         $this->format_date = $format_date;
         global $DIC;
-        $this->badge_image_service = new ilBadgeImage($DIC->resourceStorage(), $DIC->upload(), $DIC->ui()->mainTemplate(), $DIC->language());
+        $this->badge_image_service = new ilBadgeImage($DIC->resourceStorage(), $DIC->upload(), $DIC->ui()->mainTemplate());
     }
 
     /**

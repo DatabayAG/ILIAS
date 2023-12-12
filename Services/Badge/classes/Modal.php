@@ -41,7 +41,7 @@ class Modal
     ) {
         $this->sign_file = Closure::fromCallable($sign_file);
         global $DIC;
-        $this->badge_image_service = new ilBadgeImage($DIC->resourceStorage(), $DIC->upload(), $DIC->ui()->mainTemplate(), $DIC->language());
+        $this->badge_image_service = new ilBadgeImage($DIC->resourceStorage(), $DIC->upload(), $DIC->ui()->mainTemplate());
     }
 
     /**
