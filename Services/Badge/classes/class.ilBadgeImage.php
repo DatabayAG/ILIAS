@@ -58,7 +58,5 @@ class ilBadgeImage
         } catch (IllegalStateException $e) {
             $this->main_template->setOnScreenMessage('failure', $e->getMessage(), true);
         }
-
-
     }
 }

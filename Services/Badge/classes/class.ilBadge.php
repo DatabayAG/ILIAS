@@ -152,14 +152,17 @@ class ilBadge
         $this->setActive(false);
 
         if ($this->getId()) {
-            $img = $this->getImagePath();
-
             $this->setId(0);
             $this->create();
-
-            if ($img) {
-                // see uploadImage()
-                copy($img, $this->getImagePath());
+            if($this->getImageRid()) {
+                $img = $this->getImageRid();
+                $this->setImageRid($img);
+            } else {
+                $img = $this->getImagePath();
+                if ($img) {
+                    // see uploadImage()
+                    copy($img, $this->getImagePath());
+                }
             }
         }
     }

@@ -41,7 +41,23 @@ class ilBadgeDBUpdateSteps implements ilDatabaseUpdateSteps
                 $attributes
             );
         }
+    }
 
+    public function step_2(): void
+    {
+        if( ! $this->db->tableColumnExists('badge_image_template', 'image_rid')) {
+            $attributes = [
+                'type' => 'text',
+                'length' => 64,
+                'notnull' => false,
+                'default' => '',
+            ];
+            $this->db->addTableColumn(
+                'badge_image_template',
+                'image_rid',
+                $attributes
+            );
+        }
     }
 
 }

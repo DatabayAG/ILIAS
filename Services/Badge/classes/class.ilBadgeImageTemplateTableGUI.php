@@ -16,19 +16,24 @@
  *
  *********************************************************************/
 
+use ILIAS\ResourceStorage\Services;
+
 /**
  * TableGUI class for badge template listing
  * @author Jörg Lützenkirchen <luetzenkirchen@leifos.com>
  */
 class ilBadgeImageTemplateTableGUI extends ilTable2GUI
 {
+
+    protected Services $resource_storage;
+
     public function __construct(
         object $a_parent_obj,
         string $a_parent_cmd = "",
         protected bool $has_write = false
     ) {
         global $DIC;
-
+        $this->resource_storage = $DIC->resourceStorage();
         $this->ctrl = $DIC->ctrl();
         $this->lng = $DIC->language();
         $ilCtrl = $DIC->ctrl();
@@ -72,7 +77,8 @@ class ilBadgeImageTemplateTableGUI extends ilTable2GUI
                 "id" => $template->getId(),
                 "title" => $template->getTitle(),
                 "path" => $template->getImagePath(),
-                "file" => $template->getImage()
+                "file" => $template->getImage(),
+                "file_rid" => $template->getImageRid()
             );
         }
 
@@ -89,8 +95,15 @@ class ilBadgeImageTemplateTableGUI extends ilTable2GUI
         }
 
         $this->tpl->setVariable("TXT_TITLE", $a_set["title"]);
-        $this->tpl->setVariable("VAL_IMG", ilWACSignedPath::signFile($a_set["path"]));
-        $this->tpl->setVariable("TXT_IMG", $a_set["file"]);
+        if($a_set['file_rid']) {
+            $this->tpl->setVariable("TXT_IMG", $a_set["file_rid"]);
+            $img = $this->getImageFromResourceId($a_set["file_rid"]);
+            $this->tpl->setVariable("VAL_IMG", $img);
+        } else {
+            $this->tpl->setVariable("VAL_IMG", ilWACSignedPath::signFile($a_set["path"]));
+            $this->tpl->setVariable("TXT_IMG", $a_set["file"]);
+        }
+
 
         if ($this->has_write) {
             $ilCtrl->setParameter($this->getParentObject(), "tid", $a_set["id"]);
@@ -100,5 +113,24 @@ class ilBadgeImageTemplateTableGUI extends ilTable2GUI
             $this->tpl->setVariable("TXT_EDIT", $lng->txt("edit"));
             $this->tpl->setVariable("URL_EDIT", $url);
         }
+    }
+
+    public function getImageFromResourceId(?string $image_rid, int $badge_id = null) : string
+    {
+        $image_src = '';
+
+        if ($image_rid !== null) {
+            $identification = $this->resource_storage->manage()->find($image_rid);
+            if ($identification !== null) {
+                $image_src = $this->resource_storage->consume()->src($identification)->getSrc();
+            }
+        } else {
+            if($badge_id !== null) {
+                $badge = new ilBadge($badge_id);
+                $image_src = $badge->getImage();
+            }
+        }
+
+        return $image_src;
     }
 }
