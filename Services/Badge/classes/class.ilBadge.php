@@ -155,8 +155,7 @@ class ilBadge
             $this->setId(0);
             $this->create();
             if($this->getImageRid()) {
-                $img = $this->getImageRid();
-                $this->setImageRid($img);
+                $this->update();
             } else {
                 $img = $this->getImagePath();
                 if ($img) {
@@ -475,7 +474,12 @@ class ilBadge
         if (file_exists($this->getImagePath())) {
             unlink($this->getImagePath());
         } else {
-            $this->resource_storage->manage()->remove($this->getImageRid(), new ilBadgeFileStakeholder());
+            if($this->getImageRid() !== null) {
+                try{
+                    $this->resource_storage->manage()->remove($this->getImageRid(), new ilBadgeFileStakeholder());
+                } catch (Exception $e) {
+                }
+            }
         }
 
         $this->deleteStaticFiles();

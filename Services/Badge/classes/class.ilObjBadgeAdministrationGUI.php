@@ -371,7 +371,6 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
             $tmpl->setTypes($form->getInput("type"));
             $tmpl->create();
 
-            #$tmpl->uploadImage($_FILES["img"]);
             $tmpl->processImageUpload($tmpl);
 
             $this->tpl->setOnScreenMessage('success', $lng->txt("settings_saved"), true);
@@ -416,7 +415,7 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
     ): void {
         $a_form->getItemByPostVar("title")->setValue($a_tmpl->getTitle());
         if($a_tmpl->getImageRid() !== null) {
-            $img = $this->getImageFromResourceId($a_tmpl->getImageRid());
+            $img = $a_tmpl->getImageFromResourceId($a_tmpl->getImageRid());
             $a_form->getItemByPostVar("img")->setImage($img);
             $a_form->getItemByPostVar("img")->setValue($a_tmpl->getImageRid());
         } else {
@@ -460,7 +459,6 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
 
             $tmpl->update();
 
-            #$tmpl->uploadImage($_FILES["img"]);
             $tmpl->processImageUpload($tmpl);
 
             $this->tpl->setOnScreenMessage('success', $lng->txt("settings_saved"), true);
@@ -723,22 +721,4 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
         $ilCtrl->redirect($this, "listObjectBadges");
     }
 
-    public function getImageFromResourceId(?string $image_rid, int $badge_id = null) : string
-    {
-        $image_src = '';
-
-        if ($image_rid !== null) {
-            $identification = $this->resource_storage->manage()->find($image_rid);
-            if ($identification !== null) {
-                $image_src = $this->resource_storage->consume()->src($identification)->getSrc();
-            }
-        } else {
-            if($badge_id !== null) {
-                $badge = new ilBadge($badge_id);
-                $image_src = $badge->getImage();
-            }
-        }
-
-        return $image_src;
-    }
 }

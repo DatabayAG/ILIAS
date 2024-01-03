@@ -15,8 +15,11 @@ class ilBadgeImage
     private ?FileUpload $upload_service;
     private ?ilGlobalTemplateInterface $main_template;
 
-    public function __construct(Services $resourceStorage, FileUpload $uploadService, ilGlobalTemplateInterface $main_template)
-    {
+    public function __construct(
+        Services $resourceStorage,
+        FileUpload $uploadService,
+        ilGlobalTemplateInterface $main_template
+    ) {
         $this->resource_storage = $resourceStorage;
         $this->upload_service = $uploadService;
         $this->main_template = $main_template;

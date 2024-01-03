@@ -171,13 +171,19 @@ class ilBadgeImageTemplate
     public function processImageUpload( $badge) : void
     {
         try {
-            $this->upload_service->process();
-            $array_result = $this->upload_service->getResults();
-            $array_result = array_pop($array_result);
-            $stakeholder = new ilBadgeFileStakeholder();
-            $identification = $this->resource_storage->manage()->upload($array_result, $stakeholder);
-            $badge->setImageRid($identification);
-            $badge->update();
+            if (!$this->upload_service->hasBeenProcessed()) {
+                $this->upload_service->process();
+            }
+            if($this->upload_service->hasUploads()) {
+                $array_result = $this->upload_service->getResults();
+                $array_result = array_pop($array_result);
+                if($array_result->getName() !== '') {
+                    $stakeholder = new ilBadgeFileStakeholder();
+                    $identification = $this->resource_storage->manage()->upload($array_result, $stakeholder);
+                    $badge->setImageRid($identification);
+                    $badge->update();
+                }
+            }
         } catch (IllegalStateException $e) {
             $this->main_template->setOnScreenMessage('failure', $e->getMessage(), true);
         }
@@ -360,5 +366,24 @@ class ilBadgeImageTemplate
     public function setImageRid(?string $image_rid = null) : void
     {
         $this->image_rid = $image_rid;
+    }
+
+    public function getImageFromResourceId(?string $image_rid, int $badge_id = null) : string
+    {
+        $image_src = '';
+
+        if ($image_rid !== null) {
+            $identification = $this->resource_storage->manage()->find($image_rid);
+            if ($identification !== null) {
+                $image_src = $this->resource_storage->consume()->src($identification)->getSrc();
+            }
+        } else {
+            if($badge_id !== null) {
+                $badge = new ilBadge($badge_id);
+                $image_src = $badge->getImage();
+            }
+        }
+
+        return $image_src;
     }
 }

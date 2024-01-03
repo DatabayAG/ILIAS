@@ -64,6 +64,7 @@ class ilBadgeImageTemplateTableGUI extends ilTable2GUI
         $this->setFormAction($ilCtrl->getFormAction($a_parent_obj));
         $this->setRowTemplate("tpl.template_row.html", "Services/Badge");
         $this->setDefaultOrderField("title");
+        $this->setExternalSorting(true);
 
         $this->getItems();
     }
@@ -73,64 +74,44 @@ class ilBadgeImageTemplateTableGUI extends ilTable2GUI
         $data = array();
 
         foreach (ilBadgeImageTemplate::getInstances() as $template) {
-            $data[] = array(
-                "id" => $template->getId(),
-                "title" => $template->getTitle(),
-                "path" => $template->getImagePath(),
-                "file" => $template->getImage(),
-                "file_rid" => $template->getImageRid()
-            );
+
+            if($template->getId() !== null) {
+                $data[] = $template;
+            }
         }
 
         $this->setData($data);
     }
 
-    protected function fillRow(array $a_set): void
+    protected function fillRow($badge_image_template): void
     {
         $lng = $this->lng;
         $ilCtrl = $this->ctrl;
-
+        /**
+         * @var ilBadgeImageTemplate $badge_image_template
+         */
         if ($this->has_write) {
-            $this->tpl->setVariable("VAL_ID", $a_set["id"]);
+            $this->tpl->setVariable("VAL_ID", $badge_image_template->getId());
         }
 
-        $this->tpl->setVariable("TXT_TITLE", $a_set["title"]);
-        if($a_set['file_rid']) {
-            $this->tpl->setVariable("TXT_IMG", $a_set["file_rid"]);
-            $img = $this->getImageFromResourceId($a_set["file_rid"]);
+        $this->tpl->setVariable("TXT_TITLE", $badge_image_template->getTitle());
+        if($badge_image_template->getImageRid()) {
+            $this->tpl->setVariable("TXT_IMG", $badge_image_template->getImageRid());
+            $img = $badge_image_template->getImageFromResourceId($badge_image_template->getImageRid());
             $this->tpl->setVariable("VAL_IMG", $img);
         } else {
-            $this->tpl->setVariable("VAL_IMG", ilWACSignedPath::signFile($a_set["path"]));
-            $this->tpl->setVariable("TXT_IMG", $a_set["file"]);
+            $this->tpl->setVariable("VAL_IMG", ilWACSignedPath::signFile($badge_image_template->getImagePath()));
+            $this->tpl->setVariable("TXT_IMG", $badge_image_template->getImage());
         }
 
 
         if ($this->has_write) {
-            $ilCtrl->setParameter($this->getParentObject(), "tid", $a_set["id"]);
+            $ilCtrl->setParameter($this->getParentObject(), "tid", $badge_image_template->getId());
             $url = $ilCtrl->getLinkTarget($this->getParentObject(), "editImageTemplate");
             $ilCtrl->setParameter($this->getParentObject(), "tid", "");
 
             $this->tpl->setVariable("TXT_EDIT", $lng->txt("edit"));
             $this->tpl->setVariable("URL_EDIT", $url);
         }
-    }
-
-    public function getImageFromResourceId(?string $image_rid, int $badge_id = null) : string
-    {
-        $image_src = '';
-
-        if ($image_rid !== null) {
-            $identification = $this->resource_storage->manage()->find($image_rid);
-            if ($identification !== null) {
-                $image_src = $this->resource_storage->consume()->src($identification)->getSrc();
-            }
-        } else {
-            if($badge_id !== null) {
-                $badge = new ilBadge($badge_id);
-                $image_src = $badge->getImage();
-            }
-        }
-
-        return $image_src;
     }
 }

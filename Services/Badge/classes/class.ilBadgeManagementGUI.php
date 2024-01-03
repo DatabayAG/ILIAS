@@ -404,7 +404,10 @@ class ilBadgeManagementGUI
                  $this->badge_image_service->processImageUpload($badge);
             } else {
                 $tmpl = new ilBadgeImageTemplate($form->getInput('tmpl'));
-                $badge->importImage($tmpl->getImage(), $tmpl->getImagePath());
+                if($tmpl->getImageRid() !== null) {
+                    $badge->setImageRid($tmpl->getImageRid());
+                    $badge->update();
+                }
             }
 
             $this->tpl->setOnScreenMessage('success', $lng->txt('settings_saved'), true);
@@ -500,13 +503,25 @@ class ilBadgeManagementGUI
             $badge->setDescription($form->getInput('desc'));
             $badge->setCriteria($form->getInput('crit'));
             $badge->setValid($form->getInput('valid'));
+            $image = $form->getInput('img');
+            if(isset($image['name']) && $image['name'] !== '') {
+                $this->badge_image_service->processImageUpload($badge);
+            }
 
+            $badge->update();
             if ($custom) {
                 $badge->setConfiguration($custom->getConfigFromForm($form));
             }
 
-            $badge->update();
-            $this->badge_image_service->processImageUpload($badge);
+            $tmpl_id = $form->getInput('tmpl');
+            if($tmpl_id !== '') {
+                $tmpl = new ilBadgeImageTemplate($tmpl_id);
+                if($tmpl->getImageRid() !== '') {
+                    $badge->setImageRid($tmpl->getImageRid());
+                    $this->badge_image_service->processImageUpload($badge);
+                    $badge->update();
+                }
+            }
 
             $this->tpl->setOnScreenMessage('success', $lng->txt('settings_saved'), true);
             $ilCtrl->redirect($this, 'listBadges');
