@@ -28,6 +28,7 @@ class ilBadgeImage
     public function getImageFromBadge(ilBadge $badge) : string
     {
         $image_rid = $badge->getImageRid();
+        var_dump($image_rid);
         return $this->getImageFromResourceId($badge->getId(), $image_rid);
     }
 

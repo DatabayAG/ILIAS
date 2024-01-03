@@ -654,8 +654,9 @@ class ilBadgeManagementGUI
             $ilCtrl->redirect($this, 'listBadges');
         }
 
+        $copy_suffix = $this->lng->txt("copy_of_suffix");
         foreach ($this->getValidBadgesFromClipboard() as $badge) {
-            $badge->copy($this->parent_obj_id);
+            $badge->copy($this->parent_obj_id, $copy_suffix);
         }
 
         $ilCtrl->redirect($this, 'listBadges');

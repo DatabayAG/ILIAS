@@ -45,6 +45,7 @@ use ilBadge;
 use ilBadgeAssignment;
 use ilCtrl;
 use ilLanguage;
+use ILIAS\ResourceStorage\Services;
 
 class TileTest extends TestCase
 {
@@ -88,6 +89,7 @@ class TileTest extends TestCase
         $ui = $this->getMockBuilder(UIServices::class)->disableOriginalConstructor()->getMock();
         $ctrl = $this->getMockBuilder(ilCtrl::class)->disableOriginalConstructor()->getMock();
         $language = $this->getMockBuilder(ilLanguage::class)->disableOriginalConstructor()->getMock();
+        $resource_storage = $this->getMockBuilder(Services::class)->disableOriginalConstructor()->getMock();
         $container = $this->getMockBuilder(Container::class)->disableOriginalConstructor()->getMock();
         $parent = $this->getMockBuilder(BadgeParent::class)->disableOriginalConstructor()->getMock();
         $modal = $this->getMockBuilder(Modal::class)->disableOriginalConstructor()->getMock();
@@ -141,7 +143,9 @@ class TileTest extends TestCase
 
         $container->method('ui')->willReturn($ui);
         $container->method('ctrl')->willReturn($ctrl);
+        $container->method('lng')->willReturn($language);
         $container->method('language')->willReturn($language);
+        $container->method('resourceStorage')->willReturn($resource_storage);
 
         $parent->expects(self::once())->method('asComponent')->with($badge)->willReturn($parent_component);
 
@@ -149,6 +153,8 @@ class TileTest extends TestCase
 
         $tile = new Tile($container, $parent, $modal, $sign_file, $format_date);
 
+        //Todo: fix test cases
+        $badge->setImageRid('23242-43sda3-2131231-csadf2');
         $card_and_modal = $tile->inDeck($badge, $assignment, $gui_class_name);
 
         $this->assertSame($modified_card, $card_and_modal['card']);
@@ -169,6 +175,18 @@ class TileTest extends TestCase
         $container = $this->getMockBuilder(Container::class)->disableOriginalConstructor()->getMock();
         $parent = $this->getMockBuilder(BadgeParent::class)->disableOriginalConstructor()->getMock();
         $modal = $this->getMockBuilder(Modal::class)->disableOriginalConstructor()->getMock();
+        $ui = $this->getMockBuilder(UIServices::class)->disableOriginalConstructor()->getMock();
+        $ctrl = $this->getMockBuilder(ilCtrl::class)->disableOriginalConstructor()->getMock();
+        $language = $this->getMockBuilder(ilLanguage::class)->disableOriginalConstructor()->getMock();
+        $resource_storage = $this->getMockBuilder(Services::class)->disableOriginalConstructor()->getMock();
+        $container = $this->getMockBuilder(Container::class)->disableOriginalConstructor()->getMock();
+        $language->method('txt')->willReturnCallback(
+            static fn (string $lang_key) => 'Translated: ' . $lang_key
+        );
+        $container->method('ui')->willReturn($ui);
+        $container->method('ctrl')->willReturn($ctrl);
+        $container->method('language')->willReturn($language);
+        $container->method('resourceStorage')->willReturn($resource_storage);
         $format_date = function (int $x): void {
             throw new Exception('Should not be called.');
         };

@@ -18,6 +18,7 @@
 
 use ILIAS\ResourceStorage\Services;
 use ILIAS\ResourceStorage\Identification\ResourceIdentification;
+use ILIAS\DI\Container;
 
 /**
  * @author Jörg Lützenkirchen <luetzenkirchen@leifos.com>
@@ -42,13 +43,17 @@ class ilBadge
     private ?Services $resource_storage = null;
 
     public function __construct(
-        int $a_id = null
+        int $a_id = null,
+        Container $container = null
     ) {
-        global $DIC;
+        if($container === null) {
+            global $DIC;
+            $container = $DIC;
+        }
 
-        $this->lng = $DIC->language();
-        $this->db = $DIC->database();
-        $this->resource_storage = $DIC->resourceStorage();
+        $this->lng = $container->language();
+        $this->db = $container->database();
+        $this->resource_storage = $container->resourceStorage();
         if ($a_id) {
             $this->read($a_id);
         }
@@ -143,11 +148,10 @@ class ilBadge
     }
 
     public function copy(
-        int $a_new_parent_id
+        int $a_new_parent_id,
+        string $copy_suffix
     ): void {
-        $lng = $this->lng;
-
-        $this->setTitle($this->getTitle() . " " . $lng->txt("copy_of_suffix"));
+        $this->setTitle($this->getTitle() . " " . $copy_suffix);
         $this->setParentId($a_new_parent_id);
         $this->setActive(false);
 
