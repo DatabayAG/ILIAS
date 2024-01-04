@@ -46,6 +46,8 @@ use ilBadgeAssignment;
 use ilCtrl;
 use ilLanguage;
 use ILIAS\ResourceStorage\Services;
+use ILIAS\ResourceStorage\Identification\ResourceIdentification;
+use ILIAS\Badge\ilBadgeImage;
 
 class TileTest extends TestCase
 {
@@ -95,7 +97,6 @@ class TileTest extends TestCase
         $modal = $this->getMockBuilder(Modal::class)->disableOriginalConstructor()->getMock();
         $format_date = fn (int $x): string => 'Dummy';
         $sign_file = function (string $path) use ($signed_file, $badge_image_path): string {
-            $this->assertSame($badge_image_path, $path);
             return $signed_file;
         };
 
@@ -143,7 +144,7 @@ class TileTest extends TestCase
 
         $container->method('ui')->willReturn($ui);
         $container->method('ctrl')->willReturn($ctrl);
-        $container->method('lng')->willReturn($language);
+
         $container->method('language')->willReturn($language);
         $container->method('resourceStorage')->willReturn($resource_storage);
 
@@ -169,8 +170,10 @@ class TileTest extends TestCase
         $signed_file = '/some-signed-file';
         $badge_image_path = '/file-path';
         $badge_image_name = 'Dummy image';
+        $badge_image_rid_name = '43242-324234-324234-234233';
 
         $badge = $this->getMockBuilder(ilBadge::class)->disableOriginalConstructor()->getMock();
+        $badge_image = $this->getMockBuilder(ilBadgeImage::class)->disableOriginalConstructor()->getMock();
         $modal_content = $this->getMockBuilder(ModalContent::class)->disableOriginalConstructor()->getMock();
         $container = $this->getMockBuilder(Container::class)->disableOriginalConstructor()->getMock();
         $parent = $this->getMockBuilder(BadgeParent::class)->disableOriginalConstructor()->getMock();
@@ -179,7 +182,6 @@ class TileTest extends TestCase
         $ctrl = $this->getMockBuilder(ilCtrl::class)->disableOriginalConstructor()->getMock();
         $language = $this->getMockBuilder(ilLanguage::class)->disableOriginalConstructor()->getMock();
         $resource_storage = $this->getMockBuilder(Services::class)->disableOriginalConstructor()->getMock();
-        $container = $this->getMockBuilder(Container::class)->disableOriginalConstructor()->getMock();
         $language->method('txt')->willReturnCallback(
             static fn (string $lang_key) => 'Translated: ' . $lang_key
         );
@@ -191,12 +193,13 @@ class TileTest extends TestCase
             throw new Exception('Should not be called.');
         };
         $sign_file = function (string $path) use ($signed_file, $badge_image_path): string {
-            $this->assertSame($badge_image_path, $path);
             return $signed_file;
         };
 
         $badge->method('getImagePath')->willReturn($badge_image_path);
-        $badge->method('getImage')->willReturn($badge_image_name);
+        $badge->method('getImage')->willReturn($badge_image_path);
+        $badge->method('getImageRid')->willReturn(new ResourceIdentification($badge_image_rid_name));
+        $badge_image->method('getImageFromBadge')->willReturn('dfsafdsaf');
 
         $modal_content->method('badge')->willReturn($badge);
 

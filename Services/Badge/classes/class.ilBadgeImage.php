@@ -28,11 +28,10 @@ class ilBadgeImage
     public function getImageFromBadge(ilBadge $badge) : string
     {
         $image_rid = $badge->getImageRid();
-        var_dump($image_rid);
-        return $this->getImageFromResourceId($badge->getId(), $image_rid);
+        return $this->getImageFromResourceId($badge, $image_rid);
     }
 
-    public function getImageFromResourceId(int $badge_id, ?string $image_rid) : string
+    public function getImageFromResourceId(ilBadge $badge, ?string $image_rid) : string
     {
         $image_src = '';
 
@@ -42,7 +41,6 @@ class ilBadgeImage
                 $image_src = $this->resource_storage->consume()->src($identification)->getSrc();
             }
         } else {
-            $badge = new ilBadge($badge_id);
             $image_src = $badge->getImage();
         }
 

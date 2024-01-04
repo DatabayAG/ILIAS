@@ -46,11 +46,11 @@ class ilBadge
         int $a_id = null,
         Container $container = null
     ) {
+
         if($container === null) {
             global $DIC;
             $container = $DIC;
         }
-
         $this->lng = $container->language();
         $this->db = $container->database();
         $this->resource_storage = $container->resourceStorage();

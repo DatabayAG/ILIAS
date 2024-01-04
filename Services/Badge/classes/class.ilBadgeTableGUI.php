@@ -120,6 +120,7 @@ class ilBadgeTableGUI extends ilTable2GUI
         foreach (ilBadge::getInstancesByParentId($a_parent_obj_id, $this->filter) as $badge) {
             $data[] = array(
                 "id" => $badge->getId(),
+                "badge" => $badge,
                 "title" => $badge->getTitle(),
                 "active" => $badge->isActive(),
                 "type" => ($this->parent_type !== "bdga")
@@ -143,7 +144,7 @@ class ilBadgeTableGUI extends ilTable2GUI
             $this->tpl->setVariable('VAL_ID', $a_set['id']);
         }
 
-        $image_src = $this->badge_image_service->getImageFromResourceId($a_set['id'], $a_set['image_rid']);
+        $image_src = $this->badge_image_service->getImageFromResourceId($a_set['badge'], $a_set['image_rid']);
         if (null !== $a_set['image_rid']) {
             global $DIC;
             $image_responsive = $DIC->ui()->factory()->image()->responsive($image_src, $a_set['title']);
