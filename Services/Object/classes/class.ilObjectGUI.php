@@ -144,9 +144,9 @@ class ilObjectGUI implements ImplementsCreationCallback
         $this->call_by_reference = $call_by_reference;
         $this->prepare_output = $prepare_output;
 
-        $params = array("ref_id");
+        $params = ["ref_id"];
         if (!$call_by_reference) {
-            $params = array("ref_id","obj_id");
+            $params = ["ref_id","obj_id"];
         }
         $this->ctrl->saveParameter($this, $params);
 
@@ -476,7 +476,7 @@ class ilObjectGUI implements ImplementsCreationCallback
             $this->tabs_gui->addTarget(
                 "view",
                 $this->ctrl->getLinkTarget($this, "view"),
-                array("", "view"),
+                ["", "view"],
                 get_class($this)
             );
         }
@@ -484,7 +484,7 @@ class ilObjectGUI implements ImplementsCreationCallback
         if ($this->checkPermissionBool("edit_permission")) {
             $this->tabs_gui->addTarget(
                 "perm_settings",
-                $this->ctrl->getLinkTargetByClass(array(get_class($this), 'ilpermissiongui'), "perm"),
+                $this->ctrl->getLinkTargetByClass([get_class($this), 'ilpermissiongui'], "perm"),
                 "",
                 "ilpermissiongui"
             );
@@ -636,7 +636,7 @@ class ilObjectGUI implements ImplementsCreationCallback
 
             // copy form validation error: do not show other creation forms
             if ($this->request_wrapper->has("cpfl") && isset($forms[self::CFORM_CLONE])) {
-                $forms = array(self::CFORM_CLONE => $forms[self::CFORM_CLONE]);
+                $forms = [self::CFORM_CLONE => $forms[self::CFORM_CLONE]];
             }
             $this->tpl->setContent($this->getCreationFormsHTML($forms));
         }
@@ -743,10 +743,10 @@ class ilObjectGUI implements ImplementsCreationCallback
         if ($templates) {
             foreach ($templates as $template) {
                 if ($template->isEffective((int) $this->requested_ref_id)) {
-                    $options["dtpl_" . $template->getId()] = array(
+                    $options["dtpl_" . $template->getId()] = [
                         $template->getPresentationTitle(),
                         $template->getPresentationDescription()
-                    );
+                    ];
 
                     if ($template->isExclusive()) {
                         $existing_exclusive = true;
@@ -1118,7 +1118,7 @@ class ilObjectGUI implements ImplementsCreationCallback
         $form->setTitle($this->lng->txt($new_type . "_import"));
 
         $fi = new ilFileInputGUI($this->lng->txt("import_file"), "importfile");
-        $fi->setSuffixes(array("zip"));
+        $fi->setSuffixes(["zip"]);
         $fi->setRequired(true);
         if ($has_upload_files) {
             $this->lng->loadLanguageModule('content');
@@ -1476,7 +1476,7 @@ class ilObjectGUI implements ImplementsCreationCallback
         $class_name = $this->obj_definition->getClassName($obj_type);
         $class = strtolower("ilObj" . $class_name . "GUI");
         $this->ctrl->setParameterByClass("ilrepositorygui", "ref_id", $ref_id);
-        $this->ctrl->redirectByClass(array("ilrepositorygui", $class), $cmd);
+        $this->ctrl->redirectByClass(["ilrepositorygui", $class], $cmd);
     }
 
     /**
@@ -1563,8 +1563,16 @@ class ilObjectGUI implements ImplementsCreationCallback
                 if ($perm != "create" && !is_object($this->object)) {
                     return;
                 }
-                throw new ilObjectException($this->lng->txt("permission_denied"));
+
+                ilSession::clear("il_rep_ref_id");
+
+                $this->tpl->setOnScreenMessage('failure', $this->lng->txt('msg_no_perm_read'), true);
+                $parent_ref_id = $this->tree->getParentNodeData($this->object->getRefId())['ref_id'];
+                $this->ctrl->redirectToURL(ilLink::_getLink($parent_ref_id));
             }
+
+            $this->tpl->setOnScreenMessage('failure', $this->lng->txt('msg_no_perm_read'), true);
+            self::_gotoRepositoryRoot();
         }
     }
 

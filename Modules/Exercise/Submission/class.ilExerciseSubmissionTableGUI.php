@@ -346,7 +346,7 @@ abstract class ilExerciseSubmissionTableGUI extends ilTable2GUI
         // do not grade or mark if no team yet
         if (!$has_no_team_yet) {
             // status
-            $this->tpl->setVariable("SEL_" . strtoupper($a_row["status"]), ' selected="selected" ');
+            $this->tpl->setVariable("SEL_" . strtoupper($a_row["status"] ?? ""), ' selected="selected" ');
             $this->tpl->setVariable("TXT_NOTGRADED", $this->lng->txt("exc_notgraded"));
             $this->tpl->setVariable("TXT_PASSED", $this->lng->txt("exc_passed"));
             $this->tpl->setVariable("TXT_FAILED", $this->lng->txt("exc_failed"));
@@ -372,7 +372,7 @@ abstract class ilExerciseSubmissionTableGUI extends ilTable2GUI
 
             $lcomment = new ilTextAreaInputGUI($this->lng->txt("exc_comment_for_learner"), "lcomment_" . $a_ass->getId() . "_" . $a_user_id);
             $lcomment->setInfo($this->lng->txt("exc_comment_for_learner_info"));
-            $lcomment->setValue((string) $a_row["comment"]);
+            $lcomment->setValue((string) ($a_row["comment"] ?? ""));
             $lcomment->setRows(10);
             $lcomment_form->addItem($lcomment);
 
@@ -545,11 +545,11 @@ abstract class ilExerciseSubmissionTableGUI extends ilTable2GUI
                 $items[] = $this->ui_factory->link()->standard($this->lng->txt("exc_print_pdf"), $url)->withOpenInNewViewport(true);
             }
         }
-
+        $ind_deadline_mode = ($a_ass->getDeadlineMode() === ilExAssignment::DEADLINE_ABSOLUTE_INDIVIDUAL);
         if (!$has_no_team_yet &&
             $a_ass->hasActiveIDl() &&
             !$a_ass->hasReadOnlyIDl() &&
-            (!is_null($a_row["calc_deadline"] ?? null) || $a_ass->getDeadline())) {    // calculated or common deadline given
+            (!is_null($a_row["calc_deadline"] ?? null) || $a_ass->getDeadline() || $ind_deadline_mode)) {    // calculated or common deadline given
             $idl_id = $a_ass->hasTeam()
                 ? "t" . ilExAssignmentTeam::getTeamId($a_ass->getId(), $a_user_id)
                 : $a_user_id;

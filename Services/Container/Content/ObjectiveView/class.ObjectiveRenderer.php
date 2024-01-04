@@ -232,7 +232,7 @@ class ObjectiveRenderer
         if ($a_test_ref_id) {
             $node_data = $tree->getNodeData($a_test_ref_id);
         }
-        if (!$node_data['child']) {
+        if (!isset($node_data['child']) || !$node_data['child']) {
             return '';
         }
 
@@ -514,7 +514,7 @@ class ObjectiveRenderer
                 );
 
                 // #13381 - use materials order
-                $sort_key = str_pad($sort_map[$lm_ass_id], 5, "0", STR_PAD_LEFT) . "_" . strtolower($item['title']) . "_" . $lm_ass_id;
+                $sort_key = str_pad((string) $sort_map[$lm_ass_id], 5, "0", STR_PAD_LEFT) . "_" . strtolower($item['title']) . "_" . $lm_ass_id;
                 $sort_content[$sort_key] = $sub_item_html;
             }
         }
@@ -923,7 +923,7 @@ class ObjectiveRenderer
                 $initial_lim = (int) $a_lo_result['initial']['limit_perc'];
             }
             if (
-                $a_lo_result['type'] == \ilLOUserResults::TYPE_INITIAL &&
+                ($a_lo_result['type'] ?? \ilLOUserResults::TYPE_UNDEFINED) == \ilLOUserResults::TYPE_INITIAL &&
                 isset($a_lo_result['result_perc'])
             ) {
                 $initial_res = (int) $a_lo_result['result_perc'];
@@ -966,7 +966,7 @@ class ObjectiveRenderer
         $qual_res = null;
         $qual_lim = null;
 
-        if ($a_lo_result['type'] == \ilLOUserResults::TYPE_QUALIFIED) {
+        if (($a_lo_result['type'] ?? \ilLOUserResults::TYPE_UNDEFINED) == \ilLOUserResults::TYPE_QUALIFIED) {
             $qual_res = (int) $a_lo_result['result_perc'];
             $qual_lim = (int) $a_lo_result['limit_perc'];
         }

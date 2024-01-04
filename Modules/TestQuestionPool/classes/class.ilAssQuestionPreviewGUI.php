@@ -126,7 +126,9 @@ class ilAssQuestionPreviewGUI
                         $this->tabs->setBackTarget($this->lng->txt("qpl"), ilLink::_getLink($ref_id));
                     }
                 } else {
-                    $this->tabs->setBackTarget($this->lng->txt("backtocallingpool"), $this->ctrl->getLinkTargetByClass("ilobjquestionpoolgui", "questions"));
+                    $this->ctrl->clearParameterByClass(ilObjQuestionPoolGUI::class, 'q_id');
+                    $this->tabs->setBackTarget($this->lng->txt("backtocallingpool"), $this->ctrl->getLinkTargetByClass(ilObjQuestionPoolGUI::class, "questions"));
+                    $this->ctrl->setParameterByClass(ilObjQuestionPoolGUI::class, 'q_id', $questionId);
                 }
             }
         }
@@ -183,7 +185,16 @@ class ilAssQuestionPreviewGUI
 
         switch ($nextClass) {
             case 'ilassquestionhintrequestgui':
-                $gui = new ilAssQuestionHintRequestGUI($this, self::CMD_SHOW, $this->questionGUI, $this->hintTracking);
+                $gui = new ilAssQuestionHintRequestGUI(
+                    $this,
+                    self::CMD_SHOW,
+                    $this->questionGUI,
+                    $this->hintTracking,
+                    $this->ctrl,
+                    $this->lng,
+                    $this->tpl,
+                    $this->tabs
+                );
                 $this->ctrl->forwardCommand($gui);
                 break;
             case 'ilassspecfeedbackpagegui':

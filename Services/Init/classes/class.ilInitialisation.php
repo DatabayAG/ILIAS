@@ -1005,6 +1005,9 @@ class ilInitialisation
                 $DIC->offsetUnset('lng');
             }
             self::initGlobal('lng', ilLanguage::getGlobalInstance());
+            //re-init refinery with the user's language
+            unset($DIC['refinery']);
+            self::initRefinery($DIC);
         } else {
             self::initGlobal('lng', ilLanguage::getFallbackInstance());
         }
@@ -1726,7 +1729,7 @@ class ilInitialisation
             $lang = "en";
             if ($ilUser) {
                 $lang = $ilUser->getLanguage();
-            } elseif ($_REQUEST["lang"]) {
+            } elseif (isset($_REQUEST["lang"])) {
                 $lang = (string) $_REQUEST["lang"];
             } elseif ($ilSetting) {
                 $lang = $ilSetting->get("language", '');

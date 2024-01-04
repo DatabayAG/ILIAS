@@ -139,8 +139,11 @@ class ilDAVContainer implements ICollection
         } else {
             try {
                 $file_obj = new ilObjFile();
-                $file_obj->setTitle($name);
-                $file_obj->setFileName($name);
+                $title = mb_substr($name, 0, strrpos($name, '.'));
+                if ($title === '') {
+                    $title = $name;
+                }
+                $file_obj->setTitle($title);
 
                 $file_dav = $this->dav_factory->createDAVObject($file_obj, $this->obj->getRefId());
             } catch (ilWebDAVNotDavableException $e) {
@@ -148,7 +151,7 @@ class ilDAVContainer implements ICollection
             }
         }
 
-        return $file_dav->put($data);
+        return $file_dav->put($data, $name);
     }
 
     /**
