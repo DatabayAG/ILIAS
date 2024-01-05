@@ -120,9 +120,11 @@ class ilBadgeImageTemplate
         return $this->title;
     }
 
-    protected function setImage(string $a_value): void
+    protected function setImage(?string $a_value): void
     {
-        $this->image = trim($a_value);
+        if($a_value !== null) {
+            $this->image = trim($a_value);
+        }
     }
 
     /**

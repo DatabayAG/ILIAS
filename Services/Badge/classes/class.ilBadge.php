@@ -25,7 +25,6 @@ use ILIAS\DI\Container;
  */
 class ilBadge
 {
-    protected ilLanguage $lng;
     protected ilDBInterface $db;
 
     protected int $id = 0;
@@ -51,7 +50,7 @@ class ilBadge
             global $DIC;
             $container = $DIC;
         }
-        $this->lng = $container->language();
+
         $this->db = $container->database();
         $this->resource_storage = $container->resourceStorage();
         if ($a_id) {
@@ -319,9 +318,11 @@ class ilBadge
         return $this->config;
     }
 
-    protected function setImage(string $a_value): void
+    protected function setImage(?string $a_value): void
     {
-        $this->image = trim($a_value);
+        if($a_value !== null) {
+            $this->image = trim($a_value);
+        }
     }
 
     public function getImage(): string
@@ -504,7 +505,7 @@ class ilBadge
             "title" => ["text", $this->getTitle()],
             "descr" => ["text", $this->getDescription()],
             "crit" => ["text", $this->getCriteria()],
-            "image" => ["text", $this->getImage()],
+            "image" => ["text", null],
             "image_rid" => ["text", $this->getImageRid()],
             "valid" => ["text", $this->getValid()],
             "conf" => [

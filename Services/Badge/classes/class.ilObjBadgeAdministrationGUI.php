@@ -16,6 +16,9 @@
  *
  *********************************************************************/
 
+use ILIAS\UI\Implementation\Component\Table\PresentationRow;
+use ILIAS\UI\Factory;
+
 /**
  * Badge Administration Settings.
  *
@@ -286,6 +289,60 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
             $ilAccess->checkAccess("write", "", $this->object->getRefId())
         );
         $this->tpl->setContent($tbl->getHTML());
+        $this->testPresentationTable();
+    }
+
+    protected function testPresentationTable() {
+        global $DIC;
+        $f = $DIC->ui()->factory();
+        $renderer = $DIC->ui()->renderer();
+
+        //build viewcontrols
+        $actions = array("All" => "#",	"Upcoming events" => "#");
+        $aria_label = "filter entries";
+        $view_controls = array(
+            $f->viewControl()->mode($actions, $aria_label)->withActive("All")
+        );
+
+        $ptable = $f->table()->presentation(
+            "",
+            $view_controls,
+            function (
+                PresentationRow $row,
+                ilBadgeImageTemplate $record,
+                Factory $ui,
+                $environment
+            ) {
+                $img = $ui->image()->responsive(
+                    $record->getImageFromResourceId($record->getImageRid()),
+                    "Thumbnail Example"
+                );
+                $html = $environment['renderer']->render($img);
+                return $row
+                    ->withHeadline($record->getTitle())
+                    ->withSubheadline($record->getImageRid())
+                    ->withContent($ui->listing()->descriptive(['gfdhfgh' => 'dasfasdf']))
+                    ->withFurtherFields([$html])
+                    ->withAction($ui->button()->standard('edit BROKEN', '#'))
+                    ;
+            }
+        )->withEnvironment([
+            'renderer' => $renderer
+        ]);
+
+        //example data as from an assoc-query, list of arrays
+        $data = array();
+
+        foreach (ilBadgeImageTemplate::getInstances() as $template) {
+
+            if($template->getId() !== null) {
+                $data[] = $template;
+            }
+        }
+
+
+        //apply data to table and render
+        $this->tpl->setContent($renderer->render($ptable->withData($data)));
     }
 
     protected function addImageTemplate(

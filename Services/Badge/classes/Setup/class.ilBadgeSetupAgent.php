@@ -32,4 +32,12 @@ class ilBadgeSetupAgent extends Setup\Agent\NullAgent
     {
         return new ilDatabaseUpdateStepsMetricsCollectedObjective($storage, new ilBadgeDBUpdateSteps());
     }
+
+    public function getMigrations(): array
+    {
+        return [
+            new ilBadgesFilesMigration(),
+            new ilBadgeTemplatesFilesMigration()
+        ];
+    }
 }
