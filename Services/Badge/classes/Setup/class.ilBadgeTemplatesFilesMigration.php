@@ -80,18 +80,17 @@ class ilBadgeTemplatesFilesMigration implements Migration
                     null,
                     $this->getRevisionNameCallback()
                 );
-
-                $save_collection_id = $collection_id === null ? '-' : $collection_id->serialize();
-
-                $this->helper->getDatabase()->update(
-                    self::TABLE_NAME,
-                    [
-                        'image_rid' => ['text', $save_collection_id],
-                        'image' => ['text', null]
-                    ],
-                    ['id' => ['integer', $id]]
-                );
             }
+            $save_collection_id = $collection_id === null ? '-' : $collection_id->serialize();
+
+            $this->helper->getDatabase()->update(
+                self::TABLE_NAME,
+                [
+                    'image_rid' => ['text', $save_collection_id],
+                    'image' => ['text', null]
+                ],
+                ['id' => ['integer', $id]]
+            );
         }
     }
 

@@ -24,6 +24,8 @@ use ILIAS\Setup\Migration;
 
 class ilBadgesFilesMigration implements Migration
 {
+    const TABLE_NAME = 'badge_badge';
+
     protected ilResourceStorageMigrationHelper $helper;
 
     public function getLabel(): string
@@ -55,7 +57,7 @@ class ilBadgesFilesMigration implements Migration
     {
 
         $r = $this->helper->getDatabase()->query(
-            "SELECT id, image, image_rid  FROM badge_badge
+            "SELECT id, image, image_rid  FROM  " . self::TABLE_NAME . "
                              WHERE  image_rid IS NULL OR image_rid = '' 
                              LIMIT 1"
         );
@@ -79,17 +81,17 @@ class ilBadgesFilesMigration implements Migration
                     $this->getRevisionNameCallback()
                 );
 
-                $save_collection_id = $collection_id === null ? '-' : $collection_id->serialize();
-
-                $this->helper->getDatabase()->update(
-                    'badge_badge',
-                    [
-                        'image_rid' => ['text', $save_collection_id],
-                        'image' => ['text', null]
-                    ],
-                    ['id' => ['integer', $id]]
-                );
             }
+            $save_collection_id = $collection_id === null ? '-' : $collection_id->serialize();
+
+            $this->helper->getDatabase()->update(
+                self::TABLE_NAME,
+                [
+                    'image_rid' => ['text', $save_collection_id],
+                    'image' => ['text', null]
+                ],
+                ['id' => ['integer', $id]]
+            );
         }
     }
 
@@ -131,7 +133,7 @@ class ilBadgesFilesMigration implements Migration
     public function getRemainingAmountOfSteps(): int
     {
         $r = $this->helper->getDatabase()->query(
-            "SELECT count(id) as amount FROM badge_badge
+            "SELECT count(id) as amount FROM  " . self::TABLE_NAME . "
                              WHERE  image_rid IS NULL OR image_rid = '';"
         );
         $d = $this->helper->getDatabase()->fetchObject($r);
