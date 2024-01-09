@@ -182,6 +182,7 @@ class ilBadgeImageTemplate
                 if($array_result->getName() !== '') {
                     $stakeholder = new ilBadgeFileStakeholder();
                     $identification = $this->resource_storage->manage()->upload($array_result, $stakeholder);
+                    $this->resource_storage->flavours()->ensure($identification, new \ilBadgePictureDefinition());
                     $badge->setImageRid($identification);
                     $badge->update();
                 }
@@ -377,7 +378,11 @@ class ilBadgeImageTemplate
         if ($image_rid !== null) {
             $identification = $this->resource_storage->manage()->find($image_rid);
             if ($identification !== null) {
-                $image_src = $this->resource_storage->consume()->src($identification)->getSrc();
+                $flavour = $this->resource_storage->flavours()->get($identification, new \ilBadgePictureDefinition());
+                $urls = $this->resource_storage->consume()->flavourUrls($flavour)->getURLsAsArray(false);
+                if(is_array($urls) && sizeof($urls) === 4 && isset($urls[1])) {
+                    $image_src = $urls[1];
+                }
             }
         } else {
             if($badge_id !== null) {

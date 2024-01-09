@@ -20,6 +20,8 @@ use ILIAS\Badge\ilBadgeImage;
 use ILIAS\ResourceStorage\Services;
 use ILIAS\FileUpload\FileUpload;
 use ILIAS\FileUpload\Exception\IllegalStateException;
+use ILIAS\ResourceStorage\Flavour\Definition\FlavourDefinition;
+use ILIAS\Badge\ilBadgeTable;
 
 /**
  * Class ilBadgeManagementGUI
@@ -45,6 +47,7 @@ class ilBadgeManagementGUI
     private ?ilBadgeImage $badge_image_service = null;
     private ?Services $resource_storage = null;
     private ?FileUpload $upload_service = null;
+    private ?ilBadgePictureDefinition $flavour_definition = null;
 
     public function __construct(
         private readonly int $parent_ref_id,
@@ -82,6 +85,7 @@ class ilBadgeManagementGUI
 
         $this->session_repo = new ilBadgeManagementSessionRepository();
         $this->badge_image_service = new ilBadgeImage($DIC->resourceStorage(), $DIC->upload(), $DIC->ui()->mainTemplate());
+        $this->flavour_definition = new ilBadgePictureDefinition();
     }
 
     public function executeCommand(): void
@@ -215,6 +219,8 @@ class ilBadgeManagementGUI
 
         $tbl = new ilBadgeTableGUI($this, 'listBadges', $this->parent_obj_id, $this->hasWrite());
         $tpl->setContent($tbl->getHTML());
+        $table = new ilBadgeTable($this->parent_obj_id, $this->parent_obj_type);
+        #$table->renderTable();
     }
 
     protected function applyBadgeFilter(): void
@@ -461,7 +467,9 @@ class ilBadgeManagementGUI
         $a_form->getItemByPostVar('img')->setImage($a_badge->getImagePath());
 
         $image_src = $this->badge_image_service->getImageFromBadge($a_badge);
-        $a_form->getItemByPostVar('img')->setImage($image_src);
+        if($image_src !== '') {
+            $a_form->getItemByPostVar('img')->setImage($image_src);
+        }
 
         $a_form->getItemByPostVar('valid')->setValue($a_badge->getValid());
 

@@ -38,7 +38,11 @@ class ilBadgeImage
         if ($image_rid !== null) {
             $identification = $this->resource_storage->manage()->find($image_rid);
             if ($identification !== null) {
-                $image_src = $this->resource_storage->consume()->src($identification)->getSrc();
+                $flavour = $this->resource_storage->flavours()->get($identification, new \ilBadgePictureDefinition());
+                $urls = $this->resource_storage->consume()->flavourUrls($flavour)->getURLsAsArray(false);
+                if(is_array($urls) && sizeof($urls) === 4 && isset($urls[1])) {
+                    $image_src = $urls[1];
+                }
             }
         } else {
             $image_src = $badge->getImage();
@@ -55,6 +59,7 @@ class ilBadgeImage
             $array_result = array_pop($array_result);
             $stakeholder = new ilBadgeFileStakeholder();
             $identification = $this->resource_storage->manage()->upload($array_result, $stakeholder);
+            $this->resource_storage->flavours()->ensure($identification, new \ilBadgePictureDefinition());
             $badge->setImageRid($identification);
             $badge->update();
         } catch (IllegalStateException $e) {

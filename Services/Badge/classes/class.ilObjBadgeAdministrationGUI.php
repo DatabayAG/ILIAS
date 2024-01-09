@@ -18,6 +18,9 @@
 
 use ILIAS\UI\Implementation\Component\Table\PresentationRow;
 use ILIAS\UI\Factory;
+use ILIAS\UI\URLBuilder;
+use ILIAS\Data\Order;
+use ILIAS\Data\Range;
 
 /**
  * Badge Administration Settings.
@@ -83,7 +86,22 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
                 if (!$cmd || $cmd === 'view') {
                     $cmd = "editSettings";
                 }
+                global $DIC;
+                $action_parameter_token = 'tid_id';
+                $query = $DIC->http()->wrapper()->query();
+            if ($query->has($action_parameter_token)) {
+                if($query->has($action_parameter_token)) {
+                    $id = $query->retrieve($action_parameter_token, $DIC->refinery()->kindlyTo()->listOf($DIC->refinery()->kindlyTo()->int()));
+                   if(is_array($id)) {
+                      $id =  array_pop($id);
+                   }
+                    $DIC->ctrl()->setParameter( $this, "tid", $id);
+                }
 
+                $a_form = $this->editImageTemplate();
+                #$DIC->ui()->mainTemplate()->setContent($a_form->getHTML());
+                break;
+            }
                 $this->$cmd();
                 break;
         }
@@ -288,62 +306,11 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
             "listImageTemplates",
             $ilAccess->checkAccess("write", "", $this->object->getRefId())
         );
-        $this->tpl->setContent($tbl->getHTML());
-        $this->testPresentationTable();
+       # $this->tpl->setContent($tbl->getHTML());
+        $template_table = new \ILIAS\Badge\ilBadgeImageTemplateTable();
+        $template_table->renderTable();
     }
 
-    protected function testPresentationTable() {
-        global $DIC;
-        $f = $DIC->ui()->factory();
-        $renderer = $DIC->ui()->renderer();
-
-        //build viewcontrols
-        $actions = array("All" => "#",	"Upcoming events" => "#");
-        $aria_label = "filter entries";
-        $view_controls = array(
-            $f->viewControl()->mode($actions, $aria_label)->withActive("All")
-        );
-
-        $ptable = $f->table()->presentation(
-            "",
-            $view_controls,
-            function (
-                PresentationRow $row,
-                ilBadgeImageTemplate $record,
-                Factory $ui,
-                $environment
-            ) {
-                $img = $ui->image()->responsive(
-                    $record->getImageFromResourceId($record->getImageRid()),
-                    "Thumbnail Example"
-                );
-                $html = $environment['renderer']->render($img);
-                return $row
-                    ->withHeadline($record->getTitle())
-                    ->withSubheadline($record->getImageRid())
-                    ->withContent($ui->listing()->descriptive(['gfdhfgh' => 'dasfasdf']))
-                    ->withFurtherFields([$html])
-                    ->withAction($ui->button()->standard('edit BROKEN', '#'))
-                    ;
-            }
-        )->withEnvironment([
-            'renderer' => $renderer
-        ]);
-
-        //example data as from an assoc-query, list of arrays
-        $data = array();
-
-        foreach (ilBadgeImageTemplate::getInstances() as $template) {
-
-            if($template->getId() !== null) {
-                $data[] = $template;
-            }
-        }
-
-
-        //apply data to table and render
-        $this->tpl->setContent($renderer->render($ptable->withData($data)));
-    }
 
     protected function addImageTemplate(
         ilPropertyFormGUI $a_form = null

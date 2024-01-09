@@ -145,7 +145,7 @@ class ilBadgeTableGUI extends ilTable2GUI
         }
 
         $image_src = $this->badge_image_service->getImageFromResourceId($a_set['badge'], $a_set['image_rid']);
-        if (null !== $a_set['image_rid']) {
+        if (null !== $a_set['image_rid'] && $image_src !== '') {
             global $DIC;
             $image_responsive = $DIC->ui()->factory()->image()->responsive($image_src, $a_set['title']);
             $image = $this->ui->renderer()->render($image_responsive);
