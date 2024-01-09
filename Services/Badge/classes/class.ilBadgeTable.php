@@ -20,6 +20,7 @@ use ILIAS\DI\Container;
 use ilBadgeHandler;
 use ilBadge;
 use ilBadgeAuto;
+use ILIAS\UI\Implementation\Component\Table\Column\Boolean;
 
 class ilBadgeTable
 {
@@ -45,17 +46,32 @@ class ilBadgeTable
         $this->parent_id = $parent_obj_id;
         $this->parent_type = $parent_obj_type;
     }
+    protected function buildColumns() : array
+    {
+        $column = $this->factory->table()->column();
+        $lng = $this->lng;
+
+        return [
+            'title' => $column->text($lng->txt("title")),
+            'image_rid' => $column->text($lng->txt("image")),
+            'type' => $column->text($lng->txt("type")),
+            'active' => $column->boolean($lng->txt("active"), $lng->txt("yes"), $lng->txt("no")),
+        ];
+    }
 
     /**
      * @param Factory  $f
      * @param Renderer $r
-     * @return DataRetrieval|__anonymous@1221
+     * @param int      $p
+     * @param string   $type
+     * @return DataRetrieval@2044
      */
     protected function buildDataRetrievalObject(Factory $f, Renderer $r, int $p, string $type)
     {
         return new class ($f, $r, $p, $type) implements DataRetrieval {
-            protected $parent_obj_id;
-            protected $parent_obj_type;
+            protected int $parent_obj_id;
+            protected string $parent_obj_type;
+            protected ilBadgeImage $badge_image_service;
             public function __construct(
                 protected Factory $ui_factory,
                 protected Renderer $ui_renderer,
@@ -77,7 +93,7 @@ class ilBadgeTable
             {
                 if (true) {
                     $data = array();
-
+                    $image_html = '';
                     foreach (ilBadge::getInstancesByParentId($this->parent_id, null) as $badge) {
                         $badge_rid = $badge->getImageRid();
                         $image_src = $this->badge_image_service->getImageFromResourceId($badge, $badge_rid);
@@ -92,18 +108,17 @@ class ilBadgeTable
                             }
                         }
 
-                        $badge_active = $badge->isActive() ? $DIC->language()->txt('yes') : $DIC->language()->txt('no');
                         $data[] = array(
-                            "id" => $badge->getId(),
-                            "badge" => $badge,
-                            "title" => $badge->getTitle(),
-                            "active" => $badge_active,
-                            "type" => ($this->parent_type !== "bdga")
+                            'id' => $badge->getId(),
+                            'badge' => $badge,
+                            'title' => $badge->getTitle(),
+                            'active' => $badge->isActive(),
+                            'type' => ($this->parent_type !== 'bdga')
                                 ? ilBadge::getExtendedTypeCaption($badge->getTypeInstance())
                                 : $badge->getTypeInstance()->getCaption(),
-                            "manual" => (!$badge->getTypeInstance() instanceof ilBadgeAuto),
-                            "image_rid" => $image_html,
-                            "renderer" => fn () => $this->tile->asTitle($this->tile->modalContent($badge)),
+                            'manual' => (!$badge->getTypeInstance() instanceof ilBadgeAuto),
+                            'image_rid' => $image_html,
+                            'renderer' => fn () => $this->tile->asTitle($this->tile->modalContent($badge)),
                         );
                     }
                     return $data;
@@ -197,17 +212,12 @@ class ilBadgeTable
     {
         $f = $this->factory;
         $r = $this->renderer;
-        $refinery = $this->refinery;
-        $request = $this->request;
         $df = new \ILIAS\Data\Factory();
 
-        $columns = [
-            'title' => $f->table()->column()->text($this->lng->txt("title")),
-            'image_rid' => $f->table()->column()->text($this->lng->txt("image")),
-            'type' => $f->table()->column()->text($this->lng->txt("type")),
-            'active' => $f->table()->column()->text($this->lng->txt("active")),
-        ];
+        $refinery = $this->refinery;
+        $request = $this->request;
 
+        $columns = $this->buildColumns();
         $table_uri = $df->uri($request->getUri()->__toString());
         $url_builder = new URLBuilder($table_uri);
         $query_params_namespace = ['tid'];
@@ -220,17 +230,14 @@ class ilBadgeTable
             );
 
         $actions = $this->getActions($url_builder, $action_parameter_token, $row_id_token);
-
         $data_retrieval = $this->buildDataRetrievalObject($f, $r, $this->parent_id, $this->parent_type);
-
-        $table = $f->table()
-                   ->data('', $columns, $data_retrieval)
+        $table = $f->table()->data('', $columns, $data_retrieval)
                    ->withActions($actions)
                    ->withRequest($request);
-
         $out = [$table];
 
         $query = $this->http->wrapper()->query();
+
         if ($query->has($action_parameter_token->getName())) {
             $action = $query->retrieve($action_parameter_token->getName(), $refinery->to()->string());
             $ids = $query->retrieve($row_id_token->getName(), $refinery->custom()->transformation(fn($v) => $v));

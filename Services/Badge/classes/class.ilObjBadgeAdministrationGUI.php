@@ -31,6 +31,7 @@ use ILIAS\Data\Range;
  */
 class ilObjBadgeAdministrationGUI extends ilObjectGUI
 {
+    private \ILIAS\ResourceStorage\Services $resource_storage;
     protected ilRbacSystem $rbacsystem;
     protected ilBadgeGUIRequest $badge_request;
     protected ilTabsGUI $tabs;
