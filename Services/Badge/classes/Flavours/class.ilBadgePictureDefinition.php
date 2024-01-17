@@ -33,8 +33,12 @@ class ilBadgePictureDefinition implements FlavourDefinition
         'xxsmall' => 30
     ];
 
-    public function __construct(
-    ) {
+    private int $actual_size = 0;
+
+    public function __construct(int $size = 0) {
+        if($size > 0) {
+            $this->actual_size = $size;
+        }
     }
 
     public function getId(): string
@@ -54,6 +58,7 @@ class ilBadgePictureDefinition implements FlavourDefinition
 
     public function getVariantName(): ?string
     {
+        $a = $this->actual_size;
         return json_encode([
             'quality' => $this->quality,
             'sizes' => $this->sizes

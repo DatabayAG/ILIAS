@@ -72,6 +72,8 @@ class ilBadgeTable
             protected int $parent_obj_id;
             protected string $parent_obj_type;
             protected ilBadgeImage $badge_image_service;
+            protected Factory $factory;
+            protected Renderer $renderer;
             public function __construct(
                 protected Factory $ui_factory,
                 protected Renderer $ui_renderer,
@@ -82,6 +84,8 @@ class ilBadgeTable
                 $this->parent_obj_id = $parent_id;
                 $this->parent_obj_type = $parent_type;
                 $this->badge_image_service = new ilBadgeImage($DIC->resourceStorage(), $DIC->upload(), $DIC->ui()->mainTemplate());
+                $this->factory = $this->ui_factory;
+                $this->renderer = $this->ui_renderer;
             }
 
             /**
@@ -89,40 +93,38 @@ class ilBadgeTable
              * @param array $data
              * @return array
              */
-            protected function getBadges(Container $DIC, array $data) : array
+            protected function getBadges() : array
             {
-                if (true) {
-                    $data = array();
-                    $image_html = '';
-                    foreach (ilBadge::getInstancesByParentId($this->parent_id, null) as $badge) {
-                        $badge_rid = $badge->getImageRid();
-                        $image_src = $this->badge_image_service->getImageFromResourceId($badge, $badge_rid);
-                        if($badge_rid != '') {
-                            $badge_template_image = $image_src;
-                            if($badge_template_image !== '') {
-                                $badge_img = $DIC->ui()->factory()->image()->responsive(
-                                    $badge_template_image,
-                                    $badge->getTitle()
-                                );
-                                $image_html = $DIC->ui()->renderer()->render($badge_img);
-                            }
+                $data = [];
+                $image_html = '';
+                foreach (ilBadge::getInstancesByParentId($this->parent_id) as $badge) {
+                    $badge_rid = $badge->getImageRid();
+                    $image_src = $this->badge_image_service->getImageFromResourceId($badge, $badge_rid);
+                    if($badge_rid != '') {
+                        $badge_template_image = $image_src;
+                        if($badge_template_image !== '') {
+                            $badge_img = $this->factory->image()->responsive(
+                                $badge_template_image,
+                                $badge->getTitle()
+                            );
+                            $image_html = $this->renderer->render($badge_img);
                         }
-
-                        $data[] = array(
-                            'id' => $badge->getId(),
-                            'badge' => $badge,
-                            'title' => $badge->getTitle(),
-                            'active' => $badge->isActive(),
-                            'type' => ($this->parent_type !== 'bdga')
-                                ? ilBadge::getExtendedTypeCaption($badge->getTypeInstance())
-                                : $badge->getTypeInstance()->getCaption(),
-                            'manual' => (!$badge->getTypeInstance() instanceof ilBadgeAuto),
-                            'image_rid' => $image_html,
-                            'renderer' => fn () => $this->tile->asTitle($this->tile->modalContent($badge)),
-                        );
                     }
-                    return $data;
+
+                    $data[] = array(
+                        'id' => $badge->getId(),
+                        'badge' => $badge,
+                        'title' => $badge->getTitle(),
+                        'active' => $badge->isActive(),
+                        'type' => ($this->parent_type !== 'bdga')
+                            ? ilBadge::getExtendedTypeCaption($badge->getTypeInstance())
+                            : $badge->getTypeInstance()->getCaption(),
+                        'manual' => (!$badge->getTypeInstance() instanceof ilBadgeAuto),
+                        'image_rid' => $image_html,
+                        'renderer' => fn () => $this->tile->asTitle($this->tile->modalContent($badge)),
+                    );
                 }
+                return $data;
             }
 
             public function getRows(
@@ -149,11 +151,7 @@ class ilBadgeTable
 
             protected function getRecords(Range $range = null, Order $order = null) : array
             {
-
-                global $DIC;
-                $data = array();
-
-                $data = $this->getBadges($DIC, $data);
+                $data = $this->getBadges();
 
                 if ($order) {
                     list($order_field, $order_direction) = $order->join([],
