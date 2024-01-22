@@ -21,6 +21,7 @@ use ILIAS\UI\Factory;
 use ILIAS\UI\URLBuilder;
 use ILIAS\Data\Order;
 use ILIAS\Data\Range;
+use ILIAS\Badge\ilBadgeImageTemplateTable;
 
 /**
  * Badge Administration Settings.
@@ -308,7 +309,7 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
             $ilAccess->checkAccess("write", "", $this->object->getRefId())
         );
        # $this->tpl->setContent($tbl->getHTML());
-        $template_table = new \ILIAS\Badge\ilBadgeImageTemplateTable();
+        $template_table = new ilBadgeImageTemplateTable();
         $template_table->renderTable();
     }
 
@@ -568,6 +569,9 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
             $ilAccess->checkAccess("write", "", $this->object->getRefId())
         );
         $tpl->setContent($tbl->getHTML());
+
+        $tbl = new \ILIAS\Badge\ilObjectBadgeTable();
+        $tbl->renderTable();
     }
 
     protected function applyObjectFilter(): void

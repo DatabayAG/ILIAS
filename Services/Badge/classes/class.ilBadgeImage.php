@@ -31,7 +31,7 @@ class ilBadgeImage
         return $this->getImageFromResourceId($badge, $image_rid);
     }
 
-    public function getImageFromResourceId(ilBadge $badge, ?string $image_rid) : string
+    public function getImageFromResourceId(ilBadge|array $badge, ?string $image_rid) : string
     {
         $image_src = '';
 
@@ -44,6 +44,8 @@ class ilBadgeImage
                     $image_src = $urls[1];
                 }
             }
+        } elseif(is_array($badge) && isset($badge['image'])) {
+            $image_src = $badge['image'];
         } else {
             $image_src = $badge->getImage();
         }
