@@ -727,7 +727,9 @@ class ilBadgeManagementGUI
         }
 
         $tbl = new ilBadgeUserTableGUI($this, 'listUsers', $this->parent_ref_id);
-        $tpl->setContent($tbl->getHTML());
+       # $tpl->setContent($tbl->getHTML());
+        $tbl = new \ILIAS\Badge\ilBadgeUserTable($this->parent_ref_id);
+        $tbl->renderTable();
     }
 
     protected function applyListUsers(): void

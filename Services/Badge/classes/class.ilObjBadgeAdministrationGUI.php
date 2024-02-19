@@ -240,6 +240,8 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
             $ilAccess->checkAccess("write", "", $this->object->getRefId())
         );
         $this->tpl->setContent($tbl->getHTML());
+        $tpl = new \ILIAS\Badge\ilBadgeTypesTable();
+        $tpl->renderTable();
     }
 
     protected function activateTypes(): void
