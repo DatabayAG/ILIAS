@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -16,16 +18,18 @@
  *
  *********************************************************************/
 
-interface ilQuestionEditingFormConsumer
+class ilScormAiccDatabaseUpdateSteps implements ilDatabaseUpdateSteps
 {
-    /**
-     * @return string
-     */
-    public function getQuestionEditingFormBackTargetLabel(): string;
+    protected ilDBInterface $db;
 
-    /**
-     * @param $context
-     * @return string
-     */
-    public function getQuestionEditingFormBackTarget($context): string;
+    public function prepare(ilDBInterface $db): void
+    {
+        $this->db = $db;
+    }
+
+    public function step_1(): void
+    {
+        $this->db->modifyTableColumn("cp_manifest", "defaultorganization", array("type" => "text", "length" => 255, "notnull" => false, 'default' => null));
+    }
+
 }

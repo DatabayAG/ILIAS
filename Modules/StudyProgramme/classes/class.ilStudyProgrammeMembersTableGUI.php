@@ -48,7 +48,7 @@ class ilStudyProgrammeMembersTableGUI extends ilTable2GUI
         string $parent_cmd = '',
         string $template_context = ''
     ) {
-        $this->setId("sp_member_list");
+        $this->setId("sp_member_list_" . $prg_obj_id);
         $this->prg_obj_id = $prg_obj_id;
         $this->prg_user_table = $prg_user_table;
         $this->custom_filter = $custom_filter;
@@ -228,9 +228,14 @@ class ilStudyProgrammeMembersTableGUI extends ilTable2GUI
                     $this->tpl->parseCurrentBlock();
                     break;
                 default:
-                    $this->tpl->setCurrentBlock('udf');
-                    $this->tpl->setVariable("UDF", $row->getUserInformation()->getUserData($column));
-                    $this->tpl->parseCurrentBlock();
+                    $value = $row->getUserInformation()->getUserData($column);
+                    if($value == null || trim($value) === '') {
+                        $this->tpl->touchBlock('udf');
+                    } else {
+                        $this->tpl->setCurrentBlock('udf');
+                        $this->tpl->setVariable("UDF", $value);
+                        $this->tpl->parseCurrentBlock();
+                    }
             }
         }
         $actions = $this->getPossibleActions(

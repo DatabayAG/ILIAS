@@ -44,8 +44,11 @@ abstract class assQuestion
 
     protected const DEFAULT_THUMB_SIZE = 150;
     protected const MINIMUM_THUMB_SIZE = 20;
+    public const TRIM_PATTERN = '/^[\p{C}\p{Z}]+|[\p{C}\p{Z}]+$/u';
+
     protected \ILIAS\TestQuestionPool\QuestionInfoService $questioninfo;
     protected \ILIAS\Test\TestParticipantInfoService $testParticipantInfo;
+
     protected ILIAS\HTTP\Services $http;
     protected ILIAS\Refinery\Factory $refinery;
     protected \ILIAS\TestQuestionPool\QuestionFilesService $questionFilesService;
@@ -357,7 +360,7 @@ abstract class assQuestion
 
     public function setAuthor(string $author = ""): void
     {
-        if (!$author) {
+        if ($author === '') {
             $author = $this->current_user->getFullname();
         }
         $this->author = $author;
@@ -1604,20 +1607,34 @@ abstract class assQuestion
 
     public function syncWithOriginal(): void
     {
-        if (!$this->getOriginalId()) {
+        $original_id = $this->getOriginalId();
+        if ($original_id === null) {
             return; // No original -> no sync
         }
 
-        $originalObjId = self::lookupParentObjId($this->getOriginalId());
+        $original_obj_id = self::lookupParentObjId($this->getOriginalId());
 
-        if (!$originalObjId) {
+        if (!$original_obj_id) {
             return; // Original does not exist -> no sync
         }
 
-        $this->beforeSyncWithOriginal($this->getOriginalId(), $this->getId(), $originalObjId, $this->getObjId());
+        $this->beforeSyncWithOriginal($this->getOriginalId(), $this->getId(), $original_obj_id, $this->getObjId());
+
+        $original = clone $this;
+        // Now we become the original
+        $original->setId($this->getOriginalId());
+        $original->setOriginalId(null);
+        $original->setObjId($original_obj_id);
+
+        $original->saveToDb();
+
+        $original->deletePageOfQuestion($this->getOriginalId());
+        $original->createPageObject();
+        $original->copyPageOfQuestion($this->getId());
+
         $this->syncSuggestedSolutions($this->getId(), $this->getOriginalId());
         $this->syncXHTMLMediaObjectsOfQuestion();
-        $this->afterSyncWithOriginal($this->getId(), $this->getOriginalId(), $this->getObjId(), $originalObjId);
+        $this->afterSyncWithOriginal($this->getId(), $this->getOriginalId(), $this->getObjId(), $original_obj_id);
         $this->syncHints();
     }
 
@@ -1724,7 +1741,7 @@ abstract class assQuestion
      * @param boolean $returndetails (deprecated !!)
      * @return integer/array $points/$details (array $details is deprecated !!)
      */
-    abstract public function calculateReachedPoints($active_id, $pass = null, $authorizedSolution = true, $returndetails = false);
+    abstract public function calculateReachedPoints($active_id, $pass = null, $authorizedSolution = true, $returndetails = false): float|array;
 
     public function deductHintPointsFromReachedPoints(ilAssQuestionPreviewSession $previewSession, $reachedPoints): ?float
     {
@@ -2847,7 +2864,7 @@ abstract class assQuestion
         $this->log($activeId, "log_user_solution_willingly_deleted");
 
         $test = new ilObjTest(
-            ilObjTest::_lookupTestObjIdForQuestionId($this->getId()),
+            $this->test_id,
             false
         );
         $test->updateTestPassResults(
@@ -2963,4 +2980,24 @@ abstract class assQuestion
         $question_id = $this->getId();
         return $this->getSuggestedSolutionsRepo()->selectFor($question_id);
     }
+
+    /**
+     * Trim non-printable characters from the beginning and end of a string.
+     *
+     * Note: The PHP trim() function is not fully Unicode-compatible and may not handle
+     * non-printable characters effectively. As a result, it may not trim certain Unicode
+     * characters, such as control characters, zero width characters or ideographic space as expected.
+     *
+     * This method provides a workaround for trimming non-printable characters until PHP 8.4,
+     * where the mb_trim() function is introduced. Users are encouraged to migrate to mb_trim()
+     * for proper Unicode and non-printable character handling.
+     *
+     * @param string $value The string to trim.
+     * @return string The trimmed string.
+     */
+    public static function extendedTrim(string $value): string
+    {
+        return preg_replace(self::TRIM_PATTERN, '', $value);
+    }
+
 }

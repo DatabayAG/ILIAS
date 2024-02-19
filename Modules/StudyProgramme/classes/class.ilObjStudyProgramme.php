@@ -302,6 +302,17 @@ class ilObjStudyProgramme extends ilContainer
         return !is_null($type) && count($this->type_repository->getAssignedAMDRecordIdsByType($type->getId(), true)) > 0;
     }
 
+    public function cloneObject(int $target_ref_id, int $copy_id = 0, bool $omit_tree = false): ?ilObject
+    {
+        $new_obj = parent::cloneObject($target_ref_id, $copy_id, $omit_tree);
+        $settings = $this->getSettings()->withObjId($new_obj->getId());
+        $settings = $settings->withAssessmentSettings(
+            $settings->getAssessmentSettings()->withStatus(ilStudyProgrammeSettings::STATUS_DRAFT)
+        );
+        $new_obj->updateSettings($settings);
+        return $new_obj;
+    }
+
     ////////////////////////////////////
     // GETTERS AND SETTERS
     ////////////////////////////////////
@@ -1548,12 +1559,14 @@ class ilObjStudyProgramme extends ilContainer
         $customIcon = $this->custom_icon_factory->getByObjId($this->getId(), $this->getType());
         $subtype = $this->getSubType();
 
-        if ($subtype
-                && $this->webdir->has($subtype->getIconPath(true))
-                && $subtype->getIconPath(true) !== $subtype->getIconPath(false)
-        ) {
-            $icon = $subtype->getIconPath(true);
-            $customIcon->saveFromSourceFile($icon);
+        if ($subtype && $subtype->getIconIdentifier()) {
+            $src = $this->type_repository->getIconPathFS($subtype);
+
+            //This is a horrible hack to allow Flysystem/LocalFilesystem to read the file.
+            $tmp = 'ico_' . $this->getId();
+            copy($src, \ilFileUtils::getDataDir() . '/temp/' . $tmp);
+
+            $customIcon->saveFromTempFileName($tmp);
         } else {
             $customIcon->remove();
         }
