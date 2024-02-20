@@ -22,6 +22,7 @@ use ILIAS\FileUpload\FileUpload;
 use ILIAS\FileUpload\Exception\IllegalStateException;
 use ILIAS\ResourceStorage\Flavour\Definition\FlavourDefinition;
 use ILIAS\Badge\ilBadgeTable;
+use ILIAS\Badge\ilBadgeUserTable;
 
 /**
  * Class ilBadgeManagementGUI
@@ -786,6 +787,8 @@ class ilBadgeManagementGUI
 
         $tbl = new ilBadgeUserTableGUI($this, 'awardBadgeUserSelection', $this->parent_ref_id, $badge);
         $tpl->setContent($tbl->getHTML());
+        $tbl = new ilBadgeUserTable($this->parent_ref_id, $badge);
+        $tbl->renderTable();
     }
 
     protected function applyAwardBadgeUserSelection(): void
