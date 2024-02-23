@@ -22,6 +22,7 @@ use ILIAS\UI\URLBuilder;
 use ILIAS\Data\Order;
 use ILIAS\Data\Range;
 use ILIAS\Badge\ilBadgeImageTemplateTable;
+use ILIAS\HTTP\Services;
 
 /**
  * Badge Administration Settings.
@@ -36,6 +37,7 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
     protected ilRbacSystem $rbacsystem;
     protected ilBadgeGUIRequest $badge_request;
     protected ilTabsGUI $tabs;
+    protected Services $http;
 
     public function __construct(
         $a_data,
@@ -53,6 +55,7 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
         $this->tpl = $DIC["tpl"];
         $this->tabs = $DIC->tabs();
         $this->type = "bdga";
+        $this->http = $DIC->http();
         parent::__construct($a_data, $a_id, $a_call_by_reference, $a_prepare_output);
 
         $this->badge_request = new ilBadgeGUIRequest(
@@ -91,19 +94,26 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
                 global $DIC;
                 $action_parameter_token = 'tid_id';
                 $query = $DIC->http()->wrapper()->query();
-            if ($query->has($action_parameter_token)) {
-                if($query->has($action_parameter_token)) {
-                    $id = $query->retrieve($action_parameter_token, $DIC->refinery()->kindlyTo()->listOf($DIC->refinery()->kindlyTo()->int()));
-                   if(is_array($id)) {
-                      $id =  array_pop($id);
-                   }
-                    $DIC->ctrl()->setParameter( $this, "tid", $id);
+                if ($query->has($action_parameter_token)) {
+                    if($query->has($action_parameter_token)) {
+                        $id = $query->retrieve($action_parameter_token, $DIC->refinery()->kindlyTo()->listOf($DIC->refinery()->kindlyTo()->string()));
+                       if(is_array($id)) {
+                          $id =  array_pop($id);
+                       }
+                        $DIC->ctrl()->setParameter($this, "tid", $id);
+                    }
+                }
+                $action = '';
+                $parameter = 'tid_table_action';
+                if ($query->has($parameter)) {
+                    $action = $query->retrieve($parameter , $DIC->refinery()->kindlyTo()->string());
                 }
 
-                $a_form = $this->editImageTemplate();
-                #$DIC->ui()->mainTemplate()->setContent($a_form->getHTML());
-                break;
-            }
+                if($action === 'badge_type_activate') {
+                    $this->activateTypes();
+                } elseif ($action === 'badge_type_deactivate') {
+                    $this->deactivateTypes();
+                }
                 $this->$cmd();
                 break;
         }
@@ -196,6 +206,7 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
 
         $form->setValuesByPost();
         $this->editSettings($form);
+        $this->editSettings($form);
     }
 
     protected function initFormSettings(): ilPropertyFormGUI
@@ -247,10 +258,17 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
     protected function activateTypes(): void
     {
         $lng = $this->lng;
-
         $this->assertActive();
 
-        $ids = $this->badge_request->getIds();
+        $ids = [];
+        $action_parameter_token = 'tid_id';
+        $query = $this->http->wrapper()->query();
+        if ($query->has($action_parameter_token)) {
+            if ($query->has($action_parameter_token)) {
+                $ids = $query->retrieve($action_parameter_token,
+                    $this->refinery->kindlyTo()->listOf($this->refinery->kindlyTo()->string()));
+            }
+        }
         if ($this->checkPermissionBool("write") && count($ids) > 0) {
             $handler = ilBadgeHandler::getInstance();
             $inactive = [];
@@ -269,10 +287,18 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
     protected function deactivateTypes(): void
     {
         $lng = $this->lng;
-
         $this->assertActive();
 
-        $ids = $this->badge_request->getIds();
+        $ids = [];
+        $action_parameter_token = 'tid_id';
+        $query = $this->http->wrapper()->query();
+        if ($query->has($action_parameter_token)) {
+            if ($query->has($action_parameter_token)) {
+                $ids = $query->retrieve($action_parameter_token,
+                    $this->refinery->kindlyTo()->listOf($this->refinery->kindlyTo()->string()));
+            }
+        }
+
         if ($this->checkPermissionBool("write") && count($ids) > 0) {
             $handler = ilBadgeHandler::getInstance();
             $inactive = array_merge($handler->getInactiveTypes(), $ids);

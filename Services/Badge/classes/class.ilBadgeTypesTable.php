@@ -146,26 +146,17 @@ class ilBadgeTypesTable
     ) : array {
         $f = $this->factory;
         return [
-            'edit' => $f->table()->action()->single( //never in multi actions
-                $this->lng->txt("edit"),
-                $url_builder->withParameter($action_parameter_token, "editImageTemplate"),
+            'badge_type_activate' => $f->table()->action()->multi(
+                $this->lng->txt("activate"),
+                $url_builder->withParameter($action_parameter_token, "badge_type_activate"),
                 $row_id_token
             ),
-            'info' =>
-                $f->table()->action()->standard( //in both
-                    $this->lng->txt("info"),
-                    $url_builder->withParameter($action_parameter_token, "info"),
+            'badge_type_deactivate' =>
+                $f->table()->action()->multi(
+                    $this->lng->txt("deactivate"),
+                    $url_builder->withParameter($action_parameter_token, "badge_type_deactivate"),
                     $row_id_token
                 )
-                  ->withAsync()
-            ,
-            'delete' =>
-                $f->table()->action()->standard( //in both
-                    $this->lng->txt("delete"),
-                    $url_builder->withParameter($action_parameter_token, "delete"),
-                    $row_id_token
-                )
-                  ->withAsync()
         ];
     }
 
@@ -216,29 +207,6 @@ class ilBadgeTypesTable
                 'table_action' => $action,
                 'id' => print_r($ids, true),
             ]);
-
-            if ($action === 'delete') {
-                $items = [];
-                foreach ($ids as $id) {
-                    $items[] = $f->modal()->interruptiveItem()->keyValue($id, $row_id_token->getName(), $id);
-                }
-                echo($r->renderAsync([
-                    $f->modal()->interruptive(
-                        'Deletion',
-                        'You are about to delete items!',
-                        '#'
-                    )->withAffectedItems($items)
-                      ->withAdditionalOnLoadCode(static fn($id) : string => "console.log('ASYNC JS');")
-                ]));
-                exit();
-            }
-            if ($action === 'info') {
-                echo(
-                    $r->render($f->messageBox()->info('an info message: <br><li>' . implode('<li>', $ids)))
-                    . '<script data-replace-marker="script">console.log("ASYNC JS, too");</script>'
-                );
-
-            }
 
             $out[] = $f->divider()->horizontal();
             $out[] = $listing;

@@ -58,7 +58,6 @@ class ilBadgePictureDefinition implements FlavourDefinition
 
     public function getVariantName(): ?string
     {
-        $a = $this->actual_size;
         return json_encode([
             'quality' => $this->quality,
             'sizes' => $this->sizes
