@@ -141,23 +141,15 @@ class ilBadgeImageTemplateTable
     ) : array {
         $f = $this->factory;
         return [
-            'edit' => $f->table()->action()->single( //never in multi actions
+            'badge_image_template_edit' => $f->table()->action()->single( //never in multi actions
                 $this->lng->txt("edit"),
-                $url_builder->withParameter($action_parameter_token, "editImageTemplate"),
+                $url_builder->withParameter($action_parameter_token, "badge_image_template_editImageTemplate"),
                 $row_id_token
             ),
-            'info' =>
-                $f->table()->action()->standard( //in both
-                    $this->lng->txt("info"),
-                    $url_builder->withParameter($action_parameter_token, "info"),
-                    $row_id_token
-                )
-                  ->withAsync()
-            ,
-            'delete' =>
+            'badge_image_template_delete' =>
                 $f->table()->action()->standard( //in both
                     $this->lng->txt("delete"),
-                    $url_builder->withParameter($action_parameter_token, "delete"),
+                    $url_builder->withParameter($action_parameter_token, "badge_image_template_delete"),
                     $row_id_token
                 )
                   ->withAsync()

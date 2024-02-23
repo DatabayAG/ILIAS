@@ -91,6 +91,7 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
                 if (!$cmd || $cmd === 'view') {
                     $cmd = "editSettings";
                 }
+                $render_default = true;
                 global $DIC;
                 $action_parameter_token = 'tid_id';
                 $query = $DIC->http()->wrapper()->query();
@@ -108,14 +109,19 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
                 if ($query->has($parameter)) {
                     $action = $query->retrieve($parameter , $DIC->refinery()->kindlyTo()->string());
                 }
-
                 if($action === 'badge_type_activate') {
                     $this->activateTypes();
                 } elseif ($action === 'badge_type_deactivate') {
                     $this->deactivateTypes();
+                } elseif($action === 'badge_image_template_editImageTemplate') {
+                    $this->editImageTemplate();
+                    $render_default = false;
                 }
-                $this->$cmd();
-                break;
+
+                if($render_default) {
+                    $this->$cmd();
+                    break;
+                }
         }
     }
 
@@ -336,7 +342,7 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
             "listImageTemplates",
             $ilAccess->checkAccess("write", "", $this->object->getRefId())
         );
-       # $this->tpl->setContent($tbl->getHTML());
+        $this->tpl->setContent($tbl->getHTML());
         $template_table = new ilBadgeImageTemplateTable();
         $template_table->renderTable();
     }
@@ -445,10 +451,17 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
 
         $this->assertActive();
         $this->tabs_gui->setTabActive("imgtmpl");
-
-        $tmpl_id = $this->badge_request->getTemplateId();
-        if (!$tmpl_id) {
-            $ilCtrl->redirect($this, "listImageTemplates");
+        $tmpl_id = [];
+        $action_parameter_token = 'tid_id';
+        $query = $this->http->wrapper()->query();
+        if ($query->has($action_parameter_token)) {
+            if ($query->has($action_parameter_token)) {
+                $tmpl_id = $query->retrieve($action_parameter_token,
+                    $this->refinery->kindlyTo()->listOf($this->refinery->kindlyTo()->string()));
+            }
+        }
+        if(count($tmpl_id) === 1) {
+            $tmpl_id = array_pop($tmpl_id);
         }
 
         $ilCtrl->setParameter($this, "tid", $tmpl_id);
