@@ -19,6 +19,16 @@ use ILIAS\UI\URLBuilderToken;
 use ILIAS\DI\Container;
 use ilBadge;
 use ilBadgeHandler;
+use ILIAS\Data\Link;
+use ILIAS\Data\URI;
+use ILIAS\UI\Implementation\Component\Link\Standard;
+use ILIAS\StaticURL\Init;
+use ilObject;
+use ilLink;
+
+/*
+ * @ilCtrl_IsCalledBy ilObjBadgeAdministration: ilObjectBadgeTable
+ */
 
 class ilObjectBadgeTable
 {
@@ -29,7 +39,7 @@ class ilObjectBadgeTable
     private Services $http;
     protected ilLanguage $lng;
     protected ilGlobalTemplateInterface $tpl;
-    public function __construct() {
+    public function __construct($parentObj) {
         global $DIC;
         $this->lng = $DIC->language();
         $this->tpl = $DIC->ui()->mainTemplate();
@@ -38,26 +48,45 @@ class ilObjectBadgeTable
         $this->refinery = $DIC->refinery();
         $this->request = $DIC->http()->request();
         $this->http = $DIC->http();
+        $this->parent_obj = $parentObj;
     }
 
-    /**
-     * @param Factory  $f
-     * @param Renderer $r
-     * @return DataRetrieval|__anonymous@1221
-     */
-    protected function buildDataRetrievalObject(Factory $f, Renderer $r)
+    protected function buildDataRetrievalObject(Factory $f, Renderer $r, $p) : DataRetrieval
     {
-        return new class ($f, $r) implements DataRetrieval {
+        return new class ($f, $r, $p) implements DataRetrieval {
             private ilBadgeImage $badge_image_service;
+            private Factory $factory;
+            private Renderer $renderer;
+            private \ilCtrlInterface $ctrl;
+            private ilLanguage $lng;
+            private \ilAccessHandler $access;
+            private ?bool $user_has_write_permission = null;
 
             public function __construct(
                 protected Factory $ui_factory,
-                protected Renderer $ui_renderer
+                protected Renderer $ui_renderer,
+                protected $parent
             ) {
                 global $DIC;
                 $this->badge_image_service = new ilBadgeImage($DIC->resourceStorage(), $DIC->upload(), $DIC->ui()->mainTemplate());
                 $this->factory = $this->ui_factory;
                 $this->renderer = $this->ui_renderer;
+                $this->ctrl = $DIC->ctrl();
+                $this->lng = $DIC->language();
+                $this->access = $DIC->access();
+            }
+
+            protected function userHasWritePermission(int $parent_id) : bool
+            {
+                if($this->user_has_write_permission === null) {
+                    $parent_ref_id = ilObject::_getAllReferences($parent_id);
+                    if (count($parent_ref_id) > 0) {
+                        $parent_ref_id = array_pop($parent_ref_id);
+                    }
+                    $this->user_has_write_permission = $this->access->checkAccess("write", "", $parent_ref_id);
+
+                }
+                return $this->user_has_write_permission;
             }
 
             public function getRows(
@@ -102,6 +131,26 @@ class ilObjectBadgeTable
                             $image_html = $this->renderer->render($badge_img);
                         }
                     }
+                    $url = '';
+                    $ref_ids = ilObject::_getAllReferences($badge_item['parent_id']);
+                    $ref_id = array_shift($ref_ids);
+                    $this->userHasWritePermission($badge_item['parent_id']);
+
+                    $user_url_link = '';
+                    if ($this->user_has_write_permission) {
+                        $this->ctrl->setParameter($this->parent, 'pid', (string) $badge_item['parent_id']);
+                        $this->ctrl->setParameter($this->parent, 'bid', (string) $badge_item['id']);
+                        $url = ILIAS_HTTP_PATH . '/' . $this->ctrl->getLinkTarget($this->parent, 'listObjectBadgeUsers');
+                        $this->ctrl->setParameter($this->parent, 'bid', '');
+                        $this->ctrl->setParameter($this->parent, 'pid', '');
+                        $user_url_link = new Standard($this->lng->txt('user'), new URI($url));
+                    }
+
+                    $container_url_link = '';
+                    if ($this->access->checkAccess('read', '', $ref_id)) {
+                        $container_url = ilLink::_getLink($ref_id);
+                        $container_url_link = new Standard($badge_item['parent_title'], new URI($container_url));
+                    }
                     $data[] = [
                         'id' => (int) $badge_item['id'],
                         'active' => $badge_item['active'] ? true : false,
@@ -109,19 +158,13 @@ class ilObjectBadgeTable
                         'title' => $badge_item['title'],
                         'image_rid' => $image_html,
                         'container' => $badge_item['parent_title'],
-                        'container_deleted' => (bool) ($badge_item['deleted'] ?? false),
+                        'container_url' => $container_url_link ?: '',
+                        'container_deleted' => ($badge_item['deleted'] ?? false),
                         'container_id' => (int) $badge_item['parent_id'],
                         'container_type' => $badge_item['parent_type'],
-                        'renderer' => fn () => $this->tile->asTitle(
-                            $this->tile->modalContent(new ilBadge((int) $badge_item['id']))
-                        )
-                        /*
-                         *             $this->tpl->setVariable('TXT_LIST', $lng->txt('users'));
-            $this->tpl->setVariable('URL_LIST', $url);
-                         */
+                        'user' => $user_url_link ?: ''
                     ];
                 }
-
                 return $data;
             }
         };
@@ -139,24 +182,23 @@ class ilObjectBadgeTable
         URLBuilderToken  $row_id_token
     ) : array {
         $f = $this->factory;
+
         return [
-            'edit' => $f->table()->action()->single( //never in multi actions
-                $this->lng->txt("edit"),
-                $url_builder->withParameter($action_parameter_token, "editImageTemplate"),
+            'obj_badge_activate' => $f->table()->action()->multi( //never in multi actions
+                $this->lng->txt("activate"),
+                $url_builder->withParameter($action_parameter_token, "obj_badge_activate"),
                 $row_id_token
             ),
-            'info' =>
-                $f->table()->action()->standard( //in both
-                    $this->lng->txt("info"),
-                    $url_builder->withParameter($action_parameter_token, "info"),
+            'obj_badge_deactivate' =>
+                $f->table()->action()->multi( //in both
+                    $this->lng->txt("deactivate"),
+                    $url_builder->withParameter($action_parameter_token, "obj_badge_deactivate"),
                     $row_id_token
-                )
-                  ->withAsync()
-            ,
-            'delete' =>
-                $f->table()->action()->standard( //in both
+                ),
+            'obj_badge_delete' =>
+                $f->table()->action()->multi( //in both
                     $this->lng->txt("delete"),
-                    $url_builder->withParameter($action_parameter_token, "delete"),
+                    $url_builder->withParameter($action_parameter_token, "obj_badge_delete"),
                     $row_id_token
                 )
                   ->withAsync()
@@ -175,9 +217,9 @@ class ilObjectBadgeTable
             'title' => $f->table()->column()->text($this->lng->txt("title")),
             'image_rid' => $f->table()->column()->text($this->lng->txt("image")),
             'type' => $f->table()->column()->text($this->lng->txt("type")),
-            'container' => $f->table()->column()->text($this->lng->txt("container")),
+            'container_url' => $f->table()->column()->link($this->lng->txt("container")),
             'active' => $f->table()->column()->boolean($this->lng->txt("active"), $this->lng->txt("yes"), $this->lng->txt("no")),
-            'action' => $f->table()->column()->text($this->lng->txt("action")),
+            'user' => $f->table()->column()->link($this->lng->txt("user")),
         ];
 
         $table_uri = $df->uri($request->getUri()->__toString());
@@ -191,9 +233,9 @@ class ilObjectBadgeTable
                 "id"
             );
 
-        $actions = $this->getActions($url_builder, $action_parameter_token, $row_id_token);
+        $data_retrieval = $this->buildDataRetrievalObject($f, $r, $this->parent_obj);
 
-        $data_retrieval = $this->buildDataRetrievalObject($f, $r);
+        $actions = $this->getActions($url_builder, $action_parameter_token, $row_id_token);
 
         $table = $f->table()
                    ->data('', $columns, $data_retrieval)

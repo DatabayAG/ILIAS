@@ -216,42 +216,6 @@ class ilBadgeUserTable
         };
     }
 
-    /**
-     * @param URLBuilder      $url_builder
-     * @param URLBuilderToken $action_parameter_token
-     * @param URLBuilderToken $row_id_token
-     * @return array
-     */
-    protected function getActions(
-        URLBuilder $url_builder,
-        URLBuilderToken $action_parameter_token,
-        URLBuilderToken  $row_id_token
-    ) : array {
-        $f = $this->factory;
-        return [
-            'edit' => $f->table()->action()->single( //never in multi actions
-                $this->lng->txt("edit"),
-                $url_builder->withParameter($action_parameter_token, "editImageTemplate"),
-                $row_id_token
-            ),
-            'info' =>
-                $f->table()->action()->standard( //in both
-                    $this->lng->txt("info"),
-                    $url_builder->withParameter($action_parameter_token, "info"),
-                    $row_id_token
-                )
-                  ->withAsync()
-            ,
-            'delete' =>
-                $f->table()->action()->standard( //in both
-                    $this->lng->txt("delete"),
-                    $url_builder->withParameter($action_parameter_token, "delete"),
-                    $row_id_token
-                )
-                  ->withAsync()
-        ];
-    }
-
     public function renderTable() : void
     {
         $f = $this->factory;
@@ -279,13 +243,11 @@ class ilBadgeUserTable
                 "id",
             );
 
-        $actions = $this->getActions($url_builder, $action_parameter_token, $row_id_token);
 
         $data_retrieval = $this->buildDataRetrievalObject($f, $r, $this->parent_ref_id, $this->award_badge);
 
         $table = $f->table()
                    ->data('', $columns, $data_retrieval)
-                   ->withActions($actions)
                    ->withRequest($request);
 
         $out = [$table];
@@ -298,29 +260,6 @@ class ilBadgeUserTable
                 'table_action' => $action,
                 'id' => print_r($ids, true),
             ]);
-
-            if ($action === 'delete') {
-                $items = [];
-                foreach ($ids as $id) {
-                    $items[] = $f->modal()->interruptiveItem()->keyValue($id, $row_id_token->getName(), $id);
-                }
-                echo($r->renderAsync([
-                    $f->modal()->interruptive(
-                        'Deletion',
-                        'You are about to delete items!',
-                        '#'
-                    )->withAffectedItems($items)
-                      ->withAdditionalOnLoadCode(static fn($id) : string => "console.log('ASYNC JS');")
-                ]));
-                exit();
-            }
-            if ($action === 'info') {
-                echo(
-                    $r->render($f->messageBox()->info('an info message: <br><li>' . implode('<li>', $ids)))
-                    . '<script data-replace-marker="script">console.log("ASYNC JS, too");</script>'
-                );
-
-            }
 
             $out[] = $f->divider()->horizontal();
             $out[] = $listing;

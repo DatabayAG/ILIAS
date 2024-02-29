@@ -116,7 +116,41 @@ class ilBadgeManagementGUI
                 break;
 
             default:
-                $this->$cmd();
+                $render_default = true;
+                global $DIC;
+                $action_parameter_token = 'tid_id';
+                $parameter = 'tid_table_action';
+
+                $query = $DIC->http()->wrapper()->query();
+                if ($query->has($action_parameter_token)) {
+                    if($query->has($action_parameter_token)) {
+                        $id = $query->retrieve($action_parameter_token, $DIC->refinery()->kindlyTo()->listOf($DIC->refinery()->kindlyTo()->string()));
+                        if(is_array($id)) {
+                            $id =  array_pop($id);
+                        }
+                        $DIC->ctrl()->setParameter($this, "tid", $id);
+                    }
+                }
+                $action = '';
+                if ($query->has($parameter)) {
+                    $action = $query->retrieve($parameter , $DIC->refinery()->kindlyTo()->string());
+                }
+                if($action === 'badge_table_activate') {
+                    $this->activateBadges();
+                } elseif ($action === 'badge_table_deactivate') {
+                    $this->deactivateBadges();
+                } elseif($action === 'badge_table_edit') {
+                    $this->editBadge();
+                    $render_default = false;
+                } elseif($action === 'badge_table_delete') {
+                    $this->deleteBadges();
+                    $render_default = false;
+                }
+
+                if($render_default) {
+                    $this->$cmd();
+                    break;
+                }
                 break;
         }
     }
@@ -431,7 +465,7 @@ class ilBadgeManagementGUI
         $tpl = $this->tpl;
         $lng = $this->lng;
 
-        $badge_id = $this->request->getBadgeId();
+        $badge_id = $this->request->getBadgeIdFromUrl();
         if (!$badge_id ||
             !$this->hasWrite()) {
             $ilCtrl->redirect($this, 'listBadges');
@@ -580,7 +614,7 @@ class ilBadgeManagementGUI
         $ilCtrl = $this->ctrl;
         $lng = $this->lng;
 
-        $badge_ids = $this->getBadgesFromMultiAction();
+        $badge_ids = $this->request->getMultiActionBadgeIdsFromUrl();
 
         foreach ($badge_ids as $badge_id) {
             $badge = new ilBadge($badge_id);
@@ -676,7 +710,7 @@ class ilBadgeManagementGUI
         $ilCtrl = $this->ctrl;
         $lng = $this->lng;
 
-        $badge_ids = $this->getBadgesFromMultiAction();
+        $badge_ids = $this->request->getMultiActionBadgeIdsFromUrl();
 
         foreach ($badge_ids as $badge_id) {
             $badge = new ilBadge($badge_id);
@@ -728,7 +762,7 @@ class ilBadgeManagementGUI
         }
 
         $tbl = new ilBadgeUserTableGUI($this, 'listUsers', $this->parent_ref_id);
-       # $tpl->setContent($tbl->getHTML());
+        $tpl->setContent($tbl->getHTML());
         $tbl = new \ILIAS\Badge\ilBadgeUserTable($this->parent_ref_id);
         $tbl->renderTable();
     }

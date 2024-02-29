@@ -183,23 +183,27 @@ class ilBadgeTable
     ) : array {
         $f = $this->factory;
         return [
-            'edit' => $f->table()->action()->single( //never in multi actions
+            'badge_table_activate' =>
+                $f->table()->action()->multi(
+                    $this->lng->txt("activate"),
+                    $url_builder->withParameter($action_parameter_token, "badge_table_activate"),
+                    $row_id_token
+                ),
+            'badge_table_deactivate' =>
+                $f->table()->action()->multi(
+                    $this->lng->txt("deactivate"),
+                    $url_builder->withParameter($action_parameter_token, "badge_table_deactivate"),
+                    $row_id_token
+                ),
+            'badge_table_edit' => $f->table()->action()->single(
                 $this->lng->txt("edit"),
-                $url_builder->withParameter($action_parameter_token, "editImageTemplate"),
+                $url_builder->withParameter($action_parameter_token, "badge_table_edit"),
                 $row_id_token
             ),
-            'info' =>
-                $f->table()->action()->standard( //in both
-                    $this->lng->txt("info"),
-                    $url_builder->withParameter($action_parameter_token, "info"),
-                    $row_id_token
-                )
-                  ->withAsync()
-            ,
-            'delete' =>
-                $f->table()->action()->standard( //in both
+            'badge_table_delete' =>
+                $f->table()->action()->standard(
                     $this->lng->txt("delete"),
-                    $url_builder->withParameter($action_parameter_token, "delete"),
+                    $url_builder->withParameter($action_parameter_token, "badge_table_delete"),
                     $row_id_token
                 )
                   ->withAsync()
