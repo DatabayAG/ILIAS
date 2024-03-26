@@ -130,6 +130,9 @@ class ilBadgeProfileGUI
         $table = new ilBadgePersonalTableGUI($this, "manageBadges");
         (new PresentationHeader($DIC, self::class))->show($this->lng->txt('table_view'));
         $this->tpl->setContent($table->getHTML());
+
+        $tpl = new ilBadgePersonalTable();
+        $tpl->renderTable();
     }
 
     protected function getMultiSelection(): array

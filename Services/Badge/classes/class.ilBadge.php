@@ -370,6 +370,9 @@ class ilBadge
             }
 
             return "img" . $this->getId() . "." . $suffix;
+        } else {
+            $image_rid = $this->getImageRid();
+          #  $image_src = $this->badge_image_service->getImageFromBadge($a_badge);
         }
         return "";
     }
