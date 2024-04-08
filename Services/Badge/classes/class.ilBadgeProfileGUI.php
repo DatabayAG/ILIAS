@@ -77,9 +77,24 @@ class ilBadgeProfileGUI
         $lng->loadLanguageModule("badge");
 
         switch ($ilCtrl->getNextClass()) {
+
             default:
                 $this->setTabs();
                 $cmd = $ilCtrl->getCmd("listBadges");
+
+                global $DIC;
+                $query = $DIC->http()->wrapper()->query();
+                $action = '';
+                $parameter = 'badge_table_action';
+                if ($query->has($parameter)) {
+                    $action = $query->retrieve($parameter , $DIC->refinery()->kindlyTo()->string());
+                }
+                if($action === 'obj_badge_activate') {
+                    $this->activate();
+                } elseif ($action === 'obj_badge_deactivate') {
+                    $this->deactivate();
+                }
+
                 $this->$cmd();
                 break;
         }
@@ -137,11 +152,18 @@ class ilBadgeProfileGUI
 
     protected function getMultiSelection(): array
     {
+        global $DIC;
         $lng = $this->lng;
         $ilCtrl = $this->ctrl;
         $ilUser = $this->user;
-
-        $ids = $this->request->getBadgeIds();
+        $action_parameter_token = 'badge_id';
+        $query = $DIC->http()->wrapper()->query();
+        if ($query->has($action_parameter_token)) {
+            if($query->has($action_parameter_token)) {
+                $ids = $query->retrieve($action_parameter_token, $DIC->refinery()->kindlyTo()->listOf($DIC->refinery()->kindlyTo()->string()));
+            }
+        }
+       $ids = $this->request->getBadgeIds();
         if (count($ids) > 0) {
             $res = array();
             foreach ($ids as $id) {

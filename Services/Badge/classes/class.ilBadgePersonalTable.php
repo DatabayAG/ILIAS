@@ -227,7 +227,7 @@ class ilBadgePersonalTable
 
         $table_uri = $df->uri($request->getUri()->__toString());
         $url_builder = new URLBuilder($table_uri);
-        $query_params_namespace = ['tid'];
+        $query_params_namespace = ['badge'];
 
         list($url_builder, $action_parameter_token, $row_id_token) =
             $url_builder->acquireParameters(
