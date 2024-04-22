@@ -124,15 +124,10 @@ class ilBadgePersonalTable
                 global $DIC;
                 $data = [];
                 $a_user_id = $DIC->user()->getId();
-                $f = $this->ui_factory->table()->column();
                 $df = $this->data_factory->dateFormat();
-                $date_format = $df->withTime24($this->data_factory->dateFormat()->germanShort());
-                $types = ilBadgeHandler::getInstance()->getAvailableTypes(false);
-                $filter = ['type' => '' , 'title' => '', 'object' => ''];
                 foreach (ilBadgeAssignment::getInstancesByUserId($a_user_id) as $ass) {
                     $image_html = '';
                     $badge = new ilBadge($ass->getBadgeId());
-                    $badge_rid = $badge->getImagePath();
                     $image_src = $this->badge_image_service->getImageFromBadge($badge);
                     if($image_src != '') {
                         $badge_template_image = $image_src;
