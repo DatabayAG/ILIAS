@@ -464,11 +464,24 @@ class ilOpenIdConnectSettings
      */
     public function getProfileMappingFields(): array
     {
-        return [
-            'firstname' => 'firstname',
-            'lastname' => 'lastname',
-            'email' => 'email',
-            'birthday' => 'birthday'
+        return ['gender' => 'gender',
+                'firstname' => 'firstname',
+                'lastname' => 'lastname',
+                'title' => 'person_title',
+                'institution' => 'institution',
+                'department' => 'department',
+                'street' => 'street',
+                'city' => 'city',
+                'zipcode' => 'zipcode',
+                'country' => 'country',
+                'phone_office' => 'phone_office',
+                'phone_home' => 'phone_home',
+                'phone_mobile' => 'phone_mobile',
+                'fax' => 'fax',
+                'email' => 'email',
+                'second_email' => 'second_email',
+                'hobby' => 'hobby',
+                'matriculation' => 'matriculation'
         ];
     }
 }
