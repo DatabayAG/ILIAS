@@ -44,6 +44,12 @@ class ilOpenIdConnectSettingsGUI
     private ilGlobalTemplateInterface $mainTemplate;
     private ilTabsGUI $tabs;
     private FileUpload $upload;
+    private ilToolbarGUI $toolbar;
+
+    private ilUserDefinedFields $udf;
+    private ilGlobalTemplateInterface $tpl;
+    private $mapping = [];
+    private ?string $mapping_template = null;
 
     public function __construct(int $a_ref_id)
     {
@@ -65,6 +71,18 @@ class ilOpenIdConnectSettingsGUI
         $this->upload = $DIC->upload();
         $this->body = $DIC->http()->request()->getParsedBody();
         $this->settings = ilOpenIdConnectSettings::getInstance();
+        $http_wrapper = $DIC->http()->wrapper();
+        $this->toolbar = $DIC->toolbar();
+        $refinery = $DIC->refinery();
+        $this->tpl = $DIC->ui()->mainTemplate();
+
+        if ($http_wrapper->post()->has('mapping_template')) {
+            $this->mapping_template = $http_wrapper->post()->retrieve(
+                'mapping_template',
+                $refinery->kindlyTo()->string()
+            );
+        }
+
     }
 
     protected function checkAccess(string $a_permission): void
@@ -507,12 +525,7 @@ class ilOpenIdConnectSettingsGUI
     protected function profile(ilPropertyFormGUI $form = null): void
     {
         $this->checkAccess('read');
-        $this->setSubTabs(self::STAB_PROFILE);
-
-        if (!$form instanceof ilPropertyFormGUI) {
-            $form = $this->initProfileForm();
-        }
-        $this->mainTemplate->setContent($form->getHTML());
+        $this->userMapping();
     }
 
     protected function initProfileForm(): ilPropertyFormGUI
@@ -546,7 +559,7 @@ class ilOpenIdConnectSettingsGUI
     {
         $this->checkAccessBool('write');
 
-        $form = $this->initProfileForm();
+        $form = $this->initUserMappingForm();
         if (!$form->checkInput()) {
             $this->mainTemplate->setOnScreenMessage('failure', $this->lng->txt('err_check_input'));
             $form->setValuesByPost();
@@ -555,6 +568,18 @@ class ilOpenIdConnectSettingsGUI
         }
 
         foreach ($this->settings->getProfileMappingFields() as $field => $lng_key) {
+            $this->settings->setProfileMappingFieldValue(
+                $field,
+                $form->getInput($field . '_value')
+            );
+            $this->settings->setProfileMappingFieldUpdate(
+                $field,
+                (bool) $form->getInput($field . '_update')
+            );
+        }
+
+        foreach ($this->udf->getDefinitions() as $definition) {
+            $field = 'udf_' . $definition['field_id'];
             $this->settings->setProfileMappingFieldValue(
                 $field,
                 $form->getInput($field . '_value')
@@ -681,4 +706,115 @@ class ilOpenIdConnectSettingsGUI
 
         $this->tabs->activateSubTab($active_tab);
     }
+
+    public function getServer(): int
+    {
+        return 0;
+    }
+
+    public function chooseMapping(): void
+    {
+        if (!$this->mapping_template) {
+            $this->userMapping();
+            return;
+        }
+
+        $this->initAttributeMapping();
+    }
+
+    private function initAttributeMapping()
+    {
+        $mapping = ilOpenIdAttributeMappingTemplate::_getMappingRulesByClass($this->mapping_template);
+        if(count($mapping) > 0 )
+        {
+            $this->settings->clearProfileMaps();
+        }
+        foreach($mapping as $field => $item) {
+            $this->settings->setProfileMappingFieldValue(
+                $field,
+                $item
+            );
+        }
+
+        $this->userMapping();
+    }
+
+    private function userMappingToolbar(): void
+    {
+        $select_form = new ilSelectInputGUI("mapping_template");
+        $select_form->setPostVar("mapping_template");
+        $options = [
+            "" => $this->lng->txt('openid_mapping_template'),
+        ];
+        $options = array_merge($options, ilOpenIdAttributeMappingTemplate::OPEN_ID_TEMPLATES);
+        $select_form->setOptions($options);
+        $select_form->setValue($this->mapping_template);
+
+        $this->toolbar->addInputItem($select_form);
+        $this->toolbar->addFormButton($this->lng->txt('show'), "chooseMapping");
+        $this->toolbar->setFormAction($this->ctrl->getFormAction(new ilOpenIdConnectSettingsGUI($this->ref_id), "chooseMapping"));
+    }
+
+    private function initUserMappingForm(): ilPropertyFormGUI
+    {
+        $propertie_form = new ilPropertyFormGUI();
+        $propertie_form->setTitle($this->lng->txt('auth_oidc_mapping_table'));
+        $propertie_form->setFormAction($this->ctrl->getFormAction(new ilOpenIdConnectSettingsGUI($this->ref_id), 'saveProfile'));
+        $propertie_form->addCommandButton('saveProfile', $this->lng->txt('save'));
+
+        foreach ($this->settings->getProfileMappingFields() as $mapping => $lang) {
+            $text_form = new ilTextInputGUI($lang);
+            $text_form->setPostVar($mapping . "_value");
+            $text_form->setValue(
+                $this->settings->getProfileMappingFieldValue($mapping)
+            );
+            $text_form->setSize(32);
+            $text_form->setMaxLength(255);
+            $propertie_form->addItem($text_form);
+
+            $checkbox_form = new ilCheckboxInputGUI("");
+            $checkbox_form->setPostVar($mapping . "_update");
+            $checkbox_form->setChecked($this->settings->getProfileMappingFieldUpdate($mapping));
+            $checkbox_form->setOptionTitle($this->lng->txt('auth_oidc_update_field_info'));
+            $propertie_form->addItem($checkbox_form);
+        }
+
+        $this->initUserDefinedFields();
+        foreach ($this->udf->getDefinitions() as $definition) {
+            $text_form = new ilTextInputGUI($definition['field_name']);
+            $text_form->setPostVar('udf_' . $definition['field_id'] . '_value');
+            $a = $this->settings->getProfileMappingFieldValue('udf_' . $definition['field_id']);
+            $text_form->setValue(
+                $this->settings->getProfileMappingFieldValue('udf_' . $definition['field_id'])
+            );
+            $text_form->setSize(32);
+            $text_form->setMaxLength(255);
+            $propertie_form->addItem($text_form);
+
+            $checkbox_form = new ilCheckboxInputGUI("");
+            $checkbox_form->setPostVar('udf_' . $definition['field_id'] . '_update');
+            $checked = $this->settings->getProfileMappingFieldUpdate('udf_' . $definition['field_id']);
+            $checkbox_form->setChecked($checked);
+            $checkbox_form->setOptionTitle($this->lng->txt('auth_oidc_update_field_info'));
+            $propertie_form->addItem($checkbox_form);
+        }
+
+        return $propertie_form;
+    }
+
+    private function initUserDefinedFields(): void
+    {
+        $this->udf = ilUserDefinedFields::_getInstance();
+    }
+    public function userMapping($form = null): void
+    {
+        $this->setSubTabs(self::STAB_PROFILE);
+        $this->userMappingToolbar();
+        if($form === null) {
+            $form = $this->initUserMappingForm();
+        }
+
+        $this->tpl->setContent($form->getHTML());
+    }
+
 }

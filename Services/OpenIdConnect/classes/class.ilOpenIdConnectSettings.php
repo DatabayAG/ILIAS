@@ -72,6 +72,8 @@ class ilOpenIdConnectSettings
     private array $additional_scopes = [];
     private int $validate_scopes = self::URL_VALIDATION_PROVIDER;
     private ?string $custom_discovery_url = null;
+    private ilLanguage $lng;
+    private ilUserDefinedFields $udf;
 
     private function __construct()
     {
@@ -79,6 +81,8 @@ class ilOpenIdConnectSettings
 
         $this->storage = new ilSetting(self::STORAGE_ID);
         $this->filesystem = $DIC->filesystem()->web();
+        $this->lng = $DIC->language();
+        $this->udf = ilUserDefinedFields::_getInstance();
         $this->load();
     }
 
@@ -372,7 +376,13 @@ class ilOpenIdConnectSettings
         $this->storage->set('role', (string) $this->getRole());
         $this->storage->set('uid', $this->getUidField());
 
-        foreach ($this->getProfileMappingFields() as $field => $lang_key) {
+        foreach ($this->getProfileMappingFields() as $field => $lng_key) {
+            $this->storage->set('pmap_' . $field, $this->getProfileMappingFieldValue($field));
+            $this->storage->set('pumap_' . $field, (string) ((int) $this->getProfileMappingFieldUpdate($field)));
+        }
+
+        foreach ($this->udf->getDefinitions() as $definition) {
+            $field = 'udf_' . $definition['field_id'];
             $this->storage->set('pmap_' . $field, $this->getProfileMappingFieldValue($field));
             $this->storage->set('pumap_' . $field, (string) ((int) $this->getProfileMappingFieldUpdate($field)));
         }
@@ -388,6 +398,11 @@ class ilOpenIdConnectSettings
     protected function load(): void
     {
         foreach ($this->getProfileMappingFields() as $field => $lang_key) {
+            $this->profile_map[$field] = (string) $this->storage->get('pmap_' . $field, '');
+            $this->profile_update_map[$field] = (bool) $this->storage->get('pumap_' . $field, '0');
+        }
+        foreach ($this->udf->getDefinitions() as $definition) {
+            $field = 'udf_' . $definition['field_id'];
             $this->profile_map[$field] = (string) $this->storage->get('pmap_' . $field, '');
             $this->profile_update_map[$field] = (bool) $this->storage->get('pumap_' . $field, '0');
         }
@@ -425,6 +440,11 @@ class ilOpenIdConnectSettings
         return (string) ($this->profile_map[$field] ?? '');
     }
 
+    public function clearProfileMaps()
+    {
+        $this->profile_map = [];
+        $this->profile_update_map = [];
+    }
     public function setProfileMappingFieldValue(string $field, string $value): void
     {
         $this->profile_map[$field] = $value;
@@ -464,24 +484,25 @@ class ilOpenIdConnectSettings
      */
     public function getProfileMappingFields(): array
     {
-        return ['gender' => 'gender',
-                'firstname' => 'firstname',
-                'lastname' => 'lastname',
-                'title' => 'person_title',
-                'institution' => 'institution',
-                'department' => 'department',
-                'street' => 'street',
-                'city' => 'city',
-                'zipcode' => 'zipcode',
-                'country' => 'country',
-                'phone_office' => 'phone_office',
-                'phone_home' => 'phone_home',
-                'phone_mobile' => 'phone_mobile',
-                'fax' => 'fax',
-                'email' => 'email',
-                'second_email' => 'second_email',
-                'hobby' => 'hobby',
-                'matriculation' => 'matriculation'
+        return [
+                'gender'        => $this->lng->txt('gender'),
+                'firstname'     => $this->lng->txt('firstname'),
+                'lastname'      => $this->lng->txt('lastname'),
+                'title'         => $this->lng->txt('person_title'),
+                'institution'   => $this->lng->txt('institution'),
+                'department'    => $this->lng->txt('department'),
+                'street'        => $this->lng->txt('street'),
+                'city'          => $this->lng->txt('city'),
+                'zipcode'       => $this->lng->txt('zipcode'),
+                'country'       => $this->lng->txt('country'),
+                'phone_office'  => $this->lng->txt('phone_office'),
+                'phone_home'    => $this->lng->txt('phone_home'),
+                'phone_mobile'  => $this->lng->txt('phone_mobile'),
+                'fax'           => $this->lng->txt('fax'),
+                'email'         => $this->lng->txt('email'),
+                'second_email'  => $this->lng->txt('second_email'),
+                'hobby'         => $this->lng->txt('hobby'),
+                'matriculation' => $this->lng->txt('matriculation')
         ];
     }
 }
