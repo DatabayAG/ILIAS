@@ -19,6 +19,7 @@
 declare(strict_types=1);
 
 use ILIAS\FileUpload\FileUpload;
+use ILIAS\UI\Component\Input\Container\Form\Standard;
 
 /**
  * Class ilOpenIdConnectSettingsGUI
@@ -46,10 +47,13 @@ class ilOpenIdConnectSettingsGUI
     private FileUpload $upload;
     private ilToolbarGUI $toolbar;
 
+    private $ui;
+    private $renderer;
     private ilUserDefinedFields $udf;
     private ilGlobalTemplateInterface $tpl;
     private $mapping = [];
     private ?string $mapping_template = null;
+    private $request;
 
     public function __construct(int $a_ref_id)
     {
@@ -75,6 +79,9 @@ class ilOpenIdConnectSettingsGUI
         $this->toolbar = $DIC->toolbar();
         $refinery = $DIC->refinery();
         $this->tpl = $DIC->ui()->mainTemplate();
+        $this->ui = $DIC->ui()->factory();
+        $this->renderer = $DIC->ui()->renderer();
+        $this->request = $DIC->http()->request();
 
         if ($http_wrapper->post()->has('mapping_template')) {
             $this->mapping_template = $http_wrapper->post()->retrieve(
@@ -560,38 +567,52 @@ class ilOpenIdConnectSettingsGUI
         $this->checkAccessBool('write');
 
         $form = $this->initUserMappingForm();
-        if (!$form->checkInput()) {
-            $this->mainTemplate->setOnScreenMessage('failure', $this->lng->txt('err_check_input'));
-            $form->setValuesByPost();
-            $this->profile($form);
-            return;
+        if ($this->request->getMethod() == "POST"
+            && $this->request->getQueryParams()["opic"] == "opic_user_data_mapping") {
+            $request_form = $form->withRequest($this->request);
+            $result = $request_form->getData();
+            if (is_null($result)) {
+                $this->mainTemplate->setOnScreenMessage('failure', $this->lng->txt('err_check_input'));
+                $this->profile();
+                return;
+            } else {
+                foreach ($this->settings->getProfileMappingFields() as $field => $lng_key) {
+                    $this->updateProfileMappingFieldValue($field);
+                }
+                foreach ($this->udf->getDefinitions() as $definition) {
+                    $field = 'udf_' . $definition['field_id'];
+                    $this->updateProfileMappingFieldValue($field);
+                }
+            }
         }
 
-        foreach ($this->settings->getProfileMappingFields() as $field => $lng_key) {
-            $this->settings->setProfileMappingFieldValue(
-                $field,
-                $form->getInput($field . '_value')
-            );
-            $this->settings->setProfileMappingFieldUpdate(
-                $field,
-                (bool) $form->getInput($field . '_update')
-            );
-        }
-
-        foreach ($this->udf->getDefinitions() as $definition) {
-            $field = 'udf_' . $definition['field_id'];
-            $this->settings->setProfileMappingFieldValue(
-                $field,
-                $form->getInput($field . '_value')
-            );
-            $this->settings->setProfileMappingFieldUpdate(
-                $field,
-                (bool) $form->getInput($field . '_update')
-            );
-        }
         $this->settings->save();
         $this->mainTemplate->setOnScreenMessage('success', $this->lng->txt('settings_saved'), true);
         $this->ctrl->redirect($this, self::STAB_PROFILE);
+    }
+
+    private function updateProfileMappingFieldValue(string $field) : void {
+        $form = $this->initUserMappingForm();
+        $request_form = $form->withRequest($this->request);
+        $result = $request_form->getData();
+        foreach ($form->getInputs() as $group => $inputs) {
+            foreach ($inputs->getInputs() as $key => $input) {
+                $dedicated_name = $input->getDedicatedName();
+                $result_data = $result[$group][$key];
+
+                if ($dedicated_name === $field . '_value') {
+                    $this->settings->setProfileMappingFieldValue(
+                        $field,
+                        $result_data
+                    );
+                } elseif ($dedicated_name === $field . '_update') {
+                    $this->settings->setProfileMappingFieldUpdate(
+                        $field,
+                        (bool) $result_data
+                    );
+                }
+            }
+        }
     }
 
     protected function roles(ilPropertyFormGUI $form = null): void
@@ -707,11 +728,6 @@ class ilOpenIdConnectSettingsGUI
         $this->tabs->activateSubTab($active_tab);
     }
 
-    public function getServer(): int
-    {
-        return 0;
-    }
-
     public function chooseMapping(): void
     {
         if (!$this->mapping_template) {
@@ -755,51 +771,46 @@ class ilOpenIdConnectSettingsGUI
         $this->toolbar->setFormAction($this->ctrl->getFormAction(new ilOpenIdConnectSettingsGUI($this->ref_id), "chooseMapping"));
     }
 
-    private function initUserMappingForm(): ilPropertyFormGUI
+    private function initUserMappingForm() : Standard
     {
-        $propertie_form = new ilPropertyFormGUI();
-        $propertie_form->setTitle($this->lng->txt('auth_oidc_mapping_table'));
-        $propertie_form->setFormAction($this->ctrl->getFormAction(new ilOpenIdConnectSettingsGUI($this->ref_id), 'saveProfile'));
-        $propertie_form->addCommandButton('saveProfile', $this->lng->txt('save'));
+        $ui_container = [];
 
         foreach ($this->settings->getProfileMappingFields() as $mapping => $lang) {
-            $text_form = new ilTextInputGUI($lang);
-            $text_form->setPostVar($mapping . "_value");
-            $text_form->setValue(
-                $this->settings->getProfileMappingFieldValue($mapping)
+            $text_input = $this->ui->input()->field()
+                                   ->text($lang, '')
+                                   ->withValue($this->settings->getProfileMappingFieldValue($mapping))
+                                   ->withDedicatedName($mapping . "_value");
+            $checkbox_input = $this->ui->input()->field()->checkbox("", $this->lng->txt('auth_oidc_update_field_info'))
+                                       ->withValue($this->settings->getProfileMappingFieldUpdate($mapping))
+                                       ->withDedicatedName($mapping . "_update");
+            $group = $this->ui->input()->field()->group(
+                [$text_input, $checkbox_input]
             );
-            $text_form->setSize(32);
-            $text_form->setMaxLength(255);
-            $propertie_form->addItem($text_form);
-
-            $checkbox_form = new ilCheckboxInputGUI("");
-            $checkbox_form->setPostVar($mapping . "_update");
-            $checkbox_form->setChecked($this->settings->getProfileMappingFieldUpdate($mapping));
-            $checkbox_form->setOptionTitle($this->lng->txt('auth_oidc_update_field_info'));
-            $propertie_form->addItem($checkbox_form);
+            $ui_container[] = $group;
         }
 
         $this->initUserDefinedFields();
         foreach ($this->udf->getDefinitions() as $definition) {
-            $text_form = new ilTextInputGUI($definition['field_name']);
-            $text_form->setPostVar('udf_' . $definition['field_id'] . '_value');
-            $a = $this->settings->getProfileMappingFieldValue('udf_' . $definition['field_id']);
-            $text_form->setValue(
-                $this->settings->getProfileMappingFieldValue('udf_' . $definition['field_id'])
+
+            $text_input = $this->ui->input()->field()
+                                   ->text($definition['field_name'], '')
+                                   ->withValue($this->settings->getProfileMappingFieldValue('udf_' . $definition['field_id']))
+                                   ->withDedicatedName('udf_' . $definition['field_id'] . '_value');
+            $checkbox_input = $this->ui->input()->field()->checkbox("", $this->lng->txt('auth_oidc_update_field_info'))
+                                       ->withValue($this->settings->getProfileMappingFieldUpdate('udf_' . $definition['field_id']))
+                                       ->withDedicatedName('udf_' . $definition['field_id'] . '_update');
+            $group = $this->ui->input()->field()->group(
+                [$text_input, $checkbox_input]
             );
-            $text_form->setSize(32);
-            $text_form->setMaxLength(255);
-            $propertie_form->addItem($text_form);
-
-            $checkbox_form = new ilCheckboxInputGUI("");
-            $checkbox_form->setPostVar('udf_' . $definition['field_id'] . '_update');
-            $checked = $this->settings->getProfileMappingFieldUpdate('udf_' . $definition['field_id']);
-            $checkbox_form->setChecked($checked);
-            $checkbox_form->setOptionTitle($this->lng->txt('auth_oidc_update_field_info'));
-            $propertie_form->addItem($checkbox_form);
+            $ui_container[] = $group;
         }
-
-        return $propertie_form;
+        $this->ctrl->setParameter(
+            $this,
+            "opic",
+            "opic_user_data_mapping"
+        );
+        return $this->ui->input()->container()->form()->standard($this->ctrl->getFormAction($this, 'saveProfile'),
+            $ui_container);
     }
 
     private function initUserDefinedFields(): void
@@ -814,7 +825,7 @@ class ilOpenIdConnectSettingsGUI
             $form = $this->initUserMappingForm();
         }
 
-        $this->tpl->setContent($form->getHTML());
+        $this->tpl->setContent( $this->renderer->render($form));
     }
 
 }
