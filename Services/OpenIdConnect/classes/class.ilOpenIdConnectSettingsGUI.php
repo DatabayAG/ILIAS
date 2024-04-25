@@ -30,6 +30,9 @@ class ilOpenIdConnectSettingsGUI
     private const STAB_SETTINGS = 'settings';
     private const STAB_PROFILE = 'profile';
     private const STAB_ROLES = 'roles';
+    private const VALUE_STRING = '_value';
+    private const UPDATE_STRING = '_update';
+    private const UDF_STRING = 'udf_';
 
     private const DEFAULT_CMD = 'settings';
     private int $ref_id;
@@ -543,13 +546,13 @@ class ilOpenIdConnectSettingsGUI
 
         foreach ($this->settings->getProfileMappingFields() as $field => $lng_key) {
             $text_form = new ilTextInputGUI($this->lng->txt($lng_key));
-            $text_form->setPostVar($field . "_value");
+            $text_form->setPostVar($field . self::VALUE_STRING);
             $text_form->setValue($this->settings->getProfileMappingFieldValue($field));
             $form->addItem($text_form);
 
             $checkbox_form = new ilCheckboxInputGUI('');
             $checkbox_form->setValue("1");
-            $checkbox_form->setPostVar($field . "_update");
+            $checkbox_form->setPostVar($field . self::UPDATE_STRING);
             $checkbox_form->setChecked($this->settings->getProfileMappingFieldUpdate($field));
             $checkbox_form->setOptionTitle($this->lng->txt('auth_oidc_update_field_info'));
             $form->addItem($checkbox_form);
@@ -580,7 +583,7 @@ class ilOpenIdConnectSettingsGUI
                     $this->updateProfileMappingFieldValue($field);
                 }
                 foreach ($this->udf->getDefinitions() as $definition) {
-                    $field = 'udf_' . $definition['field_id'];
+                    $field = self::UDF_STRING . $definition['field_id'];
                     $this->updateProfileMappingFieldValue($field);
                 }
             }
@@ -600,12 +603,12 @@ class ilOpenIdConnectSettingsGUI
                 $dedicated_name = $input->getDedicatedName();
                 $result_data = $result[$group][$key];
 
-                if ($dedicated_name === $field . '_value') {
+                if ($dedicated_name === $field . self::VALUE_STRING) {
                     $this->settings->setProfileMappingFieldValue(
                         $field,
                         $result_data
                     );
-                } elseif ($dedicated_name === $field . '_update') {
+                } elseif ($dedicated_name === $field . self::UPDATE_STRING) {
                     $this->settings->setProfileMappingFieldUpdate(
                         $field,
                         (bool) $result_data
@@ -755,6 +758,9 @@ class ilOpenIdConnectSettingsGUI
         $this->userMapping();
     }
 
+    /**
+     * @throws ilCtrlException
+     */
     private function userMappingToolbar(): void
     {
         $select_form = new ilSelectInputGUI("mapping_template");
@@ -771,6 +777,9 @@ class ilOpenIdConnectSettingsGUI
         $this->toolbar->setFormAction($this->ctrl->getFormAction(new ilOpenIdConnectSettingsGUI($this->ref_id), "chooseMapping"));
     }
 
+    /**
+     * @throws ilCtrlException
+     */
     private function initUserMappingForm() : Standard
     {
         $ui_container = [];
@@ -779,10 +788,10 @@ class ilOpenIdConnectSettingsGUI
             $text_input = $this->ui->input()->field()
                                    ->text($lang, '')
                                    ->withValue($this->settings->getProfileMappingFieldValue($mapping))
-                                   ->withDedicatedName($mapping . "_value");
+                                   ->withDedicatedName($mapping . self::VALUE_STRING);
             $checkbox_input = $this->ui->input()->field()->checkbox("", $this->lng->txt('auth_oidc_update_field_info'))
                                        ->withValue($this->settings->getProfileMappingFieldUpdate($mapping))
-                                       ->withDedicatedName($mapping . "_update");
+                                       ->withDedicatedName($mapping . self::UPDATE_STRING);
             $group = $this->ui->input()->field()->group(
                 [$text_input, $checkbox_input]
             );
@@ -794,11 +803,11 @@ class ilOpenIdConnectSettingsGUI
 
             $text_input = $this->ui->input()->field()
                                    ->text($definition['field_name'], '')
-                                   ->withValue($this->settings->getProfileMappingFieldValue('udf_' . $definition['field_id']))
-                                   ->withDedicatedName('udf_' . $definition['field_id'] . '_value');
+                                   ->withValue($this->settings->getProfileMappingFieldValue(self::UDF_STRING . $definition['field_id']))
+                                   ->withDedicatedName(self::UDF_STRING . $definition['field_id'] . self::VALUE_STRING );
             $checkbox_input = $this->ui->input()->field()->checkbox("", $this->lng->txt('auth_oidc_update_field_info'))
-                                       ->withValue($this->settings->getProfileMappingFieldUpdate('udf_' . $definition['field_id']))
-                                       ->withDedicatedName('udf_' . $definition['field_id'] . '_update');
+                                       ->withValue($this->settings->getProfileMappingFieldUpdate(self::UDF_STRING . $definition['field_id']))
+                                       ->withDedicatedName(self::UDF_STRING . $definition['field_id'] . self::UPDATE_STRING );
             $group = $this->ui->input()->field()->group(
                 [$text_input, $checkbox_input]
             );
