@@ -122,7 +122,6 @@ class ilOpenIdConnectSettingsGUI
         $this->checkAccess('read');
         $this->setSubTabs(self::STAB_SETTINGS);
 
-
         if (!$form instanceof ilPropertyFormGUI) {
             $form = $this->initSettingsForm();
         }
@@ -592,6 +591,9 @@ class ilOpenIdConnectSettingsGUI
         $this->ctrl->redirect($this, self::STAB_PROFILE);
     }
 
+    /**
+     * @throws ilCtrlException
+     */
     private function updateProfileMappingFieldValue(string $field) : void {
         $form = $this->initUserMappingForm();
         $request_form = $form->withRequest($this->request);
@@ -806,12 +808,15 @@ class ilOpenIdConnectSettingsGUI
      */
     protected function buildUserMappingInputFormUDF(mixed $definition, array $ui_container) : array
     {
+        $value = $this->settings->getProfileMappingFieldValue(self::UDF_STRING . $definition['field_id']);
+        $update = $this->settings->getProfileMappingFieldUpdate(self::UDF_STRING . $definition['field_id']);
+
         $text_input = $this->ui->input()->field()
                                ->text($definition['field_name'], '')
-                               ->withValue($this->settings->getProfileMappingFieldValue(self::UDF_STRING . $definition['field_id']))
+                               ->withValue($value)
                                ->withDedicatedName(self::UDF_STRING . $definition['field_id'] . self::VALUE_STRING);
         $checkbox_input = $this->ui->input()->field()->checkbox("", $this->lng->txt('auth_oidc_update_field_info'))
-                                   ->withValue($this->settings->getProfileMappingFieldUpdate(self::UDF_STRING . $definition['field_id']))
+                                   ->withValue($update)
                                    ->withDedicatedName(self::UDF_STRING . $definition['field_id'] . self::UPDATE_STRING);
         $group = $this->ui->input()->field()->group(
             [$text_input, $checkbox_input]
@@ -828,12 +833,15 @@ class ilOpenIdConnectSettingsGUI
      */
     protected function buildUserMappingInputForUserData(string $lang, int|string $mapping, array $ui_container) : array
     {
+        $value = $this->settings->getProfileMappingFieldValue($mapping);
+        $update = $this->settings->getProfileMappingFieldUpdate($mapping);
+
         $text_input = $this->ui->input()->field()
                                ->text($lang, '')
-                               ->withValue($this->settings->getProfileMappingFieldValue($mapping))
+                               ->withValue($value)
                                ->withDedicatedName($mapping . self::VALUE_STRING);
         $checkbox_input = $this->ui->input()->field()->checkbox("", $this->lng->txt('auth_oidc_update_field_info'))
-                                   ->withValue($this->settings->getProfileMappingFieldUpdate($mapping))
+                                   ->withValue($update)
                                    ->withDedicatedName($mapping . self::UPDATE_STRING);
         $group = $this->ui->input()->field()->group(
             [$text_input, $checkbox_input]
