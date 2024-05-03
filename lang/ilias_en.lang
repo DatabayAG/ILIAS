@@ -2037,7 +2037,9 @@ auth#:#auth_info_add#:#Choose this option if you have never registered to ILIAS.
 auth#:#auth_info_migrate#:#If you have already an ILIAS account, enter username and password to migrate your personal data (mail, test results...).
 auth#:#auth_ldap_server_ds#:#LDAP-Server
 auth#:#auth_login_editor#:#Loginscreen Editor
+auth#:#auth_odic_scope_info#:#DESCRIPTION BE REPLACED WITH INFO
 auth#:#auth_oidc#:#OpenID Connect
+auth#:#auth_oidc_configured_scopes#:#Default values for configured scopes
 auth#:#auth_oidc_failed#:#Login via OpenID Connect failed
 auth#:#auth_oidc_login_element_info#:#Login to ILIAS via OpenID Connect
 auth#:#auth_oidc_mapping_table#:#Mapping ILIAS User Information to OpenID Connect Attributes
@@ -2045,6 +2047,8 @@ auth#:#auth_oidc_profile#:#User Profile Mapping
 auth#:#auth_oidc_role_info#:#OpenID Connect Attribute::Value (e.g: ‘roles::employee‘).
 auth#:#auth_oidc_role_mapping_table#:#Mapping ILIAS Roles to OpenID Connect Attributes.
 auth#:#auth_oidc_roles#:#Role Assignment
+auth#:#auth_oidc_saved_values#:#Saved values
+auth#:#auth_oidc_scopes#:#Scopes
 auth#:#auth_oidc_settings#:#Server Settings
 auth#:#auth_oidc_settings_activation#:#Enable OpenID Connect
 auth#:#auth_oidc_settings_additional_scopes#:#Additional Scopes
@@ -2054,6 +2058,7 @@ auth#:#auth_oidc_settings_custom_session_duration_option#:#Duration of Own Sessi
 auth#:#auth_oidc_settings_custom_session_duration_type#:#Session Duration Settings
 auth#:#auth_oidc_settings_default_role#:#Role Assignment
 auth#:#auth_oidc_settings_default_role_info#:#Please select a global role for the ILIAS user accounts that will be created for users who have authenticated themselves using OpenID Connect.
+auth#:#auth_oidc_settings_default_scopes#:#Default Scope
 auth#:#auth_oidc_settings_discovery_error#:#Retrieving the Discovery URL failed with: %s
 auth#:#auth_oidc_settings_discovery_url#:#Discovery URL of the provider
 auth#:#auth_oidc_settings_img#:#Image
@@ -2087,11 +2092,6 @@ auth#:#auth_oidc_settings_validate_scopes#:#Validate Scopes upon saving
 auth#:#auth_oidc_update_field_info#:#Update Automatically
 auth#:#auth_oidc_update_role_info#:#Only Synchronise Automatically the First Time a User Logs In.
 auth#:#auth_oidconnect#:#OpenID Connect
-auth#:#auth_odic_scope_info#:#DESCRIPTION BE REPLACED WITH INFO
-auth#:#auth_oidc_configured_scopes#:#Default values for configured scopes
-auth#:#auth_oidc_saved_values#:#Saved values
-auth#:#auth_oidc_scopes#:#Scopes
-auth#:#auth_oidc_settings_default_scopes#:#Default Scope
 auth#:#auth_page_type_auth#:#Login Page
 auth#:#auth_saml#:#SAML
 auth#:#auth_saml_add_idp_btn#:#Add new Identity Provider

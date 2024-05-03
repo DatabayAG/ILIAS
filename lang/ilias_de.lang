@@ -2036,7 +2036,9 @@ auth#:#auth_info_add#:#Wählen Sie diese Einstellung, falls Sie sich noch nie f�
 auth#:#auth_info_migrate#:#Wenn Sie bereits ein ILIAS-Konto besitzen, geben Sie bitte den Anmeldenamen und das Passwort ein, um Ihre persönlichen Daten (Mails, Testergebnisse ...) zu übernehmen.
 auth#:#auth_ldap_server_ds#:#LDAP-Server
 auth#:#auth_login_editor#:#Loginseite gestalten
+auth#:#auth_odic_scope_info#:#DESCRIPTION BE REPLACED WITH INFO
 auth#:#auth_oidc#:#OpenID Connect
+auth#:#auth_oidc_configured_scopes#:#Standardwerte für konfigurierte Scopes
 auth#:#auth_oidc_failed#:#Login mittels OpenID Connect fehlgeschlagen
 auth#:#auth_oidc_login_element_info#:#Bei ILIAS anmelden über OpenID Connect
 auth#:#auth_oidc_mapping_table#:#Zuordnung von Datenfeldern der ILIAS-Konten zu OpenID-Connect-Attributen
@@ -2044,6 +2046,8 @@ auth#:#auth_oidc_profile#:#Zuordnung der Profildaten
 auth#:#auth_oidc_role_info#:#OpenID Connect Attribut::Wert (zum Beispiel: "roles::Mitarbeitende").
 auth#:#auth_oidc_role_mapping_table#:#Zuordnung von ILIAS-Rollen zu OpenID-Connect-Attributen
 auth#:#auth_oidc_roles#:#Rollenzuordnung
+auth#:#auth_oidc_saved_values#:#Gespeicherte Werte
+auth#:#auth_oidc_scopes#:#Scopes
 auth#:#auth_oidc_settings#:#Server-Einstellungen
 auth#:#auth_oidc_settings_activation#:#OpenID Connect aktivieren
 auth#:#auth_oidc_settings_additional_scopes#:#Zusätzliche Scopes
@@ -2053,6 +2057,7 @@ auth#:#auth_oidc_settings_custom_session_duration_option#:#Eigene Sitzungsdauer
 auth#:#auth_oidc_settings_custom_session_duration_type#:#Einstellungen zur Sitzungsdauer
 auth#:#auth_oidc_settings_default_role#:#Rollenzuordnung
 auth#:#auth_oidc_settings_default_role_info#:#Bitte wählen Sie eine globale Rolle für neu anzulegende ILIAS-Benutzer aus!
+auth#:#auth_oidc_settings_default_scopes#:#Standard Scope
 auth#:#auth_oidc_settings_discovery_error#:#Die Discovery URL konnte nicht abgerufen werden. Fehler: %s
 auth#:#auth_oidc_settings_discovery_url#:#Discovery URL des Providers
 auth#:#auth_oidc_settings_img#:#Bild
@@ -2086,11 +2091,6 @@ auth#:#auth_oidc_settings_validate_scopes#:#OpenID Connect Scopes beim speichern
 auth#:#auth_oidc_update_field_info#:#Automatisch aktualisieren
 auth#:#auth_oidc_update_role_info#:#Nur bei Erstanmeldung (automatische Synchronisierung) anwenden
 auth#:#auth_oidconnect#:#OpenID Connect
-auth#:#auth_odic_scope_info#:#DESCRIPTION BE REPLACED WITH INFO
-auth#:#auth_oidc_configured_scopes#:#Standardwerte für konfigurierte Scopes
-auth#:#auth_oidc_saved_values#:#Gespeicherte Werte
-auth#:#auth_oidc_scopes#:#Scopes
-auth#:#auth_oidc_settings_default_scopes#:#Standard Scope
 auth#:#auth_page_type_auth#:#Login-Seite
 auth#:#auth_saml#:#SAML
 auth#:#auth_saml_add_idp_btn#:#Identity - hinzufügen
