@@ -21,45 +21,52 @@ declare(strict_types=1);
 
 class ilOpenIdAttributeMappingTemplate
 {
-    public const OPEN_ID_TEMPLATES = [
-        "template_1" => 'template_1',
-        "template_2" => 'template_2',
-        "template_3" => 'template_3'
-    ];
+    const OPEN_ID_CONFIGURED = 'auth_oidc_configured_scopes';
+
     /**
-     * @param string $a_class
-     * @return array<string, string>
+     * @param array $additional_scopes
+     * @return array
      */
-    public static function _getMappingRulesByClass(string $a_class): array
+    public function getMappingRulesByAdditionalScopes(array $additional_scopes): array
     {
         $mapping_rule = [];
-
-        switch ($a_class) {
-            case 'template_1':
-                $mapping_rule['firstname'] = 'givenName';
-                $mapping_rule['institution'] = 'o';
-                $mapping_rule['department'] = 'departmentNumber';
-                $mapping_rule['phone_home'] = 'homePhone';
-                $mapping_rule['phone_mobile'] = 'mobile';
-                $mapping_rule['email'] = 'mail';
-                $mapping_rule['photo'] = 'jpegPhoto';
-                // no break since it inherits from organizationalPerson and person
-
-            case 'template_2':
-                $mapping_rule['fax'] = 'facsimileTelephoneNumber';
-                $mapping_rule['title'] = 'title';
-                $mapping_rule['street'] = 'street';
-                $mapping_rule['zipcode'] = 'postalCode';
-                $mapping_rule['city'] = 'l';
-                $mapping_rule['country'] = 'st';
-                // no break since it inherits from person
-
-            case 'template_3':
-                $mapping_rule['lastname'] = 'sn';
-                $mapping_rule['phone_office'] = 'telephoneNumber';
-                break;
+        if(in_array('profile', $additional_scopes)) {
+            $mapping_rule = $this->loadProfile($mapping_rule);
         }
+        if(in_array('email', $additional_scopes)) {
+            $mapping_rule = $this->loadEmail($mapping_rule);
+        }
+        if(in_array('address', $additional_scopes)) {
+            $mapping_rule = $this->loadAddress($mapping_rule);
+        }
+        if(in_array('phone', $additional_scopes)) {
+            $mapping_rule = $this->loadPhone($mapping_rule);
+        }
+        return $mapping_rule;
+    }
 
+    private function loadProfile($mapping_rule) {
+        $mapping_rule['lastname']  = 'family_name';
+        $mapping_rule['firstname'] = 'given_name';
+        $mapping_rule['login']     = 'preferred_username';
+        $mapping_rule['gender']    = 'gender';
+        $mapping_rule['birthday']  = 'birthdate';
+        return $mapping_rule;
+    }
+
+    private function loadEmail($mapping_rule) {
+        $mapping_rule['email'] = 'email';
+        return $mapping_rule;
+    }
+    private function loadAddress($mapping_rule) {
+        $mapping_rule['street']  = 'street_address';
+        $mapping_rule['city']    = 'locality';
+        $mapping_rule['zipcode'] = 'postal_code';
+        $mapping_rule['country'] = 'country';
+        return $mapping_rule;
+    }
+    private function loadPhone($mapping_rule) {
+        $mapping_rule['phone_home'] = 'phone_number';
         return $mapping_rule;
     }
 }

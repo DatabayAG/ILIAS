@@ -2087,6 +2087,11 @@ auth#:#auth_oidc_settings_validate_scopes#:#Validate Scopes upon saving
 auth#:#auth_oidc_update_field_info#:#Update Automatically
 auth#:#auth_oidc_update_role_info#:#Only Synchronise Automatically the First Time a User Logs In.
 auth#:#auth_oidconnect#:#OpenID Connect
+auth#:#auth_odic_scope_info#:#DESCRIPTION BE REPLACED WITH INFO
+auth#:#auth_oidc_configured_scopes#:#Default values for configured scopes
+auth#:#auth_oidc_saved_values#:#Saved values
+auth#:#auth_oidc_scopes#:#Scopes
+auth#:#auth_oidc_settings_default_scopes#:#Default Scope
 auth#:#auth_page_type_auth#:#Login Page
 auth#:#auth_saml#:#SAML
 auth#:#auth_saml_add_idp_btn#:#Add new Identity Provider
