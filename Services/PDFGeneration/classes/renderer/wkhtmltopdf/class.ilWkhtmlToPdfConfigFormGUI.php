@@ -392,20 +392,27 @@ class ilWkhtmlToPdfConfigFormGUI
         $header_footer_texts = [
             $footer_text_left, $footer_text_center, $footer_text_right, $header_text_left, $header_text_center, $header_text_right
         ];
+
+        $pre_check_valid = $this->validatePathOrUrl(['checkbox_svg',
+                                                     'checkbox_checked_svg',
+                                                     'radio_button_svg',
+                                                     'radio_button_checked_svg'
+        ]);
+        if($pre_check_valid === false) {
+            $everything_ok = false;
+        }
+
         if (mb_stripos($config->getPath(), 'wkhtmlto') === false) {
             ilUtil::sendFailure($this->lng->txt("file_not_found"), true);
             $everything_ok = false;
-        } elseif(!in_array($orientation, ilPDFGenerationConstants::getOrientations()))
-        {
+        } elseif(!in_array($orientation, ilPDFGenerationConstants::getOrientations())) {
             $everything_ok = false;
-        } elseif($this->isNotValidSize($sizes))
-        {
+        } elseif($this->isNotValidSize($sizes)) {
             $everything_ok = false;
-        } elseif($this->isNotValidText($header_footer_texts))
-        {
+        } elseif($this->isNotValidText($header_footer_texts)) {
             $everything_ok = false;
         }
-        else {
+        elseif ($everything_ok === true && $pre_check_valid) {
             $config->setZoom((float) $_POST['zoom']);
             $config->setExternalLinks((int) $_POST['external_links']);
             $config->setEnabledForms((int) $_POST['enable_forms']);
@@ -471,6 +478,73 @@ class ilWkhtmlToPdfConfigFormGUI
 
         return false;
     }
+
+    /**
+     * @param array $parameters
+     * @return bool
+     */
+    public function validatePathOrUrl(array $parameters) : bool
+    {
+        $valid = false;
+        foreach ($parameters as $parameter) {
+            $value = $this->securedString($parameter);
+            if ($value === '') {
+                $valid = true;
+            } else {
+                $valid = $this->isPathOrUrlValid($value);
+            }
+            if ($valid === false) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public function securedString(string $parameter, bool $cast_null_to_string = true) : string
+    {
+        $value = '';
+        if(isset($_POST[$parameter])) {
+            $value = (string) $_POST[$parameter];
+        }
+        if($value === '') {
+            return '';
+        }
+        $value = ilUtil::stripSlashes($value);
+        return $value;
+    }
+
+    protected function isPathOrUrlValid(string $url) : bool
+    {
+        $is_valid = false;
+        $is_url = filter_var($url, FILTER_VALIDATE_URL);
+
+        if ($is_url) {
+            try {
+                $c = new ilCurlConnection($url);
+                $c->init();
+                $c->setOpt(CURLOPT_CUSTOMREQUEST, 'HEAD');
+                $c->setOpt(CURLOPT_SSL_VERIFYPEER, 0);
+                $c->setOpt(CURLOPT_SSL_VERIFYHOST, 0);
+                $c->setOpt(CURLOPT_RETURNTRANSFER, 1);
+                $c->setOpt(CURLOPT_FOLLOWLOCATION, 0);
+                $c->setOpt(CURLOPT_MAXREDIRS, 0);
+                $c->setOpt(CURLOPT_URL, $url);
+                $c->setOpt(CURLOPT_HEADER, true);
+                $c->setOpt(CURLOPT_NOBODY, true);
+
+                $result = $c->exec();
+                $is_valid = $c->getInfo(CURLINFO_HTTP_CODE) === 200;
+
+            } catch (ilCurlConnectionException $e) {
+                return false;
+            }
+        } elseif (is_file($url)) {
+            $is_valid = true;
+        }
+
+        return $is_valid;
+    }
+
     /**
      * @param $path
      */
