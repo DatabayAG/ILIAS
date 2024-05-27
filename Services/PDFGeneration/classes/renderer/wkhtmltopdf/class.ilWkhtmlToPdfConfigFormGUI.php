@@ -128,7 +128,7 @@ class ilWkhtmlToPdfConfigFormGUI
         return $javascript_delay;
     }
 
-     /**
+    /**
      * @return ilTextInputGUI
      */
     protected function buildOverwriteDefaultFont()
@@ -236,7 +236,8 @@ class ilWkhtmlToPdfConfigFormGUI
     protected function buildHeaderForm()
     {
         $header_select = new ilRadioGroupInputGUI($this->translate('header_type'), 'header_select');
-        $header_select->addOption(new ilRadioOption($this->translate('none'), ilPDFGenerationConstants::HEADER_NONE, ''));
+        $header_select->addOption(new ilRadioOption($this->translate('none'), ilPDFGenerationConstants::HEADER_NONE,
+            ''));
         $header_select->addOption($this->buildHeaderTextForm());
         $header_select->addOption($this->buildHeaderHtmlForm());
 
@@ -292,7 +293,8 @@ class ilWkhtmlToPdfConfigFormGUI
     protected function buildFooterForm()
     {
         $footer_select = new ilRadioGroupInputGUI($this->translate('footer_type'), 'footer_select');
-        $footer_select->addOption(new ilRadioOption($this->translate("none"), ilPDFGenerationConstants::FOOTER_NONE, ''));
+        $footer_select->addOption(new ilRadioOption($this->translate("none"), ilPDFGenerationConstants::FOOTER_NONE,
+            ''));
         $footer_select->addOption($this->buildFooterTextForm());
         $footer_select->addOption($this->buildFooterHtmlForm());
 
@@ -342,22 +344,22 @@ class ilWkhtmlToPdfConfigFormGUI
         return $footer_html_option;
     }
 
-    protected function buildCheckboxSvgForm(): ilTextInputGUI
+    protected function buildCheckboxSvgForm() : ilTextInputGUI
     {
         return new ilTextInputGUI($this->translate('checkbox_svg'), 'checkbox_svg');
     }
 
-    protected function buildCheckedCheckboxSvgForm(): ilTextInputGUI
+    protected function buildCheckedCheckboxSvgForm() : ilTextInputGUI
     {
         return new ilTextInputGUI($this->translate('checkbox_checked_svg'), 'checkbox_checked_svg');
     }
 
-    protected function buildRadiobuttonSvgForm(): ilTextInputGUI
+    protected function buildRadiobuttonSvgForm() : ilTextInputGUI
     {
         return new ilTextInputGUI($this->translate('radio_button_svg'), 'radio_button_svg');
     }
 
-    protected function buildCheckedRadiobuttonSvgForm(): ilTextInputGUI
+    protected function buildCheckedRadiobuttonSvgForm() : ilTextInputGUI
     {
         return new ilTextInputGUI($this->translate('radio_button_checked_svg'), 'radio_button_checked_svg');
     }
@@ -387,10 +389,22 @@ class ilWkhtmlToPdfConfigFormGUI
         $header_text_center = ilUtil::stripSlashes($_POST['head_text_center']);
         $header_text_right = ilUtil::stripSlashes($_POST['head_text_right']);
         $sizes = [
-            $margin_left, $margin_right, $margin_top, $margin_bottom, $footer_text_spacing, $footer_html_spacing, $head_text_spacing, $head_html_spacing
+            $margin_left,
+            $margin_right,
+            $margin_top,
+            $margin_bottom,
+            $footer_text_spacing,
+            $footer_html_spacing,
+            $head_text_spacing,
+            $head_html_spacing
         ];
         $header_footer_texts = [
-            $footer_text_left, $footer_text_center, $footer_text_right, $header_text_left, $header_text_center, $header_text_right
+            $footer_text_left,
+            $footer_text_center,
+            $footer_text_right,
+            $header_text_left,
+            $header_text_center,
+            $header_text_right
         ];
 
         $pre_check_valid = $this->validatePathOrUrl(['checkbox_svg',
@@ -398,21 +412,20 @@ class ilWkhtmlToPdfConfigFormGUI
                                                      'radio_button_svg',
                                                      'radio_button_checked_svg'
         ]);
-        if($pre_check_valid === false) {
+        if ($pre_check_valid === false) {
             $everything_ok = false;
         }
 
         if (mb_stripos($config->getPath(), 'wkhtmlto') === false) {
             ilUtil::sendFailure($this->lng->txt("file_not_found"), true);
             $everything_ok = false;
-        } elseif(!in_array($orientation, ilPDFGenerationConstants::getOrientations())) {
+        } elseif (!in_array($orientation, ilPDFGenerationConstants::getOrientations())) {
             $everything_ok = false;
-        } elseif($this->isNotValidSize($sizes)) {
+        } elseif ($this->isNotValidSize($sizes)) {
             $everything_ok = false;
-        } elseif($this->isNotValidText($header_footer_texts)) {
+        } elseif ($this->isNotValidText($header_footer_texts)) {
             $everything_ok = false;
-        }
-        elseif ($everything_ok === true && $pre_check_valid) {
+        } elseif ($everything_ok === true && $pre_check_valid) {
             $config->setZoom((float) $_POST['zoom']);
             $config->setExternalLinks((int) $_POST['external_links']);
             $config->setEnabledForms((int) $_POST['enable_forms']);
@@ -455,10 +468,11 @@ class ilWkhtmlToPdfConfigFormGUI
         return $everything_ok;
     }
 
-    private function isNotValidSize(array $sizes) {
-        foreach($sizes as $size) {
-            if(! preg_match('/(\d)+?(\W)*(cm|mm)$/', $size)){
-                if($size !== 0 && $size !== null && $size !== "") {
+    private function isNotValidSize(array $sizes)
+    {
+        foreach ($sizes as $size) {
+            if (!preg_match('/(\d)+?(\W)*(cm|mm)$/', $size)) {
+                if ($size !== 0 && $size !== null && $size !== "") {
                     return true;
                 }
             }
@@ -467,10 +481,11 @@ class ilWkhtmlToPdfConfigFormGUI
         return false;
     }
 
-    private function isNotValidText(array $texts) {
-        foreach($texts as $text) {
-            if(! preg_match('/[a-zA-Z\d ]+$/', $text)){
-                if($text !== '' && $text !== null && $text !== "") {
+    private function isNotValidText(array $texts)
+    {
+        foreach ($texts as $text) {
+            if (!preg_match('/[a-zA-Z\d ]+$/', $text)) {
+                if ($text !== '' && $text !== null && $text !== "") {
                     return true;
                 }
             }
@@ -503,10 +518,10 @@ class ilWkhtmlToPdfConfigFormGUI
     public function securedString(string $parameter, bool $cast_null_to_string = true) : string
     {
         $value = '';
-        if(isset($_POST[$parameter])) {
+        if (isset($_POST[$parameter])) {
             $value = (string) $_POST[$parameter];
         }
-        if($value === '') {
+        if ($value === '') {
             return '';
         }
         $value = ilUtil::stripSlashes($value);
@@ -548,11 +563,12 @@ class ilWkhtmlToPdfConfigFormGUI
     /**
      * @param $path
      */
-    protected function saveNewDefaultBinaryPath($path){
+    protected function saveNewDefaultBinaryPath($path)
+    {
         $settings = new ilSetting('wkhtmltopdfrenderer');
         $settings->set('path', $path);
     }
-    
+
     /**
      * @param ilPropertyFormGUI $form
      * @return array
@@ -560,7 +576,7 @@ class ilWkhtmlToPdfConfigFormGUI
     public function getConfigFromForm(ilPropertyFormGUI $form)
     {
         $orientation = ilUtil::stripSlashes($form->getItemByPostVar('orientation')->getValue());
-        if(!in_array($orientation, ilPDFGenerationConstants::getOrientations())){
+        if (!in_array($orientation, ilPDFGenerationConstants::getOrientations())) {
             $orientation = 'Portrait';
         }
         $purifier = new ilHtmlForumPostPurifier();
