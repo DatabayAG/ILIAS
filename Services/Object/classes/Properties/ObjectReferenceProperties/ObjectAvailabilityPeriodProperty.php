@@ -22,7 +22,6 @@ namespace ILIAS\Object\Properties\ObjectReferenceProperties;
 
 use ILIAS\UI\Component\Input\Container\Form\FormInput;
 use ILIAS\UI\Component\Input\Field\Factory as FieldFactory;
-use ILIAS\Data\DateFormat\DateFormat;
 use ILIAS\Refinery\Factory as Refinery;
 use ILIAS\Refinery\Transformation;
 use ILIAS\Refinery\Constraint;
@@ -120,7 +119,8 @@ class ObjectAvailabilityPeriodProperty implements \ilObjectProperty
 
         return $field_factory->optionalGroup(
             $inputs,
-            $language->txt('rep_visibility_until')
+            $language->txt('rep_time_based_availability'),
+            $language->txt('rep_time_based_availability_info')
         )->withAdditionalTransformation($constraint)
             ->withAdditionalTransformation($trafo)
             ->withValue($value);

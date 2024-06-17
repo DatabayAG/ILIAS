@@ -687,7 +687,7 @@ class ilMail
             }
 
             $can_read_internal = $recipient->evaluateInternalMailReadability();
-            if (!$this->isSystemMail() && !$can_read_internal->isOk()) {
+            if ($this->isSystemMail() && !$can_read_internal->isOk()) {
                 $this->logger->debug(sprintf(
                     'Skipped recipient with id %s and reason: %s',
                     $recipient->getUserId(),
@@ -979,12 +979,13 @@ class ilMail
     ): array {
         global $DIC;
 
-        $this->logger->debug(
+        $this->logger->info(
             "New mail system task:" .
             " To: " . $a_rcp_to .
             " | CC: " . $a_rcp_cc .
             " | BCC: " . $a_rcp_bcc .
-            " | Subject: " . $a_m_subject
+            " | Subject: " . $a_m_subject .
+            " | Attachments: " . print_r($a_attachment, true)
         );
 
         if ($a_attachment && !$this->mail_file_data->checkFilesExist($a_attachment)) {

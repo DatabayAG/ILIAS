@@ -52,7 +52,7 @@ class ilDclBaseFieldModel
     public const PROP_FORMULA_EXPRESSION = "expression";
     public const PROP_DISPLAY_COPY_LINK_ACTION_MENU = "display_action_menu";
     public const PROP_LINK_DETAIL_PAGE_TEXT = "link_detail_page_text";
-    public const PROP_LINK_DETAIL_PAGE = "link_detail_page";
+    public const PROP_LINK_DETAIL_PAGE_MOB = "link_detail_page_mob";
     public const PROP_SUPPORTED_FILE_TYPES = "supported_file_types";
     public const PROP_PLUGIN_HOOK_NAME = "plugin_hook_name";
     // type of table il_dcl_view
@@ -700,8 +700,8 @@ class ilDclBaseFieldModel
     public function checkTitlesForImport(array &$titles, array &$import_fields): void
     {
         foreach ($titles as $k => $title) {
-            if (!ilStr::isUtf8($title)) {
-                $title = utf8_encode($title);
+            if (!mb_detect_encoding($title, "UTF-8", true) == "UTF-8") {
+                $title = mb_convert_encoding($title, 'UTF-8', 'ISO-8859-1');
             }
             if ($title == $this->getTitle()) {
                 $import_fields[$k] = $this;

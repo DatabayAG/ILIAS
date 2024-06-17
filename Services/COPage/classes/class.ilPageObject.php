@@ -379,6 +379,9 @@ abstract class ilPageObject
             return true;
         }
         $error = null;
+        if ($this->getXMLContent() === "") {
+            $this->setXMLContent("<PageObject></PageObject>");
+        }
         $this->dom = $this->dom_util->docFromString($this->getXMLContent(true), $error);
         $path = "//PageObject";
         if (is_null($this->dom)) {
@@ -1088,7 +1091,7 @@ s     */
     /**
      * Validate the page content agains page DTD
      */
-    public function validateDom(): ?array
+    public function validateDom(bool $throw = false): ?array
     {
         $this->stripHierIDs();
 
@@ -1096,7 +1099,7 @@ s     */
         //libxml_disable_entity_loader(false);
 
         $error = null;
-        $this->dom_util->validate($this->dom, $error);
+        $this->dom_util->validate($this->dom, $error, $throw);
         return $error;
     }
 
@@ -1275,6 +1278,8 @@ s     */
         $this->buildDom(true);
         $dom_doc = $this->getDomDoc();
 
+        $errors = $this->validateDom(true);
+
         $iel = $this->containsDeactivatedElements($content);
         $inl = $this->containsIntLinks($content);
         // create object
@@ -1317,6 +1322,8 @@ s     */
 
         $this->buildDom(true);
         $dom_doc = $this->getDomDoc();
+
+        $errors = $this->validateDom(true);
 
         $iel = $this->containsDeactivatedElements($content);
         $inl = $this->containsIntLinks($content);

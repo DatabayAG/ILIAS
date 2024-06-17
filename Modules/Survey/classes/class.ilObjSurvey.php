@@ -18,6 +18,7 @@
 
 use ILIAS\Survey\Participants;
 use ILIAS\Survey\Mode;
+use ILIAS\Survey\InternalDomainService;
 
 /**
  * @author		Helmut Schottmüller <helmut.schottmueller@mac.com>
@@ -60,7 +61,7 @@ class ilObjSurvey extends ilObject
     public const NOTIFICATION_APPRAISEES = 3;
     public const NOTIFICATION_RATERS = 4;
     public const NOTIFICATION_APPRAISEES_AND_RATERS = 5;
-
+    protected InternalDomainService $domain;
 
     protected ilLogger $svy_log;
     protected bool $activation_limited = false;
@@ -187,6 +188,7 @@ class ilObjSurvey extends ilObject
         parent::__construct($a_id, $a_call_by_reference);
         $this->svy_log = ilLoggerFactory::getLogger("svy");
         $this->initServices();
+        $this->domain = $DIC->survey()->internal()->domain();
     }
 
     protected function initServices(): void
@@ -3225,7 +3227,7 @@ class ilObjSurvey extends ilObject
             if ($isZip) {
                 $importfile = $import_dir . "/" . $file_info["name"];
                 ilFileUtils::moveUploadedFile($source, $file_info["name"], $importfile);
-                ilFileUtils::unzip($importfile);
+                $this->domain->resources()->zip()->unzipFile($importfile);
                 $found = $this->locateImportFiles($import_dir);
                 if (!((strlen($found["dir"]) > 0) && (strlen($found["xml"]) > 0))) {
                     $error = $this->lng->txt("wrong_import_file_structure");
@@ -3387,11 +3389,11 @@ class ilObjSurvey extends ilObject
         foreach ($questionblocks as $key => $value) {
             $questionblock = self::_getQuestionblock($key);
             $questionblock_id = self::_addQuestionblock(
-                $questionblock["title"],
-                $questionblock["owner_fi"],
-                $questionblock["show_questiontext"],
-                $questionblock["show_blocktitle"],
-                $questionblock["compress_view"]
+                (string) $questionblock["title"],
+                (int) $questionblock["owner_fi"],
+                (bool) $questionblock["show_questiontext"],
+                (bool) $questionblock["show_blocktitle"],
+                (bool) $questionblock["compress_view"]
             );
             $questionblocks[$key] = $questionblock_id;
         }
@@ -4682,13 +4684,13 @@ class ilObjSurvey extends ilObject
      */
     public function getAnonymousIdByCode(
         string $a_code
-    ): int {
+    ): ?int {
         $ilDB = $this->db;
         $set = $ilDB->query("SELECT anonymous_id FROM svy_anonymous" .
                 " WHERE survey_fi = " . $ilDB->quote($this->getSurveyId(), "integer") .
                 " AND survey_key = " . $ilDB->quote($a_code, "text"));
         $res = $ilDB->fetchAssoc($set);
-        return $res["anonymous_id"];
+        return $res["anonymous_id"] ?? null;
     }
 
     /**

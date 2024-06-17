@@ -371,7 +371,7 @@ class Renderer extends AbstractComponentRenderer
         if ($value) {
             $value = array_map(
                 function ($v) {
-                    return ['value' => urlencode($v), 'display' => $v];
+                    return ['value' => urlencode($this->convertSpecialCharacters($v)), 'display' => $v];
                 },
                 $value
             );
@@ -450,7 +450,7 @@ class Renderer extends AbstractComponentRenderer
 
         if(!($value && $component->isRequired())) {
             $tpl->setVariable("VALUE", null);
-            $tpl->setVariable("VALUE_STR", "-");
+            $tpl->setVariable("VALUE_STR", $component->isRequired() ? $this->txt('ui_select_dropdown_label') : '-');
             $tpl->parseCurrentBlock();
         }
 

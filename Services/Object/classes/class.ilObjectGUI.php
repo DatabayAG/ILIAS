@@ -39,6 +39,17 @@ class ilObjectGUI implements ImplementsCreationCallback
 {
     use CreationCallbackTrait;
 
+    public const ALLOWED_TAGS_IN_TITLE_AND_DESCRIPTION = [
+        '<b>',
+        '<i>',
+        '<strong>',
+        '<em>',
+        '<sub>',
+        '<sup>',
+        '<pre>',
+        '<strike>',
+        '<bdo>'
+    ];
     public const ADMIN_MODE_NONE = "";
     public const ADMIN_MODE_SETTINGS = "settings";
     public const ADMIN_MODE_REPOSITORY = "repository";
@@ -332,21 +343,36 @@ class ilObjectGUI implements ImplementsCreationCallback
         if (!is_object($this->object)) {
             if ($this->requested_crtptrefid > 0) {
                 $cr_obj_id = ilObject::_lookupObjId($this->requested_crtcb);
-                $this->tpl->setTitle($this->maskTemplateMarkers(ilObject::_lookupTitle($cr_obj_id)));
-                $this->tpl->setTitleIcon($this->maskTemplateMarkers(ilObject::_getIcon($cr_obj_id)));
+                $this->tpl->setTitle(
+                    strip_tags(
+                        ilObject::_lookupTitle($cr_obj_id),
+                        self::ALLOWED_TAGS_IN_TITLE_AND_DESCRIPTION
+                    )
+                );
+                $this->tpl->setTitleIcon(ilObject::_getIcon($cr_obj_id));
             }
             return;
         }
-        $this->tpl->setTitle($this->maskTemplateMarkers($this->object->getPresentationTitle()));
-        $this->tpl->setDescription($this->maskTemplateMarkers($this->object->getLongDescription()));
+        $this->tpl->setTitle(
+            strip_tags(
+                $this->object->getPresentationTitle(),
+                self::ALLOWED_TAGS_IN_TITLE_AND_DESCRIPTION
+            )
+        );
+        $this->tpl->setDescription(
+            strip_tags(
+                $this->object->getLongDescription(),
+                self::ALLOWED_TAGS_IN_TITLE_AND_DESCRIPTION
+            )
+        );
 
         $base_class = $this->request_wrapper->retrieve("baseClass", $this->refinery->kindlyTo()->string());
-        if (strtolower($base_class) == "iladministrationgui") {
+        if (strtolower($base_class) === "iladministrationgui") {
             // alt text would be same as heading -> empty alt text
             $this->tpl->setTitleIcon(ilObject::_getIcon(0, "big", $this->object->getType()));
         } else {
             $this->tpl->setTitleIcon(
-                ilObject::_getIcon(0, "big", $this->object->getType()),
+                ilObject::_getIcon($this->object->getId(), "big", $this->object->getType()),
                 $this->lng->txt("obj_" . $this->object->getType())
             );
         }
@@ -1577,7 +1603,7 @@ class ilObjectGUI implements ImplementsCreationCallback
                 ilSession::clear("il_rep_ref_id");
 
                 $this->tpl->setOnScreenMessage('failure', $this->lng->txt('msg_no_perm_read'), true);
-                $parent_ref_id = $this->tree->getParentNodeData($this->object->getRefId())['ref_id'];
+                $parent_ref_id = $this->tree->getParentNodeData($this->object->getRefId())['ref_id'] ?? null;
                 $this->ctrl->redirectToURL(ilLink::_getLink($parent_ref_id));
             }
 
@@ -1685,10 +1711,5 @@ class ilObjectGUI implements ImplementsCreationCallback
         $this->favourites->remove($this->user->getId(), $item_ref_id);
         $this->tpl->setOnScreenMessage("success", $this->lng->txt("rep_removed_from_favourites"), true);
         $this->ctrl->redirectToURL(ilLink::_getLink($this->requested_ref_id));
-    }
-
-    private function maskTemplateMarkers(string $string): string
-    {
-        return str_replace(['{', '}'], ['&#123;', '&#125;'], $string);
     }
 }

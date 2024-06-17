@@ -100,7 +100,7 @@ class ilCourseParticipantsTableGUI extends ilParticipantTableGUI
 
         $this->addColumn($this->lng->txt('crs_member_passed'), 'passed');
         if ($this->show_lp_status_sync) {
-            $this->addColumn($this->lng->txt('crs_member_passed_status_changed'), 'passed_info');
+            $this->addColumn($this->lng->txt('crs_member_passed_status_changed'), 'passed_timestamp');
         }
 
         $this->setSelectAllCheckbox('participants', true);
@@ -180,7 +180,7 @@ class ilCourseParticipantsTableGUI extends ilParticipantTableGUI
                 case 'consultation_hour':
                     $this->tpl->setCurrentBlock('custom_fields');
                     $dts = array();
-                    foreach ((array) $a_set['consultation_hours'] as $ch) {
+                    foreach ((array) ($a_set['consultation_hours'] ?? []) as $ch) {
                         $tmp = ilDatePresentation::formatPeriod(
                             new ilDateTime($ch['dt'], IL_CAL_UNIX),
                             new ilDateTime($ch['dtend'], IL_CAL_UNIX)
@@ -441,6 +441,7 @@ class ilCourseParticipantsTableGUI extends ilParticipantTableGUI
             if ($this->show_lp_status_sync) {
                 // #9912 / #13208
                 $passed_info = "";
+                $passed_timestamp = '';
                 if ($a_user_data[$user_id]["passed_info"]) {
                     $pinfo = $a_user_data[$user_id]["passed_info"];
                     if ($pinfo["user_id"]) {
@@ -453,9 +454,11 @@ class ilCourseParticipantsTableGUI extends ilParticipantTableGUI
                     }
                     if ($pinfo["timestamp"]) {
                         $passed_info .= "<br />" . ilDatePresentation::formatDate($pinfo["timestamp"]);
+                        $passed_timestamp = $pinfo["timestamp"];
                     }
                 }
                 $a_user_data[$user_id]["passed_info"] = $passed_info;
+                $a_user_data[$user_id]["passed_timestamp"] = $passed_timestamp;
             }
         }
 

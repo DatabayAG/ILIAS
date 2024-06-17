@@ -23,6 +23,7 @@ use ILIAS\FileUpload\Exception\IllegalStateException;
 use ILIAS\ResourceStorage\Flavour\Definition\FlavourDefinition;
 use ILIAS\Badge\ilBadgeTable;
 use ILIAS\Badge\ilBadgeUserTable;
+use ILIAS\Services\Badge\BadgeException;
 
 /**
  * Class ilBadgeManagementGUI

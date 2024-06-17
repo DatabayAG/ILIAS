@@ -24,18 +24,18 @@ use ILIAS\Exercise\InternalService;
 use ILIAS\Exercise\GUIRequest;
 use ILIAS\Exercise\TutorFeedbackFile\TutorFeedbackFileManager;
 use ILIAS\Exercise\InternalGUIService;
+use ILIAS\Repository\Resources\ZipAdapter;
+use ILIAS\Repository\Form\FormAdapterGUI;
+use ILIAS\FileUpload\FileUpload;
+use ILIAS\FileUpload\DTO\UploadResult;
+use ILIAS\FileUpload\Handler\BasicHandlerResult;
 
 /**
- * Class ilExerciseManagementGUI
- *
- * @author Jörg Lützenkirchen <luetzenkirchen@leifos.com>
- * @author Alexander Killing <killing@leifos.de>
- *
  * @ilCtrl_Calls ilExerciseManagementGUI: ilFileSystemGUI, ilRepositorySearchGUI
  * @ilCtrl_Calls ilExerciseManagementGUI: ilExSubmissionTeamGUI, ilExSubmissionFileGUI
  * @ilCtrl_Calls ilExerciseManagementGUI: ilExSubmissionTextGUI, ilExPeerReviewGUI
  * @ilCtrl_Calls ilExerciseManagementGUI: ilParticipantsPerAssignmentTableGUI
- * @ilCtrl_Calls ilExerciseManagementGUI: ilResourceCollectionGUI
+ * @ilCtrl_Calls ilExerciseManagementGUI: ilResourceCollectionGUI, ilRepoStandardUploadHandlerGUI
  */
 class ilExerciseManagementGUI
 {
@@ -49,6 +49,7 @@ class ilExerciseManagementGUI
     public const GRADE_NOT_GRADED = "notgraded";
     public const GRADE_PASSED = "passed";
     public const GRADE_FAILED = "failed";
+    protected ZipAdapter $zip;
     protected ilGlobalTemplateInterface $tpl;
     protected \ILIAS\Exercise\InternalDomainService $domain;
     protected \ILIAS\Exercise\Notification\NotificationManager $notification;
@@ -154,6 +155,7 @@ class ilExerciseManagementGUI
         if ($this->ass_id > 0) {
             $this->tutor_feedback_file = $domain->assignment()->tutorFeedbackFile($this->ass_id);
         }
+        $this->zip = $domain->resources()->zip();
         $this->ctrl->saveParameter($this, array("part_id"));
     }
 
@@ -178,6 +180,7 @@ class ilExerciseManagementGUI
                     $lng->txt("back"),
                     $ilCtrl->getLinkTarget($this, $this->getViewBack())
                 );
+                $this->domain->assignment()->tutorFeedbackFile($this->ass_id)->addObserver();
                 $this->tpl->setOnScreenMessage('info', $lng->txt("exc_fb_tutor_info"));
                 $gui = $this->gui->assignment()->getTutorFeedbackFileResourceCollectionGUI(
                     $this->exercise->getRefId(),
@@ -252,6 +255,12 @@ class ilExerciseManagementGUI
                 $this->ctrl->setReturn($this, 'members');
 
                 $this->ctrl->forwardCommand($rep_search);
+                break;
+
+            case strtolower(ilRepoStandardUploadHandlerGUI::class):
+                $form = $this->getMultiFeedbackForm($this->assignment->getId());
+                $gui = $form->getRepoStandardUploadHandlerGUI("mfzip");
+                $this->ctrl->forwardCommand($gui);
                 break;
 
             case "ilexsubmissionteamgui":
@@ -572,12 +581,12 @@ class ilExerciseManagementGUI
 
         foreach ($this->requested_learning_comments as $k => $v) {
             $marks_obj = new ilLPMarks($this->exercise->getId(), (int) $k);
-            $marks_obj->setComment(ilUtil::stripSlashes($v));
+            $marks_obj->setComment($v);
             $marks_obj->update();
         }
         foreach ($this->requested_marks as $k => $v) {
             $marks_obj = new ilLPMarks($this->exercise->getId(), (int) $k);
-            $marks_obj->setMark(ilUtil::stripSlashes($v));
+            $marks_obj->setMark($v);
             $marks_obj->update();
         }
         $this->tpl->setOnScreenMessage('success', $lng->txt("exc_msg_saved_grades"), true);
@@ -1443,7 +1452,6 @@ class ilExerciseManagementGUI
         bool $a_redirect = true
     ): void {
         $ilCtrl = $this->ctrl;
-
         $saved_for = array();
         foreach ($a_data as $ass_id => $users) {
             $ass = ($ass_id < 0)
@@ -1451,6 +1459,8 @@ class ilExerciseManagementGUI
                 : new ilExAssignment($ass_id);
             foreach ($users as $user_id => $values) {
                 // this will add team members if available
+                // $user_id is only the ID of one team member here,
+                // $sub_user_id will be all team members
                 $submission = new ilExSubmission($ass, $user_id);
                 foreach ($submission->getUserIds() as $sub_user_id) {
                     $uname = ilObjUser::_lookupName($sub_user_id);
@@ -1793,34 +1803,46 @@ class ilExerciseManagementGUI
     //// Multi Feedback
     ////
 
-    public function initMultiFeedbackForm(int $a_ass_id): ilPropertyFormGUI
+    public function getMultiFeedbackForm(int $a_ass_id): FormAdapterGUI
     {
         $lng = $this->lng;
 
-        $form = new ilPropertyFormGUI();
-        $form->addCommandButton("uploadMultiFeedback", $lng->txt("upload"));
-        $form->addCommandButton("members", $lng->txt("cancel"));
-
-        // multi feedback file
-        $fi = new ilFileInputGUI($lng->txt("exc_multi_feedback_file"), "mfzip");
-        $fi->setSuffixes(array("zip"));
-        $fi->setRequired(true);
-        $form->addItem($fi);
-
-        $form->setTitle(ilExAssignment::lookupTitle($a_ass_id));
-        $form->setFormAction($this->ctrl->getFormAction($this, "uploadMultiFeedback"));
-
+        $form = $this->gui->form([self::class], "uploadMultiFeedback")
+            ->section("main", ilExAssignment::lookupTitle($a_ass_id))
+            ->file(
+                "mfzip",
+                $lng->txt("exc_multi_feedback_file"),
+                $this->handleMultiFeedbackUploadResult(...),
+                "rc_id",
+                "",
+                1,
+                ["application/zip"]
+            );
         return $form;
     }
 
-    /**
-     * Show multi-feedback screen
-     * @param ilPropertyFormGUI|null $a_form
-     */
+    public function handleMultiFeedbackUploadResult(
+        FileUpload $upload,
+        UploadResult $result
+    ): BasicHandlerResult {
+        $feedback_zip = $this->domain->assignment()->tutorFeedbackZip();
+        $rid = $feedback_zip->importFromUploadResult(
+            $this->ass_id,
+            $this->user->getId(),
+            $result
+        );
+        return new \ILIAS\FileUpload\Handler\BasicHandlerResult(
+            '',
+            \ILIAS\FileUpload\Handler\HandlerResult::STATUS_OK,
+            $rid,
+            ''
+        );
+    }
+
+
     public function showMultiFeedbackObject(
-        ilPropertyFormGUI $a_form = null
+        FormAdapterGUI $form = null
     ): void {
-        $ilToolbar = $this->toolbar;
         $lng = $this->lng;
         $tpl = $this->tpl;
 
@@ -1834,11 +1856,11 @@ class ilExerciseManagementGUI
             $this->ctrl->getLinkTarget($this, "downloadMultiFeedbackZip")
         )->toToolbar();
 
-        if ($a_form === null) {
-            $a_form = $this->initMultiFeedbackForm($this->assignment->getId());
+        if ($form === null) {
+            $form = $this->getMultiFeedbackForm($this->assignment->getId());
         }
 
-        $tpl->setContent($a_form->getHTML());
+        $tpl->setContent($form->render());
     }
 
     /**
@@ -1846,7 +1868,15 @@ class ilExerciseManagementGUI
      */
     public function downloadMultiFeedbackZipObject(): void
     {
-        $this->assignment->sendMultiFeedbackStructureFile($this->exercise);
+        $st_file = $this->domain->assignment()->tutorFeedbackZip()->getMultiFeedbackStructureFile(
+            $this->assignment,
+            $this->exercise
+        );
+        $this->gui->httpUtil()->deliverString(
+            $st_file->content,
+            $st_file->filename,
+            "application/zip"
+        );
     }
 
     /**
@@ -1855,18 +1885,11 @@ class ilExerciseManagementGUI
     public function uploadMultiFeedbackObject(): void
     {
         // #11983
-        $form = $this->initMultiFeedbackForm($this->assignment->getId());
-        if ($form->checkInput()) {
-            try {
-                $this->assignment->uploadMultiFeedbackFile(ilArrayUtil::stripSlashesArray($_FILES["mfzip"]));
-                $this->ctrl->redirect($this, "showMultiFeedbackConfirmationTable");
-            } catch (ilException $e) {
-                $this->tpl->setOnScreenMessage('failure', $e->getMessage(), true);
-                $this->ctrl->redirect($this, "showMultiFeedback");
-            }
+        $form = $this->getMultiFeedbackForm($this->assignment->getId());
+        if ($form->isValid()) {
+            $this->ctrl->redirect($this, "showMultiFeedbackConfirmationTable");
         }
 
-        $form->setValuesByPost();
         $this->showMultiFeedbackObject($form);
     }
 
@@ -1888,7 +1911,6 @@ class ilExerciseManagementGUI
      */
     public function cancelMultiFeedbackObject(): void
     {
-        $this->assignment->clearMultiFeedbackDirectory();
         $this->ctrl->redirect($this, "members");
     }
 
@@ -1897,7 +1919,13 @@ class ilExerciseManagementGUI
      */
     public function saveMultiFeedbackObject(): void
     {
-        $this->assignment->saveMultiFeedbackFiles($this->requested_files, $this->exercise);
+        $feedback_zip = $this->domain->assignment()->tutorFeedbackZip();
+        $feedback_zip->saveMultiFeedbackFiles(
+            $this->exercise,
+            $this->assignment->getId(),
+            $this->user->getId(),
+            $this->requested_files
+        );
 
         $this->tpl->setOnScreenMessage('success', $this->lng->txt("msg_obj_modified"), true);
         $this->ctrl->redirect($this, "members");
@@ -2248,7 +2276,7 @@ class ilExerciseManagementGUI
             $this->log->debug("file copied: " . $file_copied);
             // e.g. data/ilias/ilExercise/3/exc_327/subm_9/2/20231212085734_167.zip ?
             if ($file_copied) {
-                ilFileUtils::unzip($file_copied, true);
+                $this->zip->unzipFile($file_copied);
                 $web_filesystem->delete($zip_internal_path);
                 $this->log->debug("deleting: " . $zip_internal_path);
 

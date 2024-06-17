@@ -899,7 +899,6 @@ class ilTestServiceGUI
             $user = new ilObjUser();
             $user->setLastname($this->lng->txt("deleted_user"));
         }
-        $title_matric = "";
         if (strlen($user->getMatriculation()) && (($this->object->getAnonymity() == false))) {
             $template->setCurrentBlock("user_matric");
             $template->setVariable("TXT_USR_MATRIC", $this->lng->txt("matriculation"));
@@ -908,7 +907,6 @@ class ilTestServiceGUI
             $template->setVariable("VALUE_USR_MATRIC", $user->getMatriculation());
             $template->parseCurrentBlock();
             $template->touchBlock("user_matric_separator");
-            $title_matric = " - " . $this->lng->txt("matriculation") . ": " . $user->getMatriculation();
         }
 
         $invited_user = array_pop($this->object->getInvitedUsers($user_id));
@@ -1021,7 +1019,7 @@ class ilTestServiceGUI
 
         $table_gui = $this->buildPassDetailsOverviewTableGUI($this, 'outUserPassDetails');
 
-        $questionList = new ilAssQuestionList($ilDB, $this->lng, $component_repository);
+        $questionList = new ilAssQuestionList($ilDB, $this->lng, $this->refinery, $component_repository);
 
         $questionList->setParentObjIdsFilter([$this->object->getId()]);
         $questionList->setQuestionInstanceTypeFilter(ilAssQuestionList::QUESTION_INSTANCE_TYPE_DUPLICATES);

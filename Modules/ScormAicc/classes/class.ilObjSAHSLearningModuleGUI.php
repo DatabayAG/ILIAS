@@ -18,6 +18,8 @@
 
 declare(strict_types=1);
 
+use ILIAS\Filesystem\Util\Archive\ZipDirectoryHandling;
+
 /**
 * SCORM Learning Modules
 *
@@ -32,6 +34,7 @@ declare(strict_types=1);
 class ilObjSAHSLearningModuleGUI extends ilObjectGUI
 {
     private ilPropertyFormGUI $form;
+    private $archives;
 
     /**
     * Constructor
@@ -39,6 +42,7 @@ class ilObjSAHSLearningModuleGUI extends ilObjectGUI
     public function __construct($data, int $id, bool $call_by_reference, bool $prepare_output = true)//missing typehint because mixed
     {
         global $DIC;
+        $this->archives = $DIC->legacyArchives();
         $lng = $DIC->language();
         $rbacsystem = $DIC->access();
         $lng->loadLanguageModule("content");
@@ -273,14 +277,18 @@ class ilObjSAHSLearningModuleGUI extends ilObjectGUI
         $this->form = new ilPropertyFormGUI();
 
         // type selection
-        $options = array(
-            "scorm2004" => $lng->txt("lm_type_scorm2004"),
-            "scorm" => $lng->txt("lm_type_scorm"),
-            "exportFile" => $lng->txt("sahs_export_file")
-        );
-        $si = new ilSelectInputGUI($this->lng->txt("type"), "sub_type");
-        $si->setOptions($options);
-        $this->form->addItem($si);
+        $radg = new ilRadioGroupInputGUI($lng->txt("type"), "sub_type");
+        $op0 = new ilRadioOption($this->lng->txt("lm_type_scorm"), "scorm");
+        $op0->setInfo($this->lng->txt("lm_type_scorm_info"));
+        $radg->addOption($op0);
+        $op0 = new ilRadioOption($this->lng->txt("lm_type_scorm2004"), "scorm2004");
+        $op0->setInfo($this->lng->txt("lm_type_scorm2004_info"));
+        $radg->addOption($op0);
+        $op0 = new ilRadioOption($this->lng->txt("sahs_export_file"), "exportFile");
+        $op0->setInfo($this->lng->txt("sahs_export_file_info"));
+        $radg->addOption($op0);
+        $radg->setValue("scorm");
+        $this->form->addItem($radg);
 
         $options = array();
         if (ilUploadFiles::_getUploadDirectory()) {
@@ -462,8 +470,13 @@ class ilObjSAHSLearningModuleGUI extends ilObjectGUI
                 $scormFilePath = $import_dirname . "/" . $scormFile;
                 $file_path = $newObj->getDataDirectory() . "/" . $scormFile;
                 ilFileUtils::rename($scormFilePath, $file_path);
-                $DIC->legacyArchives()->unzip($file_path, $newObj->getDataDirectory(), false, false, false);
-                //                ilFileUtils::unzip($file_path);
+                $this->archives->unzip(
+                    $file_path,
+                    $newObj->getDataDirectory(),
+                    false,
+                    false,
+                    false
+                );
                 unlink($file_path);
                 ilFileUtils::delDir($lmTempDir, false);
             } else {
@@ -474,16 +487,26 @@ class ilObjSAHSLearningModuleGUI extends ilObjectGUI
                     $_FILES["scormfile"]["name"],
                     $file_path
                 );
-                $DIC->legacyArchives()->unzip($file_path, $newObj->getDataDirectory(), false, false, false);
-                //                ilFileUtils::unzip($file_path);
+                $this->archives->unzip(
+                    $file_path,
+                    $newObj->getDataDirectory(),
+                    false,
+                    false,
+                    false
+                );
             }
         } else {
             // copy uploaded file to data directory
             $uploadedFile = $DIC->http()->wrapper()->post()->retrieve('uploaded_file', $DIC->refinery()->kindlyTo()->string());
             $file_path = $newObj->getDataDirectory() . "/" . $uploadedFile;
             ilUploadFiles::_copyUploadFile($uploadedFile, $file_path);
-            $DIC->legacyArchives()->unzip($file_path, $newObj->getDataDirectory(), false, false, false);
-            //            ilFileUtils::unzip($file_path);
+            $this->archives->unzip(
+                $file_path,
+                $newObj->getDataDirectory(),
+                false,
+                false,
+                false
+            );
         }
         ilFileUtils::renameExecutables($newObj->getDataDirectory());
 
@@ -514,53 +537,6 @@ class ilObjSAHSLearningModuleGUI extends ilObjectGUI
         $this->uploadObject();
     }
 
-
-
-    /**
-    * save new learning module to db
-    */
-    //    public function saveObject()
-    //    {
-    //        global $DIC;
-    //        $ilErr = $DIC["ilErr"];
-    //
-    //        if (trim($_POST["title"]) == "") {
-    //            $ilErr->raiseError($this->lng->txt("msg_no_title"), $ilErr->MESSAGE);
-    //        }
-    //        $newObj = new ilObjSCORM2004LearningModule();
-    //        $newObj->setTitle(ilUtil::stripSlashes($_POST["title"]));
-    //        $newObj->setSubType("scorm2004");
-    //        $newObj->setEditable(true);
-    //        $newObj->setDescription(ilUtil::stripSlashes($_POST["desc"]));
-    //        $newObj->create();
-    //        $newObj->createReference();
-    //        $newObj->putInTree($_GET["ref_id"]);
-    //        $newObj->setPermissions($_GET["ref_id"]);
-    //        $newObj->createDataDirectory();
-    //        $newObj->createScorm2004Tree();
-    //        ilUtil::sendInfo($this->lng->txt($newObj->getType() . "_added"), true);
-    //
-    //        // #7375
-    //        $this->ctrl->setParameterByClass("ilObjSCORM2004LearningModuleGUI", "ref_id", $newObj->getRefId());
-    //        $this->ctrl->redirectByClass(array("ilSAHSEditGUI", "ilObjSCORM2004LearningModuleGUI"), "showOrganization");
-    //    }
-
-
-    //    /**
-    //    * permission form
-    //    */
-    //    public function info()
-    //    {
-    //        $this->infoObject();
-    //    }
-
-    //    /**
-    //    * show owner of learning module
-    //    */
-    //    public function owner()
-    //    {
-    //        $this->ownerObject();
-    //    }
 
     /**
      * output main header (title and locator)
@@ -828,7 +804,7 @@ class ilObjSAHSLearningModuleGUI extends ilObjectGUI
         $ilCtrl = $DIC->ctrl();
 
         $ilTabs->addSubTabTarget(
-            "cont_settings",
+            "general",
             $this->ctrl->getLinkTarget($this, "properties"),
             array("edit", ""),
             get_class($this)

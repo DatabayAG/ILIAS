@@ -399,7 +399,8 @@ class ilObjGroupGUI extends ilContainerGUI
                 // check read permission
                 if ((!$this->getCreationMode()
                     && !$this->rbacsystem->checkAccess('read', $this->object->getRefId()) && $cmd != 'infoScreen')
-                    || $cmd == 'join') {
+                    || $cmd == 'join'
+                    || $cmd === 'leaveWaitList') {
                     // no join permission -> redirect to info screen
                     if (!$this->rbacsystem->checkAccess('join', $this->object->getRefId())) {
                         $this->ctrl->redirect($this, "infoScreen");
@@ -418,6 +419,18 @@ class ilObjGroupGUI extends ilContainerGUI
         if ($header_action) {
             $this->addHeaderAction();
         }
+    }
+
+    public function enableAdministrationPanelObject(): void
+    {
+        $this->getModeManager()->setAdminMode();
+        $this->ctrl->redirect($this, "");
+    }
+
+    public function disableAdministrationPanelObject(): void
+    {
+        $this->getModeManager()->setContentMode();
+        $this->ctrl->redirect($this, "");
     }
 
     /**

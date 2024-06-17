@@ -167,7 +167,7 @@ abstract class ilTestPlayerAbstractGUI extends ilTestServiceGUI
 
     public function suspendTestCmd()
     {
-        $this->ctrl->redirectByClass(ilTestScreenGUI::class, 'testScreen');
+        $this->ctrl->redirectByClass(ilTestScreenGUI::class, ilTestScreenGUI::DEFAULT_CMD);
     }
 
     public function isMaxProcessingTimeReached(): bool
@@ -795,7 +795,7 @@ abstract class ilTestPlayerAbstractGUI extends ilTestServiceGUI
             $this->ctrl->redirectByClass(['ilTestResultsGUI', 'ilMyTestResultsGUI', 'ilTestEvaluationGUI']);
         }
 
-        $this->ctrl->redirectByClass(ilTestScreenGUI::class, 'testScreen');
+        $this->ctrl->redirectByClass(ilTestScreenGUI::class, ilTestScreenGUI::DEFAULT_CMD);
     }
 
     /*
@@ -803,6 +803,11 @@ abstract class ilTestPlayerAbstractGUI extends ilTestServiceGUI
     */
     public function showFinalStatementCmd()
     {
+        $this->global_screen->tool()->context()->current()->getAdditionalData()->replace(
+            ilTestPlayerLayoutProvider::TEST_PLAYER_VIEW_TITLE,
+            $this->object->getTitle() . ' - ' . $this->lng->txt('final_statement')
+        );
+
         $template = new ilTemplate("tpl.il_as_tst_final_statement.html", true, true, "Modules/Test");
         $this->ctrl->setParameter($this, "skipfinalstatement", 1);
         $template->setVariable("FORMACTION", $this->ctrl->getFormAction($this, ilTestPlayerCommands::AFTER_TEST_PASS_FINISHED));
@@ -811,7 +816,7 @@ abstract class ilTestPlayerAbstractGUI extends ilTestServiceGUI
         $this->tpl->setVariable($this->getContentBlockName(), $template->get());
     }
 
-    protected function prepareTestPage($presentationMode, $sequenceElement, $questionId)
+    protected function prepareTestPage($sequenceElement, $questionId)
     {
         $this->navigation_history->addItem(
             $this->test_session->getRefId(),
@@ -1016,6 +1021,7 @@ abstract class ilTestPlayerAbstractGUI extends ilTestServiceGUI
                 if ($previousSolutionAvailable) {
                     return $previousPass;
                 }
+
             }
         }
 
@@ -1298,6 +1304,11 @@ abstract class ilTestPlayerAbstractGUI extends ilTestServiceGUI
         $this->help->setSubScreenId("question_summary");
 
         $this->tpl->addBlockFile($this->getContentBlockName(), "adm_content", "tpl.il_as_tst_question_summary.html", "Modules/Test");
+
+        $this->global_screen->tool()->context()->current()->getAdditionalData()->replace(
+            ilTestPlayerLayoutProvider::TEST_PLAYER_VIEW_TITLE,
+            $this->getObject()->getTitle() . ' - ' . $this->lng->txt('question_summary')
+        );
 
         if ($obligations_info
             && $this->object->areObligationsEnabled()
@@ -1920,7 +1931,7 @@ JS;
             // Notation of the params prior to getting rid of this crap in favor of a class
             $solutionoutput = $questionGui->getSolutionOutput(
                 $this->test_session->getActiveId(),    #active_id
-                null,                                                #pass
+                $this->test_session->getPass(),                                                #pass
                 false,                                                #graphical_output
                 $show_question_inline_score,                        #result_output
                 true,                                                #show_question_only

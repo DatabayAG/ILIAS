@@ -24,6 +24,7 @@
 class ilContainerRenderer
 {
     protected const UNIQUE_SEPARATOR = "-";
+    protected \ILIAS\Container\Content\ItemManager $item_manager;
     protected ilAccessHandler $access;
     protected ilObjUser $user;
     protected \ILIAS\Containter\Content\ObjectiveRenderer $objective_renderer;
@@ -121,6 +122,12 @@ class ilContainerRenderer
             ->repo()
             ->content()
             ->block();
+        $this->item_manager = $DIC
+            ->container()
+            ->internal()
+            ->domain()
+            ->content()
+            ->items($this->container_gui->getObject());
     }
 
     public function setBlockPrefixClosure(Closure $f): void
@@ -393,11 +400,10 @@ class ilContainerRenderer
         return "";
     }
 
-    public function renderSingleTypeBlock(string $a_type): string
+    public function renderSingleTypeBlock(string $a_type, bool $exhausted = false): string
     {
         $block_tpl = $this->initBlockTemplate();
-
-        if ($this->renderHelperTypeBlock($block_tpl, $a_type, true)) {
+        if ($this->renderHelperTypeBlock($block_tpl, $a_type, true, $exhausted)) {
             return $block_tpl->get();
         }
         return "";
@@ -619,7 +625,6 @@ class ilContainerRenderer
                     $a_block_tpl->setVariable("TILE_ROWS", $html);
                     $a_block_tpl->parseCurrentBlock();
                 }
-
                 // show more
                 if ($is_exhausted) {
                     $a_block_tpl->setCurrentBlock("show_more");
@@ -809,6 +814,20 @@ class ilContainerRenderer
         return $this->container_gui->getContainerPageHTML();
     }
 
+    protected function getDetailsLevel(int $a_item_id): int
+    {
+        if ($this->container_gui->isActiveAdministrationPanel()) {
+            return ilContainerContentGUI::DETAILS_DEACTIVATED;
+        }
+        if ($this->item_manager->getExpanded($a_item_id) !== null) {
+            return $this->item_manager->getExpanded($a_item_id);
+        }
+        /*if ($a_item_id === $this->force_details) {
+            return ilContainerContentGUI::DETAILS_ALL;
+        }*/
+        return ilContainerContentGUI::DETAILS_TITLE;
+    }
+
     public function renderItemBlockSequence(
         \ILIAS\Container\Content\ItemBlock\ItemBlockSequence $sequence
     ): string {
@@ -821,6 +840,12 @@ class ilContainerRenderer
         foreach($this->item_presentation->getAllRefIds() as $ref_id) {
             $rd = $this->item_presentation->getRawDataByRefId($ref_id);
             $preloader->addItem($rd["obj_id"], $rd["type"], $ref_id);
+            if ($rd["type"] === "sess") {
+                $ev_items = ilObjectActivation::getItemsByEvent((int) $rd["obj_id"]);
+                foreach ($ev_items as $ev_item) {
+                    $preloader->addItem((int) $ev_item["obj_id"], $ev_item["type"], $ev_item["ref_id"]);
+                }
+            }
         }
         $preloader->preload();
 
@@ -900,7 +925,8 @@ class ilContainerRenderer
                     $pos_prefix,
                     $item_group_list_presentation,
                     $checkbox,
-                    $this->item_presentation->isActiveItemOrdering()
+                    $this->item_presentation->isActiveItemOrdering(),
+                    $this->getDetailsLevel($item_data["obj_id"])
                 );
                 if ($html != "") {
                     $this->addItemToBlock(
@@ -919,7 +945,7 @@ class ilContainerRenderer
                     $block->getBlock() instanceof \ILIAS\Container\Content\SessionBlock) {
                     $page_html = preg_replace(
                         '~\[list-' . $block->getId() . '\]~i',
-                        $this->renderSingleTypeBlock($block->getId()),
+                        $this->renderSingleTypeBlock($block->getId(), $block->getLimitExhausted()),
                         $page_html
                     );
                     $valid = true;
@@ -974,11 +1000,19 @@ class ilContainerRenderer
 
         // remove embedded, but unrendered blocks
         foreach ($this->item_presentation->getPageEmbeddedBlockIds() as $id) {
-            $page_html = preg_replace(
-                '~\[list-' . $id . '\]~i',
-                "",
-                $page_html
-            );
+            if (is_numeric($id)) {
+                $page_html = preg_replace(
+                    '~\[item-group-' . $id . '\]~i',
+                    "",
+                    $page_html
+                );
+            } else {
+                $page_html = preg_replace(
+                    '~\[list-' . $id . '\]~i',
+                    "",
+                    $page_html
+                );
+            }
         }
 
         if ($valid) {

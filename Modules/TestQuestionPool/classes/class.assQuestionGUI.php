@@ -232,9 +232,14 @@ abstract class assQuestionGUI
                     case 'addST':
                     case 'addPG':
                     case 'addGIT':
-                        $ret = $this->$cmd();
+                        $this->$cmd();
                         break;
-
+                    case 'save':
+                    case 'saveReturn':
+                    case 'editQuestion':
+                        $this->addSaveOnEnterOnLoadCode();
+                        $this->$cmd();
+                        break;
                     default:
                         if (method_exists($this, $cmd)) {
                             $this->$cmd();
@@ -637,14 +642,14 @@ abstract class assQuestionGUI
             $this->ctrl->redirect($this, $this->request->raw("return_to"));
         }
         if ($this->request->raw("return_to_fb") !== null) {
-            $this->ctrl->redirectByClass('ilAssQuestionFeedbackEditingGUI', 'showFeedbackForm');
+            $this->ctrl->redirectByClass(ilAssQuestionFeedbackEditingGUI::class, 'showFeedbackForm');
         }
 
         if ($this->request->raw('test_express_mode')) {
-            ilUtil::redirect(ilTestExpressPage::getReturnToPageLink($this->object->getId()));
+            $this->ctrl->redirectToURL(ilTestExpressPage::getReturnToPageLink($this->object->getId()));
         }
 
-        ilUtil::redirect("ilias.php?baseClass=ilObjTestGUI&cmd=questions&ref_id=" . $this->request->raw("calling_test"));
+        $this->ctrl->redirectByClass(ilAssQuestionPreviewGUI::class, ilAssQuestionPreviewGUI::CMD_SHOW);
     }
 
     public function cancelSync(): void
@@ -655,13 +660,12 @@ abstract class assQuestionGUI
             $this->ctrl->redirect($this, $this->request->raw("return_to"));
         }
         if ($this->request->raw('return_to_fb') !== '' && $this->request->raw('return_to_fb') !== null) {
-            $this->ctrl->redirectByClass('ilAssQuestionFeedbackEditingGUI', 'showFeedbackForm');
-        } else {
-            if ($this->request->raw('test_express_mode')) {
-                ilUtil::redirect(ilTestExpressPage::getReturnToPageLink($this->object->getId()));
-            }
-            ilUtil::redirect("ilias.php?baseClass=ilObjTestGUI&cmd=questions&ref_id=" . $this->request->raw("calling_test"));
+            $this->ctrl->redirectByClass(ilAssQuestionFeedbackEditingGUI::class, 'showFeedbackForm');
         }
+        if ($this->request->raw('test_express_mode')) {
+            $this->ctrl->redirectToURL(ilTestExpressPage::getReturnToPageLink($this->object->getId()));
+        }
+        $this->ctrl->redirectByClass(ilAssQuestionPreviewGUI::class, ilAssQuestionPreviewGUI::CMD_SHOW);
     }
 
     public function saveEdit(): void
@@ -702,8 +706,8 @@ abstract class assQuestionGUI
                 $this->ctrl->setParameter($this, "q_id", $this->object->getId());
                 $this->editQuestion();
                 $this->tpl->setOnScreenMessage('success', $this->lng->txt("msg_obj_modified"), false);
-                $this->ctrl->setParameterByClass("ilAssQuestionPageGUI", "q_id", $this->object->getId());
-                $this->ctrl->redirectByClass("ilAssQuestionPageGUI", "edit");
+                $this->ctrl->setParameterByClass(ilAssQuestionPageGUI::class, "q_id", $this->object->getId());
+                $this->ctrl->redirectByClass(ilAssQuestionPageGUI::class, "edit");
             }
         }
     }
@@ -1033,7 +1037,7 @@ abstract class assQuestionGUI
 
     protected function populateTaxonomyFormSection(ilPropertyFormGUI $form): void
     {
-        if (count($this->getTaxonomyIds())) {
+        if ($this->getTaxonomyIds() !== []) {
             // this is needed by ilTaxSelectInputGUI in some cases
             ilOverlayGUI::initJavaScript();
 
@@ -1066,28 +1070,40 @@ abstract class assQuestionGUI
      */
     public function getGenericFeedbackOutput(int $active_id, ?int $pass): string
     {
-        $output = "";
+        $output = '';
         $manual_feedback = ilObjTest::getManualFeedback($active_id, $this->object->getId(), $pass);
-        if (strlen($manual_feedback)) {
+        if ($manual_feedback !== '') {
             return $manual_feedback;
         }
 
         $correct_feedback = $this->object->feedbackOBJ->getGenericFeedbackTestPresentation($this->object->getId(), true);
         $incorrect_feedback = $this->object->feedbackOBJ->getGenericFeedbackTestPresentation($this->object->getId(), false);
-        if (strlen($correct_feedback . $incorrect_feedback)) {
-            $reached_points = $this->object->calculateReachedPoints($active_id, $pass);
-            $max_points = $this->object->getMaximumPoints();
-            if ($reached_points == $max_points) {
-                $output = $correct_feedback;
-            } else {
-                $output = $incorrect_feedback;
-            }
+        if ($correct_feedback . $incorrect_feedback !== '') {
+            $output = $this->genericFeedbackOutputBuilder($correct_feedback, $incorrect_feedback, $active_id, $pass);
         }
 
         if ($this->object->isAdditionalContentEditingModePageObject()) {
             return $output;
         }
         return ilLegacyFormElementsUtil::prepareTextareaOutput($output, true);
+    }
+
+    protected function genericFeedbackOutputBuilder(
+        string $feedback_correct,
+        string $feedback_incorrect,
+        int $active_id,
+        ?int $pass
+    ): string {
+        if ($pass === null) {
+            return '';
+        }
+        $reached_points = $this->object->calculateReachedPoints($active_id, $pass);
+        $max_points = $this->object->getMaximumPoints();
+        if ($reached_points == $max_points) {
+            return $feedback_correct;
+        }
+
+        return $feedback_incorrect;
     }
 
     public function getGenericFeedbackOutputForCorrectSolution(): string
@@ -2033,4 +2049,23 @@ abstract class assQuestionGUI
         $this->parent_type_is_lm = $flag;
     }
 
+    protected function addSaveOnEnterOnLoadCode(): void
+    {
+        $this->tpl->addOnloadCode("
+            let form = document.querySelector('#ilContentContainer form');
+            let button = form.querySelector('input[name=\"cmd[save]\"]');
+            if (form && button) {
+                form.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter'
+                        && e.target.type !== 'textarea'
+                        && e.target.type !== 'submit'
+                        && e.target.type !== 'file'
+                    ) {
+                        e.preventDefault();
+                        form.requestSubmit(button);
+                    }
+                })
+            }
+        ");
+    }
 }

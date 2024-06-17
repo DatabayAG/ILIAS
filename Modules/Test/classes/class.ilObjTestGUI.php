@@ -26,6 +26,7 @@ use ILIAS\HTTP\Services as HTTPServices;
 use ILIAS\DI\LoggingServices;
 use ILIAS\Skill\Service\SkillService;
 use ILIAS\Test\InternalRequestService;
+use ILIAS\GlobalScreen\Services as GlobalScreen;
 
 require_once './Modules/Test/classes/inc.AssessmentConstants.php';
 
@@ -80,6 +81,7 @@ class ilObjTestGUI extends ilObjectGUI implements ilCtrlBaseClassInterface, ilDe
     private ilTestPlayerFactory $test_player_factory;
     private ilTestSessionFactory $test_session_factory;
     private QuestionInfoService $questioninfo;
+    private \ILIAS\Filesystem\Util\Archive\LegacyArchives $archives;
     protected ilTestTabsManager $tabs_manager;
     private ilTestObjectiveOrientedContainer $objective_oriented_container;
     protected ilTestAccess $test_access;
@@ -92,6 +94,7 @@ class ilObjTestGUI extends ilObjectGUI implements ilCtrlBaseClassInterface, ilDe
     protected UIRenderer $ui_renderer;
     protected HTTPServices $http;
     protected ilHelpGUI $help;
+    protected GlobalScreen $global_screen;
     protected ilObjectDataCache $obj_data_cache;
     protected SkillService $skills_service;
     protected InternalRequestService $testrequest;
@@ -117,11 +120,13 @@ class ilObjTestGUI extends ilObjectGUI implements ilCtrlBaseClassInterface, ilDe
         $this->db = $DIC['ilDB'];
         $this->logging_services = $DIC->logger();
         $this->help = $DIC['ilHelp'];
+        $this->global_screen = $DIC['global_screen'];
         $this->obj_data_cache = $DIC['ilObjDataCache'];
         $this->skills_service = $DIC->skills();
         $this->questioninfo = $DIC->testQuestionPool()->questionInfo();
         $this->type = 'tst';
         $this->testrequest = $DIC->test()->internal()->request();
+        $this->archives = $DIC->legacyArchives();
 
         $ref_id = 0;
         if ($this->testrequest->hasRefId() && is_numeric($this->testrequest->getRefId())) {
@@ -208,8 +213,8 @@ class ilObjTestGUI extends ilObjectGUI implements ilCtrlBaseClassInterface, ilDe
         ) {
             $this->navigation_history->addItem(
                 $this->testrequest->getRefId(),
-                'ilias.php?baseClass=ilObjTestGUI&cmd=infoScreen&ref_id=' . $this->testrequest->getRefId(),
-                'tst'
+                ilLink::_getLink($this->testrequest->getRefId(), "tst"),
+                'tst',
             );
         }
 
@@ -353,6 +358,7 @@ class ilObjTestGUI extends ilObjectGUI implements ilCtrlBaseClassInterface, ilDe
                     $this->ctrl,
                     $this->access,
                     $this->db,
+                    $this->refinery,
                     $this->user,
                     $this->lng,
                     $this->logging_services,
@@ -364,7 +370,8 @@ class ilObjTestGUI extends ilObjectGUI implements ilCtrlBaseClassInterface, ilDe
                     $this->ui_renderer,
                     $this->skills_service,
                     $this->testrequest,
-                    $this->questioninfo
+                    $this->questioninfo,
+                    $this->http
                 );
 
                 $gui->setTestAccess($this->getTestAccess());
@@ -620,6 +627,7 @@ class ilObjTestGUI extends ilObjectGUI implements ilCtrlBaseClassInterface, ilDe
                     $this->tabs_gui,
                     $this->tpl,
                     $this->lng,
+                    $this->refinery,
                     $this->db,
                     $this->logging_services->root(),
                     $this->tree,
@@ -749,6 +757,7 @@ class ilObjTestGUI extends ilObjectGUI implements ilCtrlBaseClassInterface, ilDe
                     $this->db,
                     $this->user,
                     $this->refinery->random(),
+                    $this->global_screen
                 );
 
                 $gui->initQuestion($this->fetchAuthoringQuestionIdParameter(), $this->object->getId());
@@ -913,7 +922,7 @@ class ilObjTestGUI extends ilObjectGUI implements ilCtrlBaseClassInterface, ilDe
                     $this->questionsObject();
                     return;
                 }
-                $ret = $cmd === 'testScreen' ? ($this->getTestScreenGUIInstance())->$cmd() : $this->{$cmd . "Object"}();
+                $ret = $cmd === 'testScreen' ? $this->ctrl->forwardCommand($this->getTestScreenGUIInstance()) : $this->{$cmd . "Object"}();
                 break;
             default:
                 if ((!$this->access->checkAccess("read", "", $this->testrequest->getRefId()))) {
@@ -1038,18 +1047,6 @@ class ilObjTestGUI extends ilObjectGUI implements ilCtrlBaseClassInterface, ilDe
         }
 
         $this->ctrl->redirectByClass('ilObjTestGUI', 'questions');
-    }
-
-    public function prepareOutput(bool $show_subobjects = true): bool
-    {
-        if (!$this->getCreationMode()) {
-            $settings = ilMemberViewSettings::getInstance();
-            if ($settings->isActive() && $settings->getContainer() != $this->object->getRefId()) {
-                $settings->setContainer($this->object->getRefId());
-                $this->rbac_system->initMemberView();
-            }
-        }
-        return parent::prepareOutput($show_subobjects);
     }
 
     private function userResultsGatewayObject()
@@ -1255,7 +1252,7 @@ class ilObjTestGUI extends ilObjectGUI implements ilCtrlBaseClassInterface, ilDe
             return false;
         }
 
-        ilFileUtils::unzip($full_path);
+        $this->archives->unzip($full_path);
 
         ilObjTest::_setImportDirectory($basedir);
         $xml_file = ilObjTest::_getImportDirectory() . '/' . $subdir . '/' . $subdir . ".xml";
@@ -2308,7 +2305,7 @@ class ilObjTestGUI extends ilObjectGUI implements ilCtrlBaseClassInterface, ilDe
     *
     * @access	public
     */
-    public function printobject()
+    public function printObject()
     {
         if (!$this->access->checkAccess("write", "", $this->ref_id)) {
             // allow only write access
@@ -2334,6 +2331,7 @@ class ilObjTestGUI extends ilObjectGUI implements ilCtrlBaseClassInterface, ilDe
         foreach ($this->object->questions as $question) {
             $template->setCurrentBlock("question");
             $question_gui = $this->object->createQuestionGUI("", $question);
+            $question_gui->setPresentationContext(assQuestionGUI::PRESENTATION_CONTEXT_TEST);
 
             $questionHeaderBlockBuilder->setQuestionTitle($question_gui->object->getTitle());
             $questionHeaderBlockBuilder->setQuestionPoints($question_gui->object->getMaximumPoints());
@@ -2342,28 +2340,25 @@ class ilObjTestGUI extends ilObjectGUI implements ilCtrlBaseClassInterface, ilDe
 
             $template->setVariable("TXT_QUESTION_ID", $this->lng->txt('question_id_short'));
             $template->setVariable("QUESTION_ID", $question_gui->object->getId());
-            $result_output = $question_gui->getSolutionOutput(0, null, false, true, false, $this->object->getShowSolutionFeedback());
+            $result_output = $question_gui->getSolutionOutput(0, null, false, true, false, false);
             $template->setVariable("SOLUTION_OUTPUT", $result_output);
             $template->parseCurrentBlock("question");
             $counter++;
             $max_points += $question_gui->object->getMaximumPoints();
         }
 
-        $template->setVariable("TITLE", ilLegacyFormElementsUtil::prepareFormOutput($this->object->getTitle()));
+        $template->setVariable("TITLE", strip_tags($this->object->getTitle(), ilObjectGUI::ALLOWED_TAGS_IN_TITLE_AND_DESCRIPTION));
         $template->setVariable("PRINT_TEST", ilLegacyFormElementsUtil::prepareFormOutput($this->lng->txt("tst_print")));
         $template->setVariable("TXT_PRINT_DATE", ilLegacyFormElementsUtil::prepareFormOutput($this->lng->txt("date")));
-        $used_relative_dates = ilDatePresentation::useRelativeDates();
         $template->setVariable(
             "VALUE_PRINT_DATE",
             ilDatePresentation::formatDate(new ilDateTime($print_date, IL_CAL_UNIX))
         );
-        $use = ilDatePresentation::setUseRelativeDates($used_relative_dates);
         $template->setVariable(
             "TXT_MAXIMUM_POINTS",
             ilLegacyFormElementsUtil::prepareFormOutput($this->lng->txt("tst_maximum_points"))
         );
         $template->setVariable("VALUE_MAXIMUM_POINTS", ilLegacyFormElementsUtil::prepareFormOutput($max_points));
-
         $this->tpl->setVariable("PRINT_CONTENT", $template->get());
     }
 
@@ -2407,7 +2402,7 @@ class ilObjTestGUI extends ilObjectGUI implements ilCtrlBaseClassInterface, ilDe
             $max_points += $question_gui->object->getMaximumPoints();
         }
 
-        $template->setVariable("TITLE", ilLegacyFormElementsUtil::prepareFormOutput($this->object->getTitle()));
+        $template->setVariable("TITLE", strip_tags($this->object->getTitle(), ilObjectGUI::ALLOWED_TAGS_IN_TITLE_AND_DESCRIPTION));
         $template->setVariable(
             "PRINT_TEST",
             ilLegacyFormElementsUtil::prepareFormOutput($this->lng->txt("review_view"))
@@ -2615,7 +2610,7 @@ class ilObjTestGUI extends ilObjectGUI implements ilCtrlBaseClassInterface, ilDe
         }
 
         if ($this->object->getMainSettings()->getAdditionalSettings()->getHideInfoTab()) {
-            $this->ctrl->redirectByClass(ilTestScreenGUI::class, 'testScreen');
+            $this->ctrl->redirectByClass(ilTestScreenGUI::class, ilTestScreenGUI::DEFAULT_CMD);
             return '';
         }
 
@@ -2655,8 +2650,20 @@ class ilObjTestGUI extends ilObjectGUI implements ilCtrlBaseClassInterface, ilDe
         $info->enablePrivateNotes();
 
         $info->addSection($this->lng->txt("tst_general_properties"));
-        $info->addProperty($this->lng->txt("author"), $this->object->getAuthor());
-        $info->addProperty($this->lng->txt("title"), $this->object->getTitle());
+        $info->addProperty(
+            $this->lng->txt("author"),
+            strip_tags(
+                $this->object->getAuthor(),
+                ilObjectGUI::ALLOWED_TAGS_IN_TITLE_AND_DESCRIPTION
+            )
+        );
+        $info->addProperty(
+            $this->lng->txt("title"),
+            strip_tags(
+                $this->object->getTitle(),
+                ilObjectGUI::ALLOWED_TAGS_IN_TITLE_AND_DESCRIPTION
+            )
+        );
 
         if ($this->type !== 'tst') {
             $info->hideFurtherSections(false);
@@ -2772,7 +2779,12 @@ class ilObjTestGUI extends ilObjectGUI implements ilCtrlBaseClassInterface, ilDe
             case "postpone":
             case "outUserPassDetails":
             case "checkPassword":
-                $this->locator->addItem($this->object->getTitle(), $this->ctrl->getLinkTargetByClass(ilTestScreenGUI::class, 'testScreen'), '', $this->testrequest->getRefId());
+                $this->locator->addItem(
+                    $this->object->getTitle(),
+                    $this->ctrl->getLinkTargetByClass(ilTestScreenGUI::class, ilTestScreenGUI::DEFAULT_CMD),
+                    '',
+                    $this->testrequest->getRefId()
+                );
                 break;
             case "eval_stat":
             case "evalAllUsers":
@@ -2788,7 +2800,7 @@ class ilObjTestGUI extends ilObjectGUI implements ilCtrlBaseClassInterface, ilDe
             case "cancelImport":
                 break;
             default:
-                $this->locator->addItem($this->object->getTitle(), $this->ctrl->getLinkTargetByClass(ilTestScreenGUI::class, 'testScreen'), '', $this->testrequest->getRefId());
+                $this->locator->addItem($this->object->getTitle(), $this->ctrl->getLinkTargetByClass(ilTestScreenGUI::class, ilTestScreenGUI::DEFAULT_CMD), '', $this->testrequest->getRefId());
                 break;
         }
     }
@@ -2843,7 +2855,7 @@ class ilObjTestGUI extends ilObjectGUI implements ilCtrlBaseClassInterface, ilDe
         $main_tpl = $DIC->ui()->mainTemplate();
 
         $main_tpl->setOnScreenMessage('failure', $DIC->language()->txt("no_permission"), true);
-        $DIC->ctrl()->redirectByClass(ilTestScreenGUI::class, 'testScreen');
+        $DIC->ctrl()->redirectByClass(ilTestScreenGUI::class, ilTestScreenGUI::DEFAULT_CMD);
     }
 
     /**
@@ -2862,7 +2874,7 @@ class ilObjTestGUI extends ilObjectGUI implements ilCtrlBaseClassInterface, ilDe
 
         if ($ilAccess->checkAccess("read", "", (int) $target) || $ilAccess->checkAccess("visible", "", (int) $target)) {
             $DIC->ctrl()->setParameterByClass('ilObjTestGUI', 'ref_id', (int) $target);
-            $DIC->ctrl()->redirectByClass([ilRepositoryGUI::class, ilObjTestGUI::class, ilTestScreenGUI::class], 'testScreen');
+            $DIC->ctrl()->redirectByClass([ilRepositoryGUI::class, ilObjTestGUI::class, ilTestScreenGUI::class], ilTestScreenGUI::DEFAULT_CMD);
         } elseif ($ilAccess->checkAccess("read", "", ROOT_FOLDER_ID)) {
             $main_tpl->setOnScreenMessage('info', sprintf(
                 $lng->txt("msg_no_perm_read_item"),
@@ -3407,12 +3419,14 @@ class ilObjTestGUI extends ilObjectGUI implements ilCtrlBaseClassInterface, ilDe
             $this->ui_factory,
             $this->ui_renderer,
             $this->lng,
+            $this->refinery,
             $this->ctrl,
             $this->tpl,
             $this->http,
             $this->tabs_gui,
             $this->access,
             $this->db,
+            $this->rbac_system
         );
     }
 }

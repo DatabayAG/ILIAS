@@ -265,7 +265,7 @@ class SettingsFormGUI
         $online->setChecked(!$survey->getOfflineStatus());
         $form->addItem($online);
 
-        $dur = new \ilDateDurationInputGUI($lng->txt('rep_visibility_until'), "access_period");
+        $dur = new \ilDateDurationInputGUI($lng->txt('rep_time_based_availability'), "access_period");
         $dur->setShowTime(true);
         $date = $survey->getActivationStartDate();
         $dur->setStart($date
@@ -470,7 +470,7 @@ class SettingsFormGUI
         $mailnotification->setChecked($survey->getMailNotification());
 
         // addresses
-        $mailaddresses = new \ilTextInputGUI($lng->txt("mailaddresses"), "mailaddresses");
+        $mailaddresses = new \ilTextInputGUI($lng->txt("survey_notification_tutor_recipients"), "mailaddresses");
         $mailaddresses->setValue($survey->getMailAddresses());
         $mailaddresses->setSize(80);
         $mailaddresses->setInfo($lng->txt('mailaddresses_info'));

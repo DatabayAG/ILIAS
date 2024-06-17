@@ -30,6 +30,7 @@ use ILIAS\MetaData\Services\Services as Metadata;
  */
 class ilInfoScreenGUI
 {
+    protected \ILIAS\Repository\HTML\HTMLUtil $html;
     protected \ILIAS\DI\UIServices $ui;
     protected ?\ILIAS\UI\Component\MessageBox\MessageBox $mbox = null;
     protected ilTabsGUI $tabs_gui;
@@ -91,10 +92,8 @@ class ilInfoScreenGUI
         $this->top_formbuttons = array();
         $this->hiddenelements = array();
         $this->ui = $DIC->ui();
-        $this->request = new StandardGUIRequest(
-            $DIC->http(),
-            $DIC->refinery()
-        );
+        $this->request = $DIC->infoScreen()->internal()->gui()->standardRequest();
+        $this->html = $DIC->infoScreen()->internal()->gui()->html();
     }
 
     /**
@@ -374,10 +373,11 @@ class ilInfoScreenGUI
         // output
 
         // description
+        /* see https://mantis.ilias.de/view.php?id=39079
         if ($description != "") {
             $this->addSection($lng->txt("description"));
             $this->addProperty("", nl2br($description));
-        }
+        }*/
 
         // general section
         $this->addSection($lng->txt("meta_general"));
@@ -1220,7 +1220,7 @@ class ilInfoScreenGUI
             foreach ($properties as $p) {
                 $this->addProperty(
                     $p["condition"],
-                    "<a href='" . $p["link"] . "'>" . $p["title"] . "</a>"
+                    "<a href='" . $p["link"] . "'>" . $this->html->strip($p["title"]) . "</a>"
                 );
             }
         }

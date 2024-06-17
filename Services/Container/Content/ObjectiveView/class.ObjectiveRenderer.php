@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -17,6 +15,8 @@ declare(strict_types=1);
  * https://github.com/ILIAS-eLearning
  *
  *********************************************************************/
+
+declare(strict_types=1);
 
 namespace ILIAS\Containter\Content;
 
@@ -173,7 +173,7 @@ class ObjectiveRenderer
             $acc->setBehaviour(\ilAccordionGUI::FIRST_OPEN);
             $acc->setId("crsobjtv_" . $this->container->getId());
         } else {
-            //            $this->renderer->addCustomBlock('lobj', $lng->txt('crs_objectives'));
+            $this->renderer->addCustomBlock('lobj', $lng->txt('crs_objectives'));
         }
 
         $lur_data = $this->parseLOUserResults();
@@ -623,7 +623,7 @@ class ObjectiveRenderer
             if (isset($types[\ilLOUserResults::TYPE_QUALIFIED])) {
                 $result = $types[\ilLOUserResults::TYPE_QUALIFIED];
                 $result["type"] = \ilLOUserResults::TYPE_QUALIFIED;
-                $result["initial"] = $types[\ilLOUserResults::TYPE_INITIAL];
+                $result["initial"] = $types[\ilLOUserResults::TYPE_INITIAL] ?? null;
             } else {
                 $result = $types[\ilLOUserResults::TYPE_INITIAL];
                 $result["type"] = \ilLOUserResults::TYPE_INITIAL;
@@ -754,8 +754,7 @@ class ObjectiveRenderer
                 $a_lo_result['type'] == \ilLOUserResults::TYPE_INITIAL &&
                 \ilLOSettings::getInstanceByObjId($a_lo_result['course_id'] ?? 0)->isInitialTestQualifying()
             );
-        $has_completed =
-            ($a_lo_result["status"] ?? 0 == \ilLOUserResults::STATUS_COMPLETED);
+        $has_completed = (int) ($a_lo_result["status"] ?? 0) === \ilLOUserResults::STATUS_COMPLETED;
 
         $next_step = $progress_txt = $bar_color = $test_url = $initial_sub = null;
 

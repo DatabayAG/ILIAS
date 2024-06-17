@@ -327,7 +327,7 @@ class ilTrQuery
             $a_order_field = "login";
         } elseif (substr($a_order_field, 0, 4) == "udf_") {
             $udf_order = $a_order_field;
-            $a_order_field = null;
+            $a_order_field = '';
         }
         $result = self::executeQueries(
             $queries,
@@ -1952,7 +1952,7 @@ class ilTrQuery
             if ($row[$tree->getTreePk()] < 0) {
                 $res[$row["type"]]["deleted"] = ($res[$row["type"]]["deleted"] ?? 0) + 1;
             } else {
-                $res[$row['type']]['deleted'] = 0;
+                $res[$row["type"]]["deleted"] = ($res[$row["type"]]["deleted"] ?? 0);
             }
         }
 
@@ -2080,7 +2080,7 @@ class ilTrQuery
         $res = array();
         while ($row = $ilDB->fetchAssoc($set)) {
             $res[] = array("month" => $row["yyyy"] . "-" . $row["mm"],
-                           "count" => (int) ($row["counter"] ?? 0)
+                           "count" => (int) ($row["COUNTER"] ?? 0)
             );
         }
         return $res;
@@ -2292,5 +2292,18 @@ class ilTrQuery
         }
 
         return $res;
+    }
+
+    public static function getObjectTypeStatisticsMinYear()
+    {
+        global $DIC;
+
+        $db = $DIC->database();
+        $query = 'select min(yyyy) min from obj_type_stat';
+        $res = $db->query($query);
+        while ($row = $res->fetchRow(ilDBConstants::FETCHMODE_OBJECT)) {
+            return $row->min;
+        }
+        return date('Y');
     }
 }

@@ -425,6 +425,18 @@ class ilObjStudyProgramme extends ilContainer
         return null;
     }
 
+    public function isCertificateActive(): bool
+    {
+        $global_settings = new ilSetting('certificate');
+        $global_active = (bool) $global_settings->get('active', '0');
+        if(!$global_active) {
+            return false;
+        }
+        $certificate_template_repository = new ilCertificateTemplateDatabaseRepository($this->db);
+        $certificate_template = $certificate_template_repository->fetchCurrentlyUsedCertificate($this->getId());
+        return $certificate_template->isCurrentlyActive();
+    }
+
 
     ////////////////////////////////////
     // TREE NAVIGATION
@@ -1496,26 +1508,17 @@ class ilObjStudyProgramme extends ilContainer
     }
 
     /**
-     * Set all progresses to completed where the object with given id is a leaf
-     * and that belong to the user.
-     *
+     * Succeed all StudyProgramme(Nodes) where the object with the given id (a CRSR)
+     * is in a Programme with MODE_LP_COMPLETED.
      * This is exclusively called via event "Services/Tracking, updateStatus" (onServiceTrackingUpdateStatus)
-     */
-    public static function setProgressesCompletedFor(int $obj_id, int $user_id): void
-    {
-        // We only use courses via crs_refs
-        $type = ilObject::_lookupType($obj_id);
-        if ($type === "crsr") {
-            foreach (ilObject::_getAllReferences($obj_id) as $ref_id) {
-                self::setProgressesCompletedIfParentIsProgrammeInLPCompletedMode($ref_id, $obj_id, $user_id);
-            }
-        }
-    }
-
-    /**
+     *
+     * @param int $ref_id the RefId of the CRSR; used to find the PRG it's in
+     * @param int $obj_id the ObjId of the CRS; used as "triggering object"
+     * @param int $user_id the user's id to succeed for; all assignments are affected
+     *
      * @throws ilException
      */
-    protected static function setProgressesCompletedIfParentIsProgrammeInLPCompletedMode(
+    public static function setProgressesCompletedIfParentIsProgrammeInLPCompletedMode(
         int $ref_id,
         int $obj_id,
         int $user_id

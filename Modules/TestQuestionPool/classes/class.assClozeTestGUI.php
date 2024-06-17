@@ -331,8 +331,16 @@ JS;
         if ($save) {
             $form->setValuesByPost();
             $errors = !$form->checkInput();
-            $form->setValuesByPost(); 	// again, because checkInput now performs the whole stripSlashes handling and we
-            // need this if we don't want to have duplication of backslashes
+            $form->setValuesByPost();
+
+            $gap_combinations = $this->request->raw('gap_combination');
+            if (is_array($gap_combinations)
+                && $gap_combinations !== []
+                && $this->hasErrorInGapCombinationPoints($gap_combinations)) {
+                $this->tpl->setOnScreenMessage('failure', $this->lng->txt('points_non_numeric_or_negative_msg'));
+                $errors = true;
+            }
+
             if ($errors) {
                 $checkonly = false;
             }
@@ -346,6 +354,21 @@ JS;
             $this->tpl->setVariable("QUESTION_DATA", $form->getHTML() . $modal->getHTML());
         }
         return $errors;
+    }
+
+    private function hasErrorInGapCombinationPoints(array $gap_combinations): bool
+    {
+        foreach ($gap_combinations['points'] as $gaps_points) {
+            foreach ($gaps_points as $points) {
+                $points_standardized = str_replace(',', '.', $points);
+                if (!is_numeric($points_standardized)
+                    || (float) $points_standardized < 0) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     public function addBasicQuestionFormProperties(ilPropertyFormGUI $form): void
@@ -1152,14 +1175,8 @@ JS;
         $incorrect_feedback = $this->object->feedbackOBJ->getGenericFeedbackTestPresentation($this->object->getId(), false);
 
         $output = '';
-        if (strlen($correct_feedback . $incorrect_feedback)) {
-            $reached_points = $this->object->calculateReachedPoints($active_id, $pass);
-            $max_points = $this->object->getMaximumPoints();
-            if ($reached_points == $max_points) {
-                $output .= $correct_feedback;
-            } else {
-                $output .= $incorrect_feedback;
-            }
+        if ($correct_feedback . $incorrect_feedback !== '') {
+            $output = $this->genericFeedbackOutputBuilder($correct_feedback, $incorrect_feedback, $active_id, $pass);
         }
         //$test = new ilObjTest($this->object->active_id);
         return ilLegacyFormElementsUtil::prepareTextareaOutput($output, true);
