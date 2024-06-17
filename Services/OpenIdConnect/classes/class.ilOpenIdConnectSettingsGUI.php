@@ -501,8 +501,9 @@ return $form;
         $tag_input = $this->ui->input()->field()->tag(
             $this->lng->txt('auth_oidc_settings_additional_scopes'),
             $scopeValues
-        )->withValue($scopeValues)->withDedicatedName('custom_scope');
-
+        )->withValue($scopeValues)->withDedicatedName('custom_scope')
+                                  #->withByline('auth_oidc_settings_additional_scopes_info');
+                                    ;
         $group1 = $this->ui->input()->field()->group(
             [],
             $this->lng->txt('auth_oidc_settings_validate_scope_default')
@@ -550,8 +551,8 @@ return $form;
                 $this->scopes();
                 return;
             } else {
-                foreach ($form->getInputs() as $group => $inputs) {
-                    foreach ($inputs->getInputs() as $key => $input) {
+                foreach ($form->getInputs() as $group => $groups) {
+                    foreach ($groups->getInputs() as $key => $input) {
                         $dedicated_name = $input->getDedicatedName();
                         $result_data = $result[$group][$key];
                         if($dedicated_name === 'validate_scopes') {
@@ -684,8 +685,8 @@ return $form;
         $form = $this->initUserMappingForm();
         $request_form = $form->withRequest($this->request);
         $result = $request_form->getData();
-        foreach ($form->getInputs() as $group => $inputs) {
-            foreach ($inputs->getInputs() as $key => $input) {
+        foreach ($form->getInputs() as $group => $groups) {
+            foreach ($groups->getInputs() as $key => $input) {
                 $dedicated_name = $input->getDedicatedName();
                 $result_data = $result[$group][$key];
 
