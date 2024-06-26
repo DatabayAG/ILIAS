@@ -72,14 +72,16 @@ class ilBadgeUserTable
              */
             protected function getBadgeImageTemplates(Container $DIC, array $data) : array
             {
-                $a_parent_obj_id = null;
-                $parent_ref_id = $this->parent_ref_id;
-                $a_restrict_badge_id = 0;
 
                 global $DIC;
-                $data = [];
-                $tree = $DIC->repositoryTree();
-                $user_ids = null;
+                $a_parent_obj_id     = null;
+                $assignments         = null;
+                $user_ids            = null;
+                $parent_ref_id       = $this->parent_ref_id;
+                $a_restrict_badge_id = 0;
+                $data                = [];
+                $badges              = [];
+                $tree                = $DIC->repositoryTree();
 
                 if (!$a_parent_obj_id) {
                     $a_parent_obj_id = ilObject::_lookupObjId($parent_ref_id);
@@ -90,10 +92,11 @@ class ilBadgeUserTable
                 }
 
                 $obj_ids = [$a_parent_obj_id];
+
                 foreach ($tree->getSubTree($tree->getNodeData($parent_ref_id)) as $node) {
                     $obj_ids[] = $node["obj_id"];
                 }
-                $badges = [];
+
                 foreach ($obj_ids as $obj_id) {
                     foreach (ilBadge::getInstancesByParentId($obj_id) as $badge) {
                         $badges[$badge->getId()] = $badge;
@@ -109,7 +112,7 @@ class ilBadgeUserTable
                     }
                 }
 
-                if (!$user_ids) {
+                if (!$user_ids && $assignments !== null) {
                     $user_ids = array_keys($assignments);
                 }
 
