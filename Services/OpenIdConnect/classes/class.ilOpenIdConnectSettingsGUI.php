@@ -35,6 +35,9 @@ class ilOpenIdConnectSettingsGUI
     private const UPDATE_STRING = '_update';
     private const UDF_STRING = 'udf_';
     private const DEFAULT_CMD = 'settings';
+    private const DEFAULT_VALUES = 1;
+    private const SAVED_VALUES = 2;
+    private const POST_VALUE = 'Mode';
     private int $ref_id;
     /** @var array $body */
     private $body;
@@ -54,7 +57,7 @@ class ilOpenIdConnectSettingsGUI
     private $renderer;
     private ?ilUserDefinedFields $udf = null;
     private ilGlobalTemplateInterface $tpl;
-    private ?string $mapping_template = null;
+    private int $mapping_template = 2;
     private $request;
     private ilOpenIdAttributeMappingTemplate $attribute_mapping_template;
 
@@ -82,16 +85,17 @@ class ilOpenIdConnectSettingsGUI
         $this->toolbar = $DIC->toolbar();
         $refinery = $DIC->refinery();
         $this->tpl = $DIC->ui()->mainTemplate();
+        $this->http = $DIC->http();
         $this->ui = $DIC->ui()->factory();
         $this->renderer = $DIC->ui()->renderer();
+        $this->refinery = $DIC->refinery();
+        $this->factory = $DIC->ui()->factory();
         $this->request = $DIC->http()->request();
         $this->attribute_mapping_template = new ilOpenIdAttributeMappingTemplate();
 
-        if ($http_wrapper->post()->has('mapping_template')) {
-            $this->mapping_template = $http_wrapper->post()->retrieve(
-                'mapping_template',
-                $refinery->kindlyTo()->string()
-            );
+
+        if ($http_wrapper->query()->has(self::POST_VALUE) && $http_wrapper->query()->retrieve(self::POST_VALUE, $refinery->kindlyTo()->int())) {
+            $this->mapping_template = $http_wrapper->query()->retrieve(self::POST_VALUE, $refinery->kindlyTo()->int());
         }
 
     }
@@ -425,6 +429,7 @@ class ilOpenIdConnectSettingsGUI
     protected function profile(ilPropertyFormGUI $form = null): void
     {
         $this->checkAccess('read');
+        $this->chooseMapping();
         $this->userMapping();
     }
 
@@ -447,47 +452,8 @@ class ilOpenIdConnectSettingsGUI
 
        $form = $this->ui->input()->container()->form()->standard($this->ctrl->getFormAction($this, 'saveScopes'),
             $ui_container);
-return $form;
-        $scopes = new ilTextInputGUI(
-            "",
-            "scopes"
-        );
-        $scopes->setMulti(true);
 
-        $scopes->setMultiValues($scopeValues);
-        $form->addItem($scopes);
-
-
-        // validation options
-
-        $validation_options->setValue((string) $this->settings->getValidateScopes());
-        $form->addItem($validation_options);
-
-        $base_valid_url_option = new ilRadioOption(
-
-        );
-
-        $validation_options->addOption($base_valid_url_option);
-
-        $custom_validation_url = new ilTextInputGUI(
-            '',
-            'custom_discovery_url'
-        );
-
-        $custom_valid_url_option = new ilRadioOption(
-
-        );
-        $validation_options->addOption($custom_valid_url_option);
-        $custom_validation_url->setValue($this->settings->getCustomDiscoveryUrl() ?? '');
-        $custom_validation_url->setMaxLength(120);
-        $custom_validation_url->setInfo($this->lng->txt('auth_oidc_settings_discovery_url'));
-        $custom_valid_url_option->addSubItem($custom_validation_url);
-        $no_validation_option = new ilRadioOption(
-
-        );
-        $validation_options->addOption($no_validation_option);
-        $form->addCommandButton('saveScopes', $this->lng->txt('save'));
-        return $form;
+       return $form;
     }
 
     protected function buildScopeSelection(array $ui_container): array {
@@ -827,7 +793,10 @@ return $form;
 
     public function chooseMapping(): void
     {
-        if (!$this->mapping_template) {
+        $this->mainTemplate->setOnScreenMessage('info', $this->lng->txt('auth_odic_scope_info'));
+
+        $this->setSubTabs(self::STAB_PROFILE);
+        if ((int) $this->mapping_template === 2) {
             $this->userMapping();
             return;
         }
@@ -853,27 +822,6 @@ return $form;
         }
 
         $this->userMapping();
-    }
-
-    /**
-     * @throws ilCtrlException
-     */
-    private function userMappingToolbar(): void
-    {
-        $this->mainTemplate->setOnScreenMessage('info', $this->lng->txt('auth_odic_scope_info'), true);
-        $select_form = new ilSelectInputGUI("mapping_template");
-        $select_form->setPostVar("mapping_template");
-        $options = [
-            '' => $this->lng->txt('auth_oidc_saved_values'),
-            ilOpenIdAttributeMappingTemplate::OPEN_ID_CONFIGURED => $this->lng->txt(ilOpenIdAttributeMappingTemplate::OPEN_ID_CONFIGURED)
-        ];
-
-        $select_form->setOptions($options);
-        $select_form->setValue($this->mapping_template);
-
-        $this->toolbar->addInputItem($select_form);
-        $this->toolbar->addFormButton($this->lng->txt('show'), "chooseMapping");
-        $this->toolbar->setFormAction($this->ctrl->getFormAction(new ilOpenIdConnectSettingsGUI($this->ref_id), "chooseMapping"));
     }
 
     /**
@@ -961,14 +909,31 @@ return $form;
      */
     public function userMapping($form = null): void
     {
-        $this->setSubTabs(self::STAB_PROFILE);
-        $this->userMappingToolbar();
-
         if($form === null) {
             $form = $this->initUserMappingForm();
         }
 
-        $this->tpl->setContent($this->renderer->render($form));
+        $request_wrapper = $this->http->wrapper()->query();
+        $active = 2;
+
+        $target = $this->http->request()->getRequestTarget();
+        if ($request_wrapper->has(self::POST_VALUE) && $request_wrapper->retrieve(self::POST_VALUE, $this->refinery->kindlyTo()->int())) {
+            $active = $request_wrapper->retrieve(self::POST_VALUE, $this->refinery->kindlyTo()->int());
+        }
+
+        $actions = array(
+            $this->lng->txt("auth_oidc_saved_values") => "$target&".self::POST_VALUE."=" . self::SAVED_VALUES,
+            $this->lng->txt("auth_oidc_configured_scopes") => "$target&" . self::POST_VALUE."=" . self::DEFAULT_VALUES,
+        );
+
+        $aria_label = "change_the_currently_displayed_mode";
+        $active_label =  $this->lng->txt("auth_oidc_saved_values");
+        if($active !== 2) {
+            $active_label = $this->lng->txt("auth_oidc_configured_scopes");
+        }
+        $view_control = $this->factory->viewControl()->mode($actions, $aria_label)->withActive($active_label);
+        $html = $this->renderer->render($view_control);
+        $this->tpl->setContent($html . $this->renderer->render($form));
     }
 
 }

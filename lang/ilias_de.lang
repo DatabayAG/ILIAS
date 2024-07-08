@@ -2036,7 +2036,7 @@ auth#:#auth_info_add#:#Wählen Sie diese Einstellung, falls Sie sich noch nie f�
 auth#:#auth_info_migrate#:#Wenn Sie bereits ein ILIAS-Konto besitzen, geben Sie bitte den Anmeldenamen und das Passwort ein, um Ihre persönlichen Daten (Mails, Testergebnisse ...) zu übernehmen.
 auth#:#auth_ldap_server_ds#:#LDAP-Server
 auth#:#auth_login_editor#:#Loginseite gestalten
-auth#:#auth_odic_scope_info#:#DESCRIPTION BE REPLACED WITH INFO
+auth#:#auth_odic_scope_info#:#Sie haben hier die Möglichkeit zwischen ihren gespeicherten Werten und den Standardwerten zu wechseln.
 auth#:#auth_oidc#:#OpenID Connect
 auth#:#auth_oidc_configured_scopes#:#Standardwerte für konfigurierte Scopes
 auth#:#auth_oidc_failed#:#Login mittels OpenID Connect fehlgeschlagen
