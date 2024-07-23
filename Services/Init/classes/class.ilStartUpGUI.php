@@ -141,6 +141,10 @@ class ilStartUpGUI implements ilCtrlBaseClassInterface, ilCtrlSecurityInterface
                 $this->ctrl->forwardCommand(new ilPasswordAssistanceGUI());
                 return;
 
+            case strtolower(ilAccessibilityControlConceptGUI::class):
+                $this->ctrl->forwardCommand(new ilAccessibilityControlConceptGUI());
+                return;
+
             default:
                 if (method_exists($this, $cmd)) {
                     $this->$cmd();
@@ -1049,7 +1053,8 @@ class ilStartUpGUI implements ilCtrlBaseClassInterface, ilCtrlSecurityInterface
                 '[list-login-form]',
                 '[list-cas-login-form]',
                 '[list-saml-login]',
-                '[list-shibboleth-login-form]'
+                '[list-shibboleth-login-form]',
+                '[list-openid-connect-login]'
             ],
             '',
             $page_editor_html

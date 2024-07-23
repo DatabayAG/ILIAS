@@ -252,6 +252,8 @@ class ilAdvancedMDFieldDefinitionText extends ilAdvancedMDFieldDefinitionGroupBa
         // an import from release < 7
         if (strpos($a_cdata, self::XML_SEPARATOR_TRANSLATION) === false) {
             $this->getADT()->setText($a_cdata);
+            $record = ilAdvancedMDRecord::_getInstanceByRecordId($this->record_id);
+            $this->getADT()->setTranslation($record->getDefaultLanguage(), $a_cdata);
             return;
         }
 
@@ -288,8 +290,8 @@ class ilAdvancedMDFieldDefinitionText extends ilAdvancedMDFieldDefinitionGroupBa
                 break;
         }
 
-        if (trim($value)) {
-            $this->getADT()->setText($value);
+        if (trim((string) $value)) {
+            $this->getADT()->setText(is_null($value) ? null : (string) $value);
             return true;
         }
         return false;

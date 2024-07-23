@@ -29,6 +29,7 @@ use ILIAS\Services\WOPI\Embed\EmbeddedApplication;
 use ILIAS\Data\URI;
 use ILIAS\UI\Component\Modal\Modal;
 use ILIAS\Services\WOPI\Discovery\ActionTarget;
+use ILIAS\FileUpload\MimeType;
 
 /**
  * @author Fabian Schmid <fabian@sr.solutions>
@@ -169,9 +170,8 @@ class ilFileVersionsGUI
                 );
                 return;
             case strtolower(ilWOPIEmbeddedApplicationGUI::class):
-                $action = $this->action_repo->getActionForSuffix(
-                    $this->current_revision->getInformation()->getSuffix(),
-                    ActionTarget::EDIT
+                $action = $this->action_repo->getEditActionForSuffix(
+                    $this->current_revision->getInformation()->getSuffix()
                 );
 
                 $embeded_application = new EmbeddedApplication(
@@ -289,7 +289,7 @@ class ilFileVersionsGUI
 
         // only add unzip button if the current revision is a zip.
         if (null !== $this->current_revision &&
-            ilObjFileAccess::isZIP($this->current_revision->getInformation()->getMimeType())
+            in_array($this->current_revision->getInformation()->getMimeType(), [MimeType::APPLICATION__ZIP, MimeType::APPLICATION__X_ZIP_COMPRESSED], true)
         ) {
             $btn_unzip = $this->ui->factory()->button()->standard(
                 $this->lng->txt('unzip'),
@@ -301,9 +301,8 @@ class ilFileVersionsGUI
         // Editor
         $suffix = $this->current_revision?->getInformation()?->getSuffix();
 
-        if ($this->action_repo->hasActionForSuffix(
-            $this->current_revision->getInformation()->getSuffix(),
-            ActionTarget::EDIT
+        if ($this->action_repo->hasEditActionForSuffix(
+            $this->current_revision->getInformation()->getSuffix()
         )) {
             $external_editor = $this->ui->factory()
                                         ->button()

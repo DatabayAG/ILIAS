@@ -118,13 +118,19 @@ class assFormulaQuestion extends assQuestion implements iQuestionCondition, ilAs
         }
     }
 
-    public function getResultUnits($result)
+    public function getResultUnits(assFormulaQuestionResult $result): array
     {
-        if (array_key_exists($result->getResult(), $this->resultunits)) {
-            return $this->resultunits[$result->getResult()];
-        } else {
-            return array();
+        if (!isset($this->resultunits[$result->getResult()])) {
+            return [];
         }
+
+        $result_units = $this->resultunits[$result->getResult()];
+
+        usort($result_units, static function (assFormulaQuestionUnit $a, assFormulaQuestionUnit $b) {
+            return $a->getSequence() <=> $b->getSequence();
+        });
+
+        return $result_units;
     }
 
     public function getAllResultUnits(): array
@@ -357,10 +363,11 @@ class assFormulaQuestion extends assQuestion implements iQuestionCondition, ilAs
                 }
 
                 $units = "";
-                if (count($this->getResultUnits($resObj)) > 0) {
+                $result_units = $this->getResultUnits($resObj);
+                if (count($result_units) > 0) {
                     if ($forsolution) {
                         if (is_array($userdata)) {
-                            foreach ($this->getResultUnits($resObj) as $unit) {
+                            foreach ($result_units as $unit) {
                                 if (isset($userdata[$result]["unit"]) && $userdata[$result]["unit"] == $unit->getId()) {
                                     $units = $unit->getUnit();
                                 }
@@ -373,7 +380,7 @@ class assFormulaQuestion extends assQuestion implements iQuestionCondition, ilAs
                     } else {
                         $units = '<select name="result_' . $result . '_unit">';
                         $units .= '<option value="-1">' . $this->lng->txt("select_unit") . '</option>';
-                        foreach ($this->getResultUnits($resObj) as $unit) {
+                        foreach ($result_units as $unit) {
                             $units .= '<option value="' . $unit->getId() . '"';
                             if (array_key_exists($result, $userdata) &&
                                 is_array($userdata[$result]) &&
@@ -711,8 +718,6 @@ class assFormulaQuestion extends assQuestion implements iQuestionCondition, ilAs
             if ($result->numRows() > 0) {
                 while ($data = $ilDB->fetchAssoc($result)) {
                     $varObj = new assFormulaQuestionVariable($data["variable"], $data["range_min"], $data["range_max"], $this->getUnitrepository()->getUnit($data["unit_fi"]), $data["varprecision"], $data["intprecision"]);
-                    $varObj->setRangeMinTxt($data['range_min_txt']);
-                    $varObj->setRangeMaxTxt($data['range_max_txt']);
                     $this->addVariable($varObj);
                 }
             }
@@ -726,8 +731,6 @@ class assFormulaQuestion extends assQuestion implements iQuestionCondition, ilAs
                 while ($data = $ilDB->fetchAssoc($result)) {
                     $resObj = new assFormulaQuestionResult($data["result"], $data["range_min"], $data["range_max"], $data["tolerance"], $this->getUnitrepository()->getUnit($data["unit_fi"]), $data["formula"], $data["points"], $data["resprecision"], $data["rating_simple"], $data["rating_sign"], $data["rating_value"], $data["rating_unit"]);
                     $resObj->setResultType($data['result_type']);
-                    $resObj->setRangeMinTxt($data['range_min_txt']);
-                    $resObj->setRangeMaxTxt($data['range_max_txt']);
                     $this->addResult($resObj);
                 }
             }
@@ -921,7 +924,7 @@ class assFormulaQuestion extends assQuestion implements iQuestionCondition, ilAs
             );
         }
 
-        return (float)$points;
+        return (float) $points;
     }
 
     public function calculateReachedPointsFromPreviewSession(ilAssQuestionPreviewSession $previewSession)
