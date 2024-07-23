@@ -628,19 +628,6 @@ assessment#:#dont_use_questionpool#:#Don't insert the questions in a question po
 assessment#:#duplicate#:#Duplicate
 assessment#:#duplicate_matching_values_selected#:#You have selected duplicate matching values!
 assessment#:#duplicate_order_values_entered#:#You have entered duplicate order values!
-assessment#:#ects_allow_ects_grades#:#Show ECTS grade additional to received mark
-assessment#:#ects_fx_threshold#:#Threshold
-assessment#:#ects_fx_threshold_info#:#Please enter the required percentile for granting the ‘FX’ grade.
-assessment#:#ects_grade#:#ECTS Grade
-assessment#:#ects_grade_a_desc#:#outstanding performance with only minor errors
-assessment#:#ects_grade_b_desc#:#above the average standard but with some errors
-assessment#:#ects_grade_c_desc#:#generally sound work with a number of notable errors
-assessment#:#ects_grade_d_desc#:#fair but with significant shortcomings
-assessment#:#ects_grade_desc_prefix#:#Meaning of grade:
-assessment#:#ects_grade_e_desc#:#performance meets the minimum criteria
-assessment#:#ects_grade_f_desc#:#considerable further work is required
-assessment#:#ects_grade_fx_desc#:#some more work required before the credit can be awarded
-assessment#:#ects_output_of_ects_grades#:#Output of ECTS grades
 assessment#:#edit_answer#:#Edit Answer
 assessment#:#edit_concluding_remarks#:#Edit Concluding Remarks
 assessment#:#edit_introduction#:#Edit Introduction
@@ -874,7 +861,6 @@ assessment#:#manscoring_results_pass#:#Manual Scored Questions for Pass %s
 assessment#:#manual_editing#:#Manual Editing
 assessment#:#mark_schema#:#Grading System
 assessment#:#mark_schema_invalid#:#The grading system that you have tried to create contains errors. Please make sure that the values in the ‘Minimum Score Required (in %]’ column are correct.
-assessment#:#mark_tst_ects#:#Your ECTS grade is "[markects]" (European Credit Transfer System)
 assessment#:#matches#:#matches
 assessment#:#matching_pairs#:#Matching Pairs
 assessment#:#matching_shuffle_definitions#:#Definitions only
@@ -1515,7 +1501,7 @@ assessment#:#tst_instant_feedback_trigger_forced_desc#:#The presentation of feed
 assessment#:#tst_instant_feedback_trigger_manual#:#Participants can Trigger the Feedback Manually
 assessment#:#tst_instant_feedback_trigger_manual_desc#:#The feedback is availble but will only be shown when a participant triggers the presentation manually.
 assessment#:#tst_introduction#:#Introductory Message
-assessment#:#tst_introduction_desc#:#Shows an introductory message on the tab ‘Info’ of the test. This text is accessible already before the test can be started.
+assessment#:#tst_introduction_desc#:#Shows an introductory message on the ‘Test’ tab. The message can be edited in the sub-tab 'Edit Introduction' of these settings and is accessible already before the test can be started.
 assessment#:#tst_introduction_text#:#Introductory Message
 assessment#:#tst_invited_nobody#:#No users, groups or roles have been added as fixed test participants
 assessment#:#tst_invited_selected_users#:#The selected users have been added as fixed test participants
@@ -1995,7 +1981,6 @@ assessment#:#units#:#Units
 assessment#:#unlimited#:#unlimited
 assessment#:#unlock#:#Unlock
 assessment#:#uploaded_material#:#Uploaded Material
-assessment#:#use_ects_fx#:#Use the ‘FX’ grade
 assessment#:#use_previous_solution#:#Use Previous Solution
 assessment#:#use_previous_solution_advice#:#The shown solution for the question is your previously given one. You have to confirm the adoption of the solution, if you like to use it without any change.
 assessment#:#user_has_finished_a_test#:#A participant has finished a test.
@@ -4223,7 +4208,7 @@ common#:#glo_new#:#New Glossary
 common#:#global#:#Global
 common#:#global_default#:#Global Default
 common#:#global_fixed#:#Global Fixed
-common#:#global_role_assignment#:#Globale Rollenzuweisung
+common#:#global_role_assignment#:#Global Role Assignment
 common#:#global_settings#:#Global settings
 common#:#global_user#:#Global users
 common#:#glossaries#:#Glossaries
@@ -4533,7 +4518,7 @@ common#:#local#:#Local
 common#:#local_language_file#:#custom language file
 common#:#local_language_files#:#custom language files
 common#:#local_languages_already_installed#:#Selected custom language file(s) are already installed
-common#:#local_role_assignment#:#Lokale Rollenzuweisung
+common#:#local_role_assignment#:#Local Role Assignment
 common#:#location#:#Location
 common#:#locator#:#Location:
 common#:#log_in#:#Login
@@ -6058,7 +6043,7 @@ cont#:#cont_item_list#:#List
 cont#:#cont_item_list_info#:#Objects located within this container are displayed in the form of a list.
 cont#:#cont_list_presentation#:#Content Display Options
 cont#:#cont_mem_skills#:#Competences
-cont#:#cont_news_edited#:#Bearbeitet
+cont#:#cont_news_edited#:#Edited
 cont#:#cont_news_settings#:#News Settings
 cont#:#cont_news_timeline#:#News Timeline
 cont#:#cont_news_timeline_auto_entries#:#Include Automatic Entries
@@ -6067,6 +6052,7 @@ cont#:#cont_news_timeline_info#:#Activates News Timeline Tab
 cont#:#cont_news_timeline_landing_page#:#Landing Page
 cont#:#cont_news_timeline_landing_page_info#:#Timeline page will be the landing page.
 cont#:#cont_news_timeline_tab#:#Timeline
+cont#:#cont_no_title#:#Empty Title
 cont#:#cont_page_type_cont#:#Repository Page (Cours, Group, ...)
 cont#:#cont_page_type_cstr#:#Course Start Page (Learning Objectives View)
 cont#:#cont_path#:#Path
@@ -6899,7 +6885,7 @@ content#:#cont_pc_prof#:#Personal Data
 content#:#cont_pc_qover#:#Question Overview
 content#:#cont_pc_qst#:#Question
 content#:#cont_pc_repobj#:#Item Group
-content#:#cont_pc_res#:#Resource
+content#:#cont_pc_res#:#Item Group
 content#:#cont_pc_sec#:#Section
 content#:#cont_pc_skills#:#Competence
 content#:#cont_pc_src#:#Source Code
@@ -8071,10 +8057,10 @@ crs#:#timing_tutor_visible#:#Remark is visible for course tutors
 crs#:#timing_user_accept#:#Accept Timings
 crs#:#timing_user_accepted#:#Timings Accepted
 crs#:#timings#:#Timings
-crs#:#timings_cron_reminder_exceeded_start#:#Der Bearbeitungszeitraum ist überfällig bei:
-crs#:#timings_cron_reminder_exceeded_subject#:#Sie haben den Bearbeitungszeitraum überschritten
-crs#:#timings_cron_reminder_freshly_start#:#Der Bearbeitungszeitraum hat begonnen bei:
-crs#:#timings_cron_reminder_started_subject#:#Der Bearbeitungszeitraum hat begonnen
+crs#:#timings_cron_reminder_exceeded_start#:#The processing period is overdue at:
+crs#:#timings_cron_reminder_exceeded_subject#:#You have exceeded the processing period.
+crs#:#timings_cron_reminder_freshly_start#:#The processing period started at:
+crs#:#timings_cron_reminder_started_subject#:#The processing period has started.
 crs#:#timings_edit#:#Edit Timings
 crs#:#timings_of#:#Timings Off
 crs#:#timings_reminder_notifications#:#Course Timings Notifications
@@ -8567,7 +8553,6 @@ dcl#:#dcl_changed_by#:#Changed by
 dcl#:#dcl_checked#:#Checked.
 dcl#:#dcl_comments#:#Comments
 dcl#:#dcl_comments_desc#:#Displays the number of comments for a Entry.
-dcl#:#dcl_configuration_complete#:#Configuration Complete
 dcl#:#dcl_confirm_delete_detailed_view_text#:#The detailed view definition of entries of this table will be removed irreversibly, the entries and fields themselves will not be changed.
 dcl#:#dcl_confirm_delete_detailed_view_title#:#Do you really want to delete this detailed view?
 dcl#:#dcl_confirm_delete_field#:#Do you really want to delete this field?
@@ -9499,6 +9484,7 @@ exc#:#exc_rel_start_latest_lead_text#:#%s the Latest
 exc#:#exc_rel_start_lead_text#:#Submit %s Days After Start
 exc#:#exc_relative_date#:#Relative Date
 exc#:#exc_relative_date_info#:#The deadline is set individually relative to the time when a user started the assignment.
+exc#:#exc_relative_date_period#:#Working Time
 exc#:#exc_rem_time_after_start#:#Remaining Time after Start
 exc#:#exc_reminder_cron_ok#:#Reminders sent:
 exc#:#exc_reminder_end#:#Reminder ends
@@ -10235,7 +10221,7 @@ grp#:#grp_create_and_add_user#:#Create and Add User
 grp#:#grp_create_new#:#Create New Group
 grp#:#grp_create_new_grp_in#:#Create new group in '%1'.
 grp#:#grp_create_or_use_existing#:#Do you want to add the user to an existing group or create a new group?
-grp#:#grp_created_and_user_been_added#:#Die Gruppe wurde erstellt und der Benutzer hinzugefügt.
+grp#:#grp_created_and_user_been_added#:#Group created and user added.
 grp#:#grp_custom_user_fields#:#Group Relevant User Data
 grp#:#grp_custom_user_fields_infobox#:#Create additional data fields for group members to fill in when they join. You can show this information as an additional column in the "Members" tab.
 grp#:#grp_custom_user_fields_table_title#:#Relevant User Data of This Group
@@ -11435,7 +11421,7 @@ mail#:#mail_nacc_timelimit#:#User access period
 mail#:#mail_nacc_title#:#Title
 mail#:#mail_nacc_use_placeholder#:#The following placeholders may be used (only in the ‘Message Content’ field)
 mail#:#mail_new_template#:#New Text Template
-mail#:#mail_no_permissions_write_smtp#:#You have no permission to write external e-mail
+mail#:#mail_no_permissions_write_smtp#:#You do not have permission to send external e-mails.
 mail#:#mail_no_subject#:#No subject available
 mail#:#mail_no_valid_mailing_list#:#%1$s (not a valid mailing list)
 mail#:#mail_notification_membership_section#:#Membership
@@ -12796,8 +12782,8 @@ noti#:#noti_activate_notification#:#Activate Notification
 noti#:#noti_deactivate_notification#:#Deactivate Notification
 noti#:#noti_notification_activated#:#Notification Activated
 noti#:#noti_notification_deactivated#:#Notification Deactivated
-notifications_adm#:#enable_osd#:#Enable On-Screen Notifications
-notifications_adm#:#enable_osd_desc#:#If enabled, users are notified by a popup about new notifications.
+notifications_adm#:#enable_osd#:#Enable Toasts
+notifications_adm#:#enable_osd_desc#:#If enabled, users are notified by a pop-up about new notifications.
 notifications_adm#:#notification_settings#:#Notification Settings
 notifications_adm#:#osd_delay#:#Presentation Delay
 notifications_adm#:#osd_delay_desc#:#Delay of the visible presentation in milliseconds.
@@ -12808,7 +12794,7 @@ notifications_adm#:#osd_interval#:#Refreshinterval
 notifications_adm#:#osd_interval_desc#:#Polling interval for checking of new notifications in miliseconds. A lower number will notify the user more quickly but increases the number of requests the web server must handle.
 notifications_adm#:#osd_play_sound#:#Play a Sound
 notifications_adm#:#osd_play_sound_desc#:#Play a sound when receiving a new notficiation.
-notifications_adm#:#osd_settings#:#On-Screen Notifications
+notifications_adm#:#osd_settings#:#Toasts
 notifications_adm#:#osd_vanish#:#Presentation Time
 notifications_adm#:#osd_vanish_desc#:#Visible time of a notification on the screen in miliseconds.
 obj#:#activation_visible_when_disabled#:#Visibility
@@ -13875,7 +13861,7 @@ rbac#:#coms_read#:#User has read access to administration of Comments.
 rbac#:#coms_visible#:#Administration of Comments is visible.
 rbac#:#coms_write#:#User can edit settings of administration of Comments.
 rbac#:#condition_failed#:#Failed
-rbac#:#condition_learning_progress#:#Derive from Learning Progress
+rbac#:#condition_learning_progress#:#Learning Progress Status: Completed
 rbac#:#contribute#:#Contribute
 rbac#:#copa_copy#:#Copy Content Page
 rbac#:#copa_delete#:#User can move or delete Content Page
@@ -14294,7 +14280,7 @@ rbac#:#rbac_cant_import_role_wrong_type#:#Can't import a role from item %s into 
 rbac#:#rbac_change_existing_confirm_tbl#:#Settings for ‘Change Existing Objects’
 rbac#:#rbac_change_existing_objects_desc_new_role#:#The permission settings of this role will be adopted to ALL existing objects.
 rbac#:#rbac_changes#:#Changes
-rbac#:#rbac_choose_copy_targets#:#Please enter a query for selecting the target roles.
+rbac#:#rbac_choose_copy_targets#:#Please select the roles which are to be the targets for the copied permissions.
 rbac#:#rbac_condition_delete_sure#:#Are you sure you want to delete the following preconditions?
 rbac#:#rbac_context_global#:#Global
 rbac#:#rbac_copy_behaviour#:#Role Copy Settings
@@ -14352,26 +14338,26 @@ rbac#:#rbac_delete_local_policies#:#Delete Local Policies
 rbac#:#rbac_delete_local_policies_info#:#If activated, all local policies will be deleted. The object permissions will be rewritten and protected.
 rbac#:#rbac_delete_role#:#Delete Role
 rbac#:#rbac_edit_condition#:#Edit Precondition
-rbac#:#rbac_form_copy_roles_adjust_button#:#Rechte anpassen
-rbac#:#rbac_form_copy_roles_adjust_type#:#Typ der Rechteanpassung
-rbac#:#rbac_form_copy_roles_adjust_type_add#:#Rechte hinzufügen
-rbac#:#rbac_form_copy_roles_adjust_type_add_info#:#Fügt MARKIERTE Rechte der ausgewählten globalen Rollenvorlage zu den lokalen Rechtevorgabe hinzu.
-rbac#:#rbac_form_copy_roles_adjust_type_clone#:#Rechte kopieren
-rbac#:#rbac_form_copy_roles_adjust_type_clone_info#:#Alle Rechte der ausgewählten globalen Rollenvorlage überschreiben alle lokalen Rechtevorgaben.
-rbac#:#rbac_form_copy_roles_adjust_type_remove#:#Rechte entfernen
-rbac#:#rbac_form_copy_roles_adjust_type_remove_info#:#Entfernt die MARKIERTEN Rechte der ausgewählten globalen Rollenvorlage aus den lokalen Rechtevorgaben.
-rbac#:#rbac_form_copy_roles_ce_add_no#:#Vorhandene Objekte NICHT anpassen
-rbac#:#rbac_form_copy_roles_ce_add_no_info#:#Vorhandene lokale Rechtevorgaben entsprechend ergänzt, die vorhandenen Objekte werden nicht in ihren Rechten angepasst.
-rbac#:#rbac_form_copy_roles_ce_add_yes#:#Vorhandene Objekte nur um ausgewählte Rechte ergänzen
-rbac#:#rbac_form_copy_roles_ce_add_yes_info#:#Vorhandene lokale Rechtevorgaben und die Rechteeinstellungen vorhandener Objekte werden entsprechend ergänzt.
-rbac#:#rbac_form_copy_roles_ce_clone_no#:#Vorhandene Objekte NICHT anpassen
-rbac#:#rbac_form_copy_roles_ce_clone_no_info#:#Vorhandene lokale Rechtevorgaben werden überschrieben, die vorhandenen Objekte werden nicht in ihren Rechten angepasst.
-rbac#:#rbac_form_copy_roles_ce_clone_yes#:#Vorhandene Objekte ändern
-rbac#:#rbac_form_copy_roles_ce_clone_yes_info#:#Vorhandene lokale Rechtevorgaben entsprechend überschreiben und IN GÄNZE mit allen gecheckten und ungecheckten Vorgaben auf vorhandene Objekte angewendet.
-rbac#:#rbac_form_copy_roles_ce_remove_no#:#Vorhandene Objekte NICHT anpassen
-rbac#:#rbac_form_copy_roles_ce_remove_no_info#:#Markierte Rechte werden aus vorhandenen lokalen Rechtevorgaben entfernt, die vorhandenen Objekte werden nicht in ihren Rechten angepasst.
-rbac#:#rbac_form_copy_roles_ce_remove_yes#:#Vorhandene Objekte nur um ausgewählte Rechte reduzieren
-rbac#:#rbac_form_copy_roles_ce_remove_yes_info#:#Vorhandene lokale Rechtevorgaben und die Rechteeinstellungen vorhandener Objekte werden entsprechend reduziert.
+rbac#:#rbac_form_copy_roles_adjust_button#:#Alter Permissions
+rbac#:#rbac_form_copy_roles_adjust_type#:#Type of Permission Alteration
+rbac#:#rbac_form_copy_roles_adjust_type_add#:#Add Permissions
+rbac#:#rbac_form_copy_roles_adjust_type_add_info#:#Adds the SELECTED permissions of the role or role template from which you are copying to the default permissions of the target role.
+rbac#:#rbac_form_copy_roles_adjust_type_clone#:#Overwrite Permissions
+rbac#:#rbac_form_copy_roles_adjust_type_clone_info#:#Completely overwrites the permission settings of the target role with the permissions settings of the role or role template from which you are copying. This applies to both the selected AND unselected permissions.
+rbac#:#rbac_form_copy_roles_adjust_type_remove#:#Remove Permissions
+rbac#:#rbac_form_copy_roles_adjust_type_remove_info#:#Removes the SELECTED permissions (of the role or role template from which you are copying) from the default permissions of the target role.
+rbac#:#rbac_form_copy_roles_ce_add_no#:#Do NOT Alter Existing Objects
+rbac#:#rbac_form_copy_roles_ce_add_no_info#:#Only the permission settings of the target role(s) will be overwritten. Existing objects will not be affected.
+rbac#:#rbac_form_copy_roles_ce_add_yes#:#Alter Existing Objects
+rbac#:#rbac_form_copy_roles_ce_add_yes_info#:#The selected permissions settings of the role from which you are copying will be added to both the target role(s) AND any existing objects.
+rbac#:#rbac_form_copy_roles_ce_clone_no#:#Do NOT Alter Existing Objects
+rbac#:#rbac_form_copy_roles_ce_clone_no_info#:#Only the permission settings of the target role(s) will be overwritten. Existing objects will not be affected.
+rbac#:#rbac_form_copy_roles_ce_clone_yes#:#Alter Existing Objects
+rbac#:#rbac_form_copy_roles_ce_clone_yes_info#:#The permissions settings of the target role(s) AND of any existing objects will be overwritten.
+rbac#:#rbac_form_copy_roles_ce_remove_no#:#Do NOT Alter Existing Objects
+rbac#:#rbac_form_copy_roles_ce_remove_no_info#:#The selected permissions will only be removed from target role(s). The permission settings of existing objects will not be altered.
+rbac#:#rbac_form_copy_roles_ce_remove_yes#:#Remove From Existing Objects
+rbac#:#rbac_form_copy_roles_ce_remove_yes_info#:#The selected permissions will be removed from the target role(s) AND from the permission settings of existing objects.
 rbac#:#rbac_global_rolt#:#Global Role Template
 rbac#:#rbac_import_role#:#Import Role
 rbac#:#rbac_info_only_position_access#:#You are presented only with those members with a Position within your organisational unit. Members with other organisational Positions are not shown to you but may reside in this coures without being shown to you.
@@ -14418,7 +14404,7 @@ rbac#:#rbac_role_rights_copy_change_existing#:#Change Existing Objects
 rbac#:#rbac_role_rights_copy_empty#:#None
 rbac#:#rbac_role_selection#:#Role Type
 rbac#:#rbac_role_title#:#Role Title
-rbac#:#rbac_select_copy_targets#:#Please select the target roles
+rbac#:#rbac_select_copy_targets#:#Please select the roles which are to be the targets for the copied permissions.
 rbac#:#rbac_ud_global#:#User-defined global role
 rbac#:#rbac_ud_local#:#User-defined local role
 rbac#:#rbac_ud_rolt#:#User-defined role template
@@ -16686,6 +16672,7 @@ survey#:#svy_page_add_question#:#Add new %s
 survey#:#svy_page_error#:#There was an error answering a survey question. Please refer to the question to get more information on the error!
 survey#:#svy_page_errors#:#There were errors answering the survey questions. Please refer to the questions to get more information on the errors!
 survey#:#svy_participant#:#Participant
+survey#:#svy_participants#:#Participants
 survey#:#svy_participation#:#Participation
 survey#:#svy_please_select_unused_codes#:#Please select at least one unused code.
 survey#:#svy_print_hide_labels#:#Hide labels
@@ -16757,7 +16744,7 @@ svy#:#svy_finish_survey#:#Finish survey '%1'
 svy#:#svy_invite_participants#:#Invite Participants
 svy#:#svy_link_to_svy#:#Link to Survey
 svy#:#svy_part_overview#:#Overview
-svy#:#svy_placeholders_label#:#Verfügbare Platzhalter
+svy#:#svy_placeholders_label#:#Available Placeholders
 svy#:#svy_print_selection#:#Print View Selection
 svy#:#svy_remove_all_participants#:#Delete all Participant Data
 svy#:#svy_remove_participants#:#Remove Participants
