@@ -139,6 +139,9 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
                 } elseif($action === 'obj_badge_deactivate') {
                     $this->deactivateObjectBadges();
                     $render_default = false;
+                } elseif($action === 'badge_image_template_delete') {
+                    $this->deleteImageTemplates();
+                    $render_default = false;
                 }
 
                 if($render_default) {
@@ -366,12 +369,6 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
             );
         }
 
-        $tbl = new ilBadgeImageTemplateTableGUI(
-            $this,
-            "listImageTemplates",
-            $ilAccess->checkAccess("write", "", $this->object->getRefId())
-        );
-        $this->tpl->setContent($tbl->getHTML());
         $template_table = new ilBadgeImageTemplateTable();
         $template_table->renderTable();
     }
@@ -594,13 +591,21 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
 
     protected function deleteImageTemplates(): void
     {
-        $ilCtrl = $this->ctrl;
         $lng = $this->lng;
 
-        $this->checkPermission("write");
+        $tmpl_ids_old = $this->badge_request->getIds();
 
-        $tmpl_ids = $this->badge_request->getIds();
-        if ($tmpl_ids) {
+        $tmpl_ids = $this->getTemplateIdsFromUrl();
+
+        if ($this->checkPermissionBool("write") && count($tmpl_ids) > 0) {
+            if (current($tmpl_ids) === self::TABLE_ALL_OBJECTS_ACTION) {
+                $tmpl_ids = [];
+                foreach (ilBadgeImageTemplate::getInstances() as $template) {
+                    $tmpl_ids[] = $template->getId();
+                }
+            } else {
+
+            }
             foreach ($tmpl_ids as $tmpl_id) {
                 $tmpl = new ilBadgeImageTemplate($tmpl_id);
                 $tmpl->delete();
@@ -609,7 +614,7 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
             $this->tpl->setOnScreenMessage('success', $lng->txt("settings_saved"), true);
         }
 
-        $ilCtrl->redirect($this, "listImageTemplates");
+        $this->ctrl->redirect($this, "listImageTemplates");
     }
 
 

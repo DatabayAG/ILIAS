@@ -174,7 +174,7 @@ class ilBadgeGUIRequest
         $query = $this->http->wrapper()->query();
         if ($query->has($action_parameter_token)) {
             $tmpl_ids = $query->retrieve($action_parameter_token,
-                $this->refinery->kindlyTo()->listOf($this->refinery->kindlyTo()->int()));
+                $this->refinery->kindlyTo()->listOf($this->refinery->kindlyTo()->string()));
         }
 
         return $tmpl_ids;
