@@ -735,12 +735,28 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
         $lng = $this->lng;
 
         $badge_ids = $this->getObjectBadgesFromMultiAction();
-
-        foreach ($badge_ids as $badge_id) {
-            $badge = new ilBadge($badge_id);
-            $badge->setActive($a_status);
-            $badge->update();
+        if (current($badge_ids) === self::TABLE_ALL_OBJECTS_ACTION) {
+            $types = ilBadgeHandler::getInstance()->getAvailableTypes(false);
+            $filter = ['type' => '' , 'title' => '', 'object' => ''];
+            $badge_ids = [];
+            foreach (ilBadge::getObjectInstances($filter) as $badge_item) {
+                if(isset($badge_item['id'])) {
+                    $badge_ids[] = $badge_item['id'];
+                }
+            }
+            foreach ($badge_ids as $badge_id) {
+                $badge = new ilBadge($badge_id);
+                $badge->setActive($a_status);
+                $badge->update();
+            }
+        } else {
+            foreach ($badge_ids as $badge_id) {
+                $badge = new ilBadge($badge_id);
+                $badge->setActive($a_status);
+                $badge->update();
+            }
         }
+
 
         $this->tpl->setOnScreenMessage('success', $lng->txt("settings_saved"), true);
         $ilCtrl->redirect($this, "listObjectBadges");
