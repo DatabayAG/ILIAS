@@ -33,6 +33,7 @@ use ILIAS\HTTP\Services;
  */
 class ilObjBadgeAdministrationGUI extends ilObjectGUI
 {
+    const TABLE_ALL_OBJECTS_ACTION = 'ALL_OBJECTS';
     private \ILIAS\ResourceStorage\Services $resource_storage;
     protected ilRbacSystem $rbacsystem;
     protected ilBadgeGUIRequest $badge_request;
@@ -292,13 +293,18 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
 
         if ($this->checkPermissionBool("write") && count($tmpl_ids) > 0) {
             $handler = ilBadgeHandler::getInstance();
-            $inactive = [];
+            $change_state = [];
             foreach ($handler->getInactiveTypes() as $type) {
-                if (!in_array($type, $tmpl_ids)) {
-                    $inactive[] = $type;
+               if (!in_array($type, $tmpl_ids)) {
+                    $change_state[] = $type;
                 }
             }
-            $handler->setInactiveTypes($inactive);
+
+            if (current($tmpl_ids) === self::TABLE_ALL_OBJECTS_ACTION) {
+                $handler->setInactiveTypes([]);
+            } else {
+                $handler->setInactiveTypes($change_state);
+            }
 
             $this->tpl->setOnScreenMessage('success', $lng->txt("settings_saved"), true);
         }
@@ -311,9 +317,25 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
         $this->assertActive();
 
         $tmpl_ids = $this->getTemplateIdsFromUrl();
-
         if ($this->checkPermissionBool("write") && count($tmpl_ids) > 0) {
             $handler = ilBadgeHandler::getInstance();
+            $change_state = [];
+            foreach ($handler->getInactiveTypes() as $type) {
+                if (!in_array($type, $tmpl_ids)) {
+                    $change_state[] = $type;
+                }
+            }
+
+            if (current($tmpl_ids) ===  self::TABLE_ALL_OBJECTS_ACTION) {
+                $types = $handler->getAvailableTypes();
+                $res = [];
+                foreach ($types as $id => $type) {
+                        $res[] = $id;
+                }
+                $handler->setInactiveTypes($res);
+            } else {
+                $handler->setInactiveTypes($change_state);
+            }
             $inactive = array_merge($handler->getInactiveTypes(), $tmpl_ids);
             $handler->setInactiveTypes($inactive);
 
