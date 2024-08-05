@@ -2036,6 +2036,7 @@ auth#:#auth_oidc_scopes#:#Scopes
 auth#:#auth_oidc_settings#:#Server-Einstellungen
 auth#:#auth_oidc_settings_activation#:#OpenID Connect aktivieren
 auth#:#auth_oidc_settings_additional_scopes#:#Zusätzliche Scopes
+auth#:#auth_oidc_settings_additional_scopes_info#:#Standard-Scopes: address, email, phone, profile
 auth#:#auth_oidc_settings_client_id#:#Client-ID
 auth#:#auth_oidc_settings_custom_session_duration#:#Sitzungsdauer
 auth#:#auth_oidc_settings_custom_session_duration_option#:#Eigene Sitzungsdauer

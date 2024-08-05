@@ -445,13 +445,10 @@ class ilOpenIdConnectSettingsGUI
         $this->checkAccess('read');
 
         $form = new ilPropertyFormGUI();
-       # $form->setFormAction($this->ctrl->getFormAction($this, 'saveScopes'));
-        #$form->setTitle($this->lng->txt('auth_oidc_role_mapping_table'));
         $ui_container = [];
         $ui_container = $this->buildScopeSelection($ui_container);
 
-       $form = $this->ui->input()->container()->form()->standard($this->ctrl->getFormAction($this, 'saveScopes'),
-            $ui_container);
+       $form = $this->ui->input()->container()->form()->standard($this->ctrl->getFormAction($this, 'saveScopes'), $ui_container);
 
        return $form;
     }
@@ -468,7 +465,7 @@ class ilOpenIdConnectSettingsGUI
             $this->lng->txt('auth_oidc_settings_additional_scopes'),
             $scopeValues
         )->withValue($scopeValues)->withDedicatedName('custom_scope')
-                                  #->withByline('auth_oidc_settings_additional_scopes_info');
+                                  ->withByline($this->lng->txt('auth_oidc_settings_additional_scopes_info'));
                                     ;
         $group1 = $this->ui->input()->field()->group(
             [],
