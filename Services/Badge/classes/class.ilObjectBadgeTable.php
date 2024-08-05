@@ -184,19 +184,19 @@ class ilObjectBadgeTable
         $f = $this->factory;
 
         return [
-            'obj_badge_activate' => $f->table()->action()->multi( //never in multi actions
+            'obj_badge_activate' => $f->table()->action()->multi(
                 $this->lng->txt("activate"),
                 $url_builder->withParameter($action_parameter_token, "obj_badge_activate"),
                 $row_id_token
             ),
             'obj_badge_deactivate' =>
-                $f->table()->action()->multi( //in both
+                $f->table()->action()->multi(
                     $this->lng->txt("deactivate"),
                     $url_builder->withParameter($action_parameter_token, "obj_badge_deactivate"),
                     $row_id_token
                 ),
             'obj_badge_delete' =>
-                $f->table()->action()->multi( //in both
+                $f->table()->action()->multi(
                     $this->lng->txt("delete"),
                     $url_builder->withParameter($action_parameter_token, "obj_badge_delete"),
                     $row_id_token
@@ -253,10 +253,11 @@ class ilObjectBadgeTable
                 'id' => print_r($ids, true),
             ]);
 
-            if ($action === 'delete') {
+            if ($action === 'obj_badge_delete') {
                 $items = [];
                 foreach ($ids as $id) {
-                    $items[] = $f->modal()->interruptiveItem()->keyValue($id, $row_id_token->getName(), $id);
+                    $badge = new ilBadge($id);
+                    $items[] = $f->modal()->interruptiveItem()->keyValue($id, $badge->getId(), $badge->getTitle());
                 }
                 echo($r->renderAsync([
                     $f->modal()->interruptive(

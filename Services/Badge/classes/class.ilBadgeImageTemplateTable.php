@@ -17,6 +17,7 @@ use Generator;
 use ILIAS\UI\Component\Table\DataRetrieval;
 use ILIAS\UI\URLBuilderToken;
 use ILIAS\DI\Container;
+use ilBadge;
 
 class ilBadgeImageTemplateTable
 {
@@ -141,13 +142,13 @@ class ilBadgeImageTemplateTable
     ) : array {
         $f = $this->factory;
         return [
-            'badge_image_template_edit' => $f->table()->action()->single( //never in multi actions
+            'badge_image_template_edit' => $f->table()->action()->single(
                 $this->lng->txt("edit"),
                 $url_builder->withParameter($action_parameter_token, "badge_image_template_editImageTemplate"),
                 $row_id_token
             ),
             'badge_image_template_delete' =>
-                $f->table()->action()->standard( //in both
+                $f->table()->action()->standard(
                     $this->lng->txt("delete"),
                     $url_builder->withParameter($action_parameter_token, "badge_image_template_delete"),
                     $row_id_token
@@ -160,7 +161,6 @@ class ilBadgeImageTemplateTable
     {
         $f = $this->factory;
         $r = $this->renderer;
-        $refinery = $this->refinery;
         $request = $this->request;
         $df = new \ILIAS\Data\Factory();
 
@@ -190,43 +190,44 @@ class ilBadgeImageTemplateTable
                    ->withRequest($request);
 
         $out = [$table];
-
         $query = $this->http->wrapper()->query();
-        if ($query->has($action_parameter_token->getName())) {
-            $action = $query->retrieve($action_parameter_token->getName(), $refinery->to()->string());
-            $ids = $query->retrieve($row_id_token->getName(), $refinery->custom()->transformation(fn($v) => $v));
-            $listing = $f->listing()->characteristicValue()->text([
-                'table_action' => $action,
-                'id' => print_r($ids, true),
-            ]);
+        if ($query->has('tid')) {
+            $query_values = $query->retrieve('tid', $this->refinery->to()->string());
 
-            if ($action === 'delete') {
-                $items = [];
-                foreach ($ids as $id) {
-                    $items[] = $f->modal()->interruptiveItem()->keyValue($id, $row_id_token->getName(), $id);
+            $items = [];
+            if ($query_values === 'ALL_OBJECTS') {
+                foreach (ilBadgeImageTemplate::getInstances() as $template) {
+                    if ($template->getId() !== null) {
+                        $items[] = $f->modal()->interruptiveItem()->keyValue($template->getId(), $template->getId(),
+                            $template->getTitle());
+                    }
                 }
-                echo($r->renderAsync([
-                    $f->modal()->interruptive(
-                        'Deletion',
-                        'You are about to delete items!',
-                        '#'
-                    )->withAffectedItems($items)
-                      ->withAdditionalOnLoadCode(static fn($id) : string => "console.log('ASYNC JS');")
-                ]));
-                exit();
-            }
-            if ($action === 'info') {
-                echo(
-                    $r->render($f->messageBox()->info('an info message: <br><li>' . implode('<li>', $ids)))
-                    . '<script data-replace-marker="script">console.log("ASYNC JS, too");</script>'
-                );
+            } else {
+                if (is_array($query_values)) {
+                    foreach ($query_values as $id) {
+                        $badge = new ilBadgeImageTemplate($id);
+                        $items[] = $f->modal()->interruptiveItem()->keyValue($id, $badge->getId(), $badge->getTitle());
+                    }
+                } else {
+                    $badge = new ilBadgeImageTemplate($query_values);
+                    $items[] = $f->modal()->interruptiveItem()->keyValue($badge->getId(), $badge->getId(),
+                        $badge->getTitle());
+                }
 
             }
+
+            echo($r->renderAsync([
+                $f->modal()->interruptive(
+                    'Deletion',
+                    'You are about to delete items!',
+                    '#'
+                )->withAffectedItems($items)
+            ]));
+            exit();
 
             $out[] = $f->divider()->horizontal();
             $out[] = $listing;
         }
-
         $this->tpl->setContent($r->render($out));
     }
 }

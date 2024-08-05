@@ -254,7 +254,7 @@ class ilBadgeManagementGUI
         }
 
         $tbl = new ilBadgeTableGUI($this, 'listBadges', $this->parent_obj_id, $this->hasWrite());
-        #  $tpl->setContent($tbl->getHTML());
+       #   $tpl->setContent($tbl->getHTML());
         $table = new ilBadgeTable($this->parent_obj_id, $this->parent_obj_type);
         $table->renderTable();
     }

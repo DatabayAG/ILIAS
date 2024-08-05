@@ -139,10 +139,10 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
                 } elseif($action === 'obj_badge_deactivate') {
                     $this->deactivateObjectBadges();
                     $render_default = false;
-                } elseif($action === 'badge_image_template_delete') {
-                    $this->deleteImageTemplates();
-                    $render_default = false;
-                }
+                } /*elseif($action === 'badge_image_template_delete') {
+                   $this->deleteImageTemplates();
+                   $render_default = false;
+                }*/
 
                 if($render_default) {
                     $this->$cmd();
@@ -592,9 +592,6 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
     protected function deleteImageTemplates(): void
     {
         $lng = $this->lng;
-
-        $tmpl_ids_old = $this->badge_request->getIds();
-
         $tmpl_ids = $this->getTemplateIdsFromUrl();
 
         if ($this->checkPermissionBool("write") && count($tmpl_ids) > 0) {
@@ -607,8 +604,9 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
 
             }
             foreach ($tmpl_ids as $tmpl_id) {
-                $tmpl = new ilBadgeImageTemplate($tmpl_id);
-                $tmpl->delete();
+                $tmpl = new ilBadgeImageTemplate((int) $tmpl_id);
+                //TODO: remove comments
+               # $tmpl->delete();
             }
 
             $this->tpl->setOnScreenMessage('success', $lng->txt("settings_saved"), true);
@@ -736,7 +734,6 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
 
         $badge_ids = $this->getObjectBadgesFromMultiAction();
         if (current($badge_ids) === self::TABLE_ALL_OBJECTS_ACTION) {
-            $types = ilBadgeHandler::getInstance()->getAvailableTypes(false);
             $filter = ['type' => '' , 'title' => '', 'object' => ''];
             $badge_ids = [];
             foreach (ilBadge::getObjectInstances($filter) as $badge_item) {
