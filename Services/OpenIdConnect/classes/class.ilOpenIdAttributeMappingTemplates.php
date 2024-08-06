@@ -21,7 +21,7 @@ declare(strict_types=1);
 
 class ilOpenIdAttributeMappingTemplate
 {
-    const OPEN_ID_CONFIGURED = 'auth_oidc_configured_scopes';
+    const OPEN_ID_CONFIGURED_SCOPES = 'auth_oidc_configured_scopes';
 
     /**
      * @param array $additional_scopes
@@ -30,17 +30,17 @@ class ilOpenIdAttributeMappingTemplate
     public function getMappingRulesByAdditionalScopes(array $additional_scopes): array
     {
         $mapping_rule = [];
-        if(in_array('profile', $additional_scopes)) {
-            $mapping_rule = $this->loadProfile($mapping_rule);
+        if(in_array('address', $additional_scopes)) {
+            $mapping_rule = $this->loadAddress($mapping_rule);
         }
         if(in_array('email', $additional_scopes)) {
             $mapping_rule = $this->loadEmail($mapping_rule);
         }
-        if(in_array('address', $additional_scopes)) {
-            $mapping_rule = $this->loadAddress($mapping_rule);
-        }
         if(in_array('phone', $additional_scopes)) {
             $mapping_rule = $this->loadPhone($mapping_rule);
+        }
+        if(in_array('profile', $additional_scopes)) {
+            $mapping_rule = $this->loadProfile($mapping_rule);
         }
         return $mapping_rule;
     }

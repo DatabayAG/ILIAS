@@ -920,13 +920,13 @@ class ilOpenIdConnectSettingsGUI
 
         $actions = array(
             $this->lng->txt("auth_oidc_saved_values") => "$target&".self::POST_VALUE."=" . self::SAVED_VALUES,
-            $this->lng->txt("auth_oidc_configured_scopes") => "$target&" . self::POST_VALUE."=" . self::DEFAULT_VALUES,
+            $this->lng->txt(ilOpenIdAttributeMappingTemplate::OPEN_ID_CONFIGURED_SCOPES) => "$target&" . self::POST_VALUE."=" . self::DEFAULT_VALUES,
         );
 
         $aria_label = "change_the_currently_displayed_mode";
         $active_label =  $this->lng->txt("auth_oidc_saved_values");
         if($active !== 2) {
-            $active_label = $this->lng->txt("auth_oidc_configured_scopes");
+            $active_label = $this->lng->txt(ilOpenIdAttributeMappingTemplate::OPEN_ID_CONFIGURED_SCOPES);
         }
         $view_control = $this->factory->viewControl()->mode($actions, $aria_label)->withActive($active_label);
         $html = $this->renderer->render($view_control);
