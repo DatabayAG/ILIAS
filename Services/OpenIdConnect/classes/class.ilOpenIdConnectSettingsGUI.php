@@ -776,19 +776,21 @@ class ilOpenIdConnectSettingsGUI
         $this->initAttributeMapping();
     }
 
-    private function showInfoMessage() {
+    private function showInfoMessage()
+    {
         $url_text = $this->lng->txt('auth_oidc_here');
-        
-        if($this->mapping_template === 2) {
+
+        if ($this->mapping_template === 2) {
+            $url = $this->renderer->render($this->factory->link()->standard(
+                $this->lng->txt('auth_oidc_here'),
+                'https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims')
+                       ->withOpenInNewViewport(true));
+            $message = sprintf($this->lng->txt('auth_odic_scope_tab_info'), $url);
+        } else {
             $url = $this->renderer->render($this->factory->link()->standard(
                 $this->lng->txt('auth_oidc_here'), $this->ctrl->getLinkTarget($this, self::STAB_SCOPES)));
             $tab_name = $this->lng->txt('auth_oidc_configured_scopes');
             $message = sprintf($this->lng->txt('auth_odic_scope_info'), $url, $tab_name);
-        } else {
-            $url = $this->renderer->render($this->factory->link()->standard(
-                $this->lng->txt('auth_oidc_here'),  'https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims')
-                ->withOpenInNewViewport(true));
-            $message = sprintf($this->lng->txt('auth_odic_scope_tab_info'), $url);
         }
 
         $this->renderer->render($this->factory->link()->standard(
