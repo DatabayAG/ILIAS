@@ -2022,7 +2022,8 @@ auth#:#auth_info_migrate#:#Wenn Sie bereits ein ILIAS-Konto besitzen, geben Sie 
 auth#:#auth_ldap_server_ds#:#LDAP-Server
 auth#:#auth_login_editor#:#Loginseite bearbeiten
 auth#:#auth_oidc#:#OpenID Connect
-auth#:#auth_oidc_configured_scopes#:#Standardwerte für konfigurierte Scopes
+auth#:#auth_oidc_configured_scopes#:#Standard für konfigurierte Scope
+auth#:#auth_oidc_here#:#hier
 auth#:#auth_oidc_failed#:#Login mittels OpenID Connect fehlgeschlagen
 auth#:#auth_oidc_login_element_info#:#Bei ILIAS anmelden über OpenID Connect
 auth#:#auth_oidc_mapping_table#:#Zuordnung von Datenfeldern der ILIAS-Konten zu OpenID-Connect-Attributen
@@ -2030,8 +2031,9 @@ auth#:#auth_oidc_profile#:#Zuordnung der Profildaten
 auth#:#auth_oidc_role_info#:#OpenID Connect Attribut::Wert (zum Beispiel: "roles::Mitarbeitende").
 auth#:#auth_oidc_role_mapping_table#:#Zuordnung von ILIAS-Rollen zu OpenID-Connect-Attributen
 auth#:#auth_oidc_roles#:#Rollenzuordnung
-auth#:#auth_oidc_saved_values#:#Gespeicherte Werte
-auth#:#auth_odic_scope_info#:#Sie haben hier die Möglichkeit zwischen ihren gespeicherten Werten und den Standardwerten zu wechseln.
+auth#:#auth_oidc_saved_values#:#Effektive Profildatenzuordnung
+auth#:#auth_odic_scope_info#:#In dieser Maske werden anhand der %s konfigurierten OpenID Connect-Scopes die Standard-Claims als Vorschlag für eine Profildatenzuordnung dargestellt. Sie können diesen Vorschlag durch Klick auf "%s" als effektive Profildatenzuordnung übernehmen, oder aber eigene Anpassungen durch Änderung in den Textfeldern vornehmen.
+auth#:#auth_odic_scope_tab_info#:#In dieser Maske können Sie die Zuordnung von OpenID Connect-Claims zu ILIAS-Profildaten vornehmen. Tragen Sie dazu in die entsprechenden Textfelder für das jeweilige Profildatum jenen Scope ein, aus dem die Information bei erfolgreicher Authentifizierung übernommen werden soll. Aktivieren Sie die entsprechende Checkbox, wenn die Daten auch bei bereits existierendem ILIAS-Benutzerkonto übernommen werden sollen. Eine Liste von Standard-Claims können Sie %s einsehen.
 auth#:#auth_oidc_scopes#:#Scopes
 auth#:#auth_oidc_settings#:#Server-Einstellungen
 auth#:#auth_oidc_settings_activation#:#OpenID Connect aktivieren

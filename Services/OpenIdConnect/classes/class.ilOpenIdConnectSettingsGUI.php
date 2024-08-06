@@ -612,6 +612,9 @@ class ilOpenIdConnectSettingsGUI
         return $form;
     }
 
+    /**
+     * @throws ilCtrlException
+     */
     protected function saveProfile(): void
     {
         $this->checkAccessBool('write');
@@ -790,8 +793,7 @@ class ilOpenIdConnectSettingsGUI
 
     public function chooseMapping(): void
     {
-        $this->mainTemplate->setOnScreenMessage('info', $this->lng->txt('auth_odic_scope_info'));
-
+        $this->showInfoMessage();
         $this->setSubTabs(self::STAB_PROFILE);
         if ((int) $this->mapping_template === 2) {
             $this->userMapping();
@@ -799,6 +801,19 @@ class ilOpenIdConnectSettingsGUI
         }
 
         $this->initAttributeMapping();
+    }
+
+    private function showInfoMessage() {
+        if($this->mapping_template === 2) {
+            $url = $this->renderer->render($this->factory->link()->standard(
+                $this->lng->txt('auth_oidc_here'), $this->ctrl->getLinkTarget($this, self::STAB_SCOPES)));
+            $tab_name = $this->lng->txt('auth_oidc_configured_scopes');
+            $this->mainTemplate->setOnScreenMessage('info', sprintf($this->lng->txt('auth_odic_scope_info'), $url, $tab_name));
+        } else {
+            $url =  $this->renderer->render($this->factory->link()->standard(
+                $this->lng->txt('auth_oidc_here'), 'https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims'));
+            $this->mainTemplate->setOnScreenMessage('info', sprintf($this->lng->txt('auth_odic_scope_tab_info'), $url));
+        }
     }
 
     /**
