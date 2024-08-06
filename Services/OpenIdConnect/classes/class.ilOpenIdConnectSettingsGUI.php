@@ -585,33 +585,6 @@ class ilOpenIdConnectSettingsGUI
         return true;
     }
 
-    protected function initProfileForm(): ilPropertyFormGUI
-    {
-        $form = new ilPropertyFormGUI();
-        $form->setTitle($this->lng->txt('auth_oidc_mapping_table'));
-        $form->setFormAction($this->ctrl->getFormAction($this, 'saveProfile'));
-
-        foreach ($this->settings->getProfileMappingFields() as $field => $lng_key) {
-            $text_form = new ilTextInputGUI($this->lng->txt($lng_key));
-            $text_form->setPostVar($field . self::VALUE_STRING);
-            $text_form->setValue($this->settings->getProfileMappingFieldValue($field));
-            $form->addItem($text_form);
-
-            $checkbox_form = new ilCheckboxInputGUI('');
-            $checkbox_form->setValue("1");
-            $checkbox_form->setPostVar($field . self::UPDATE_STRING);
-            $checkbox_form->setChecked($this->settings->getProfileMappingFieldUpdate($field));
-            $checkbox_form->setOptionTitle($this->lng->txt('auth_oidc_update_field_info'));
-            $form->addItem($checkbox_form);
-        }
-
-        if ($this->checkAccessBool('write')) {
-            $form->addCommandButton('saveProfile', $this->lng->txt('save'));
-        }
-
-        return $form;
-    }
-
     /**
      * @throws ilCtrlException
      */
@@ -813,12 +786,14 @@ class ilOpenIdConnectSettingsGUI
             $message = sprintf($this->lng->txt('auth_odic_scope_info'), $url, $tab_name);
         } else {
             $url = $this->renderer->render($this->factory->link()->standard(
-                $this->lng->txt('auth_oidc_here'),  'https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims'));
+                $this->lng->txt('auth_oidc_here'),  'https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims')
+                ->withOpenInNewViewport(true));
             $message = sprintf($this->lng->txt('auth_odic_scope_tab_info'), $url);
         }
-        $this->mainTemplate->setOnScreenMessage('info', $message);
+
         $this->renderer->render($this->factory->link()->standard(
             $url_text, $url));
+        $this->mainTemplate->setOnScreenMessage('info', $message);
     }
 
     /**
@@ -861,8 +836,11 @@ class ilOpenIdConnectSettingsGUI
             "opic",
             "opic_user_data_mapping"
         );
-        return $this->ui->input()->container()->form()->standard($this->ctrl->getFormAction($this, 'saveProfile'),
-            $ui_container);
+        return $this->ui->input()->container()->form()
+                                              ->standard(
+                                                  $this->ctrl->getFormAction($this, 'saveProfile'), $ui_container
+                                              )
+                                              ->withSubmitLabel($this->lng->txt('apply'));
     }
 
     /**
