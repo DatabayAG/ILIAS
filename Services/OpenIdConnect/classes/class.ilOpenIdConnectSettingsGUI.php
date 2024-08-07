@@ -841,8 +841,7 @@ class ilOpenIdConnectSettingsGUI
         return $this->ui->input()->container()->form()
                                               ->standard(
                                                   $this->ctrl->getFormAction($this, 'saveProfile'), $ui_container
-                                              )
-                                              ->withSubmitLabel($this->lng->txt('apply'));
+                                              );
     }
 
     /**
