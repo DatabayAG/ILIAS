@@ -191,11 +191,11 @@ class ilBadgeImageTemplateTable
 
         $out = [$table];
         $query = $this->http->wrapper()->query();
-        if ($query->has('tid')) {
-            $query_values = $query->retrieve('tid', $this->refinery->to()->string());
+        if ($query->has('tid_id')) {
+            $query_values = $query->retrieve('tid_id', $this->refinery->kindlyTo()->listOf($this->refinery->kindlyTo()->string()));
 
             $items = [];
-            if ($query_values === 'ALL_OBJECTS') {
+            if ($query_values === ['ALL_OBJECTS']) {
                 foreach (ilBadgeImageTemplate::getInstances() as $template) {
                     if ($template->getId() !== null) {
                         $items[] = $f->modal()->interruptiveItem()->keyValue($template->getId(), $template->getId(),
@@ -215,18 +215,18 @@ class ilBadgeImageTemplateTable
                 }
 
             }
-
-            echo($r->renderAsync([
-                $f->modal()->interruptive(
-                    'Deletion',
-                    'You are about to delete items!',
-                    '#'
-                )->withAffectedItems($items)
-            ]));
-            exit();
-
-            $out[] = $f->divider()->horizontal();
-            $out[] = $listing;
+            $action = $query->retrieve($action_parameter_token->getName(), $this->refinery->to()->string());
+            if ($action === 'badge_image_template_delete') {
+                echo($r->renderAsync([
+                    $f->modal()->interruptive(
+                        'Deletion',
+                        'You are about to delete items!',
+                        '#'
+                    )->withAffectedItems($items)
+                      ->withAdditionalOnLoadCode(static fn($id) : string => "console.log('ASYNC JS');")
+                ]));
+                exit();
+            }
         }
         $this->tpl->setContent($r->render($out));
     }
