@@ -21,8 +21,10 @@ use ILIAS\UI\Factory;
 use ILIAS\UI\URLBuilder;
 use ILIAS\Data\Order;
 use ILIAS\Data\Range;
-use ILIAS\Badge\ilBadgeImageTemplateTable;
+use ILIAS\Badge\ilBadgeImageTemplateTableGUI;
 use ILIAS\HTTP\Services;
+use ILIAS\Badge\ilBadgeTypesTableGUI;
+use ILIAS\Badge\ilObjectBadgeTableGUI;
 
 /**
  * Badge Administration Settings.
@@ -277,13 +279,7 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
         $this->assertActive();
         $this->tabs_gui->setTabActive("types");
 
-        $tbl = new ilBadgeTypesTableGUI(
-            $this,
-            "listTypes",
-            $ilAccess->checkAccess("write", "", $this->object->getRefId())
-        );
-        $this->tpl->setContent($tbl->getHTML());
-        $tpl = new \ILIAS\Badge\ilBadgeTypesTable();
+        $tpl = new ilBadgeTypesTableGUI();
         $tpl->renderTable();
     }
 
@@ -369,7 +365,7 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
             );
         }
 
-        $template_table = new ilBadgeImageTemplateTable();
+        $template_table = new ilBadgeImageTemplateTableGUI();
         $template_table->renderTable();
     }
 
@@ -620,94 +616,88 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
     // object badges
     //
 
-    protected function listObjectBadges(): void
-    {
-        $ilAccess = $this->access;
-        $tpl = $this->tpl;
+     protected function listObjectBadges(): void
+     {
+         $ilAccess = $this->access;
+         $tpl = $this->tpl;
 
-        $this->assertActive();
-        $this->tabs_gui->setTabActive("obj_badges");
+         $this->assertActive();
+         $this->tabs_gui->setTabActive("obj_badges");
 
-        $tbl = new ilObjectBadgeTableGUI(
-            $this,
-            "listObjectBadges",
-            $ilAccess->checkAccess("write", "", $this->object->getRefId())
-        );
-        $tpl->setContent($tbl->getHTML());
+         $tbl = new ilObjectBadgeTableGUI($this);
+         $tbl->renderTable();
+     }
+    // CHECK IF THIS CAN BE REMOVED
+    /*
+ protected function applyObjectFilter(): void
+     {
+         $ilAccess = $this->access;
 
-        $tbl = new \ILIAS\Badge\ilObjectBadgeTable($this);
-        $tbl->renderTable();
-    }
+         $tbl = new ilObjectBadgeTableGUI(
+             $this,
+             "listObjectBadges",
+             $ilAccess->checkAccess("write", "", $this->object->getRefId())
+         );
+         $tbl->resetOffset();
+         $tbl->writeFilterToSession();
+         $this->listObjectBadges();
+     }
 
-    protected function applyObjectFilter(): void
-    {
-        $ilAccess = $this->access;
+     protected function resetObjectFilter(): void
+     {
+         $ilAccess = $this->access;
 
-        $tbl = new ilObjectBadgeTableGUI(
-            $this,
-            "listObjectBadges",
-            $ilAccess->checkAccess("write", "", $this->object->getRefId())
-        );
-        $tbl->resetOffset();
-        $tbl->writeFilterToSession();
-        $this->listObjectBadges();
-    }
+         $tbl = new ilObjectBadgeTableGUI(
+             $this,
+             "listObjectBadges",
+             $ilAccess->checkAccess("write", "", $this->object->getRefId())
+         );
+         $tbl->resetOffset();
+         $tbl->resetFilter();
+         $this->listObjectBadges();
+     }
 
-    protected function resetObjectFilter(): void
-    {
-        $ilAccess = $this->access;
+     protected function listObjectBadgeUsers(): void
+     {
+         $ilCtrl = $this->ctrl;
+         $lng = $this->lng;
+         $tpl = $this->tpl;
 
-        $tbl = new ilObjectBadgeTableGUI(
-            $this,
-            "listObjectBadges",
-            $ilAccess->checkAccess("write", "", $this->object->getRefId())
-        );
-        $tbl->resetOffset();
-        $tbl->resetFilter();
-        $this->listObjectBadges();
-    }
+         $parent_obj_id = $this->badge_request->getParentId();
+         if (!$parent_obj_id) {
+             $ilCtrl->redirect($this, "listObjectBadges");
+         }
 
-    protected function listObjectBadgeUsers(): void
-    {
-        $ilCtrl = $this->ctrl;
-        $lng = $this->lng;
-        $tpl = $this->tpl;
+         $this->assertActive();
 
-        $parent_obj_id = $this->badge_request->getParentId();
-        if (!$parent_obj_id) {
-            $ilCtrl->redirect($this, "listObjectBadges");
-        }
+         $this->tabs_gui->clearTargets();
+         $this->tabs_gui->setBackTarget(
+             $lng->txt("back"),
+             $ilCtrl->getLinkTarget($this, "listObjectBadges")
+         );
 
-        $this->assertActive();
+         $ilCtrl->saveParameter($this, "pid");
 
-        $this->tabs_gui->clearTargets();
-        $this->tabs_gui->setBackTarget(
-            $lng->txt("back"),
-            $ilCtrl->getLinkTarget($this, "listObjectBadges")
-        );
+         $tbl = new ilBadgeUserTableGUI($this, "listObjectBadgeUsers", 0, null, $parent_obj_id, $this->badge_request->getBadgeId());
+         $tpl->setContent($tbl->getHTML());
+     }
 
-        $ilCtrl->saveParameter($this, "pid");
+     protected function applylistObjectBadgeUsers(): void
+     {
+         $tbl = new ilBadgeUserTableGUI($this, "listObjectBadgeUsers", 0, null, 0, $this->badge_request->getBadgeId());
+         $tbl->resetOffset();
+         $tbl->writeFilterToSession();
+         $this->listObjectBadgeUsers();
+     }
 
-        $tbl = new ilBadgeUserTableGUI($this, "listObjectBadgeUsers", 0, null, $parent_obj_id, $this->badge_request->getBadgeId());
-        $tpl->setContent($tbl->getHTML());
-    }
-
-    protected function applylistObjectBadgeUsers(): void
-    {
-        $tbl = new ilBadgeUserTableGUI($this, "listObjectBadgeUsers", 0, null, 0, $this->badge_request->getBadgeId());
-        $tbl->resetOffset();
-        $tbl->writeFilterToSession();
-        $this->listObjectBadgeUsers();
-    }
-
-    protected function resetlistObjectBadgeUsers(): void
-    {
-        $tbl = new ilBadgeUserTableGUI($this, "listObjectBadgeUsers", 0, null, 0, $this->badge_request->getBadgeId());
-        $tbl->resetOffset();
-        $tbl->resetFilter();
-        $this->listObjectBadgeUsers();
-    }
-
+     protected function resetlistObjectBadgeUsers(): void
+     {
+         $tbl = new ilBadgeUserTableGUI($this, "listObjectBadgeUsers", 0, null, 0, $this->badge_request->getBadgeId());
+         $tbl->resetOffset();
+         $tbl->resetFilter();
+         $this->listObjectBadgeUsers();
+     }
+ */
 
     //
     // see ilBadgeManagementGUI

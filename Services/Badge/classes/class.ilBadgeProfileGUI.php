@@ -140,13 +140,7 @@ class ilBadgeProfileGUI
 
     protected function manageBadges(): void
     {
-        global $DIC;
-
-        $table = new ilBadgePersonalTableGUI($this, "manageBadges");
-        (new PresentationHeader($DIC, self::class))->show($this->lng->txt('table_view'));
-        $this->tpl->setContent($table->getHTML());
-
-        $tpl = new ilBadgePersonalTable();
+        $tpl = new ilBadgePersonalTableGUI();
         $tpl->renderTable();
     }
 

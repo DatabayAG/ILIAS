@@ -19,7 +19,7 @@ use ILIAS\FileUpload\FileUpload;
 use ILIAS\FileUpload\Exception\IllegalStateException;
 use ILIAS\ResourceStorage\Flavour\Definition\FlavourDefinition;
 use ILIAS\Badge\ilBadgeTable;
-use ILIAS\Badge\ilBadgeUserTable;
+use ILIAS\Badge\ilBadgeUserTableGUI;
 use ILIAS\Services\Badge\BadgeException;
 
 /**
@@ -254,7 +254,7 @@ class ilBadgeManagementGUI
         }
 
         $tbl = new ilBadgeTableGUI($this, 'listBadges', $this->parent_obj_id, $this->hasWrite());
-        #  $tpl->setContent($tbl->getHTML());
+          #$tpl->setContent($tbl->getHTML());
         $table = new ilBadgeTable($this->parent_obj_id, $this->parent_obj_type);
         $table->renderTable();
     }
@@ -772,26 +772,8 @@ class ilBadgeManagementGUI
             }
         }
 
-        $tbl = new ilBadgeUserTableGUI($this, 'listUsers', $this->parent_ref_id);
-        $tpl->setContent($tbl->getHTML());
-        $tbl = new \ILIAS\Badge\ilBadgeUserTable($this->parent_ref_id);
+        $tbl = new ilBadgeUserTableGUI($this->parent_ref_id);
         $tbl->renderTable();
-    }
-
-    protected function applyListUsers() : void
-    {
-        $tbl = new ilBadgeUserTableGUI($this, 'listUsers', $this->parent_ref_id);
-        $tbl->resetOffset();
-        $tbl->writeFilterToSession();
-        $this->listUsers();
-    }
-
-    protected function resetListUsers() : void
-    {
-        $tbl = new ilBadgeUserTableGUI($this, 'listUsers', $this->parent_ref_id);
-        $tbl->resetOffset();
-        $tbl->resetFilter();
-        $this->listUsers();
     }
 
     protected function awardBadgeUserSelection() : void
@@ -830,9 +812,7 @@ class ilBadgeManagementGUI
 
         $badge = new ilBadge($bid);
 
-        $tbl = new ilBadgeUserTableGUI($this, 'awardBadgeUserSelection', $this->parent_ref_id, $badge);
-        $tpl->setContent($tbl->getHTML());
-        $tbl = new ilBadgeUserTable($this->parent_ref_id, $badge);
+        $tbl = new ilBadgeUserTableGUI($this->parent_ref_id, $badge);
         $tbl->renderTable();
     }
 

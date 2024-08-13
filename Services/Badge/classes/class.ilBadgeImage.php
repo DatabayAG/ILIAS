@@ -56,7 +56,6 @@ class ilBadgeImage
     public function processImageUpload(ilBadge $badge) : void
     {
         try {
-            $this->upload_service->process();
             $array_result = $this->upload_service->getResults();
             $array_result = array_pop($array_result);
             $stakeholder = new ilBadgeFileStakeholder();
