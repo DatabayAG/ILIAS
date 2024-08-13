@@ -21,13 +21,13 @@ use ilBadge;
 
 class ilBadgeImageTemplateTableGUI
 {
-    private Factory $factory;
-    private Renderer $renderer;
-    private \ILIAS\Refinery\Factory $refinery;
-    private ServerRequestInterface|RequestInterface $request;
-    private Services $http;
-    protected ilLanguage $lng;
-    protected ilGlobalTemplateInterface $tpl;
+    private readonly Factory $factory;
+    private readonly Renderer $renderer;
+    private readonly \ILIAS\Refinery\Factory $refinery;
+    private readonly ServerRequestInterface|RequestInterface $request;
+    private readonly Services $http;
+    private readonly ilLanguage $lng;
+    private readonly ilGlobalTemplateInterface $tpl;
     public function __construct() {
         global $DIC;
         $this->lng = $DIC->language();

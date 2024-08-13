@@ -18,7 +18,7 @@ use ILIAS\ResourceStorage\Services;
 use ILIAS\FileUpload\FileUpload;
 use ILIAS\FileUpload\Exception\IllegalStateException;
 use ILIAS\ResourceStorage\Flavour\Definition\FlavourDefinition;
-use ILIAS\Badge\ilBadgeTable;
+use ILIAS\Badge\ilBadgeTableGUI;
 use ILIAS\Badge\ilBadgeUserTableGUI;
 use ILIAS\Services\Badge\BadgeException;
 
@@ -253,26 +253,8 @@ class ilBadgeManagementGUI
             }
         }
 
-        $tbl = new ilBadgeTableGUI($this, 'listBadges', $this->parent_obj_id, $this->hasWrite());
-          #$tpl->setContent($tbl->getHTML());
-        $table = new ilBadgeTable($this->parent_obj_id, $this->parent_obj_type);
+        $table = new ilBadgeTableGUI($this->parent_obj_id, $this->parent_obj_type);
         $table->renderTable();
-    }
-
-    protected function applyBadgeFilter() : void
-    {
-        $tbl = new ilBadgeTableGUI($this, 'listBadges', $this->parent_obj_id, $this->hasWrite());
-        $tbl->resetOffset();
-        $tbl->writeFilterToSession();
-        $this->listBadges();
-    }
-
-    protected function resetBadgeFilter() : void
-    {
-        $tbl = new ilBadgeTableGUI($this, 'listBadges', $this->parent_obj_id, $this->hasWrite());
-        $tbl->resetOffset();
-        $tbl->resetFilter();
-        $this->listBadges();
     }
 
 
