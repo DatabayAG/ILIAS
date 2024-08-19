@@ -2172,6 +2172,7 @@ badge#:#badge_create#:#Badge erstellen
 badge#:#badge_create_image_processing_failed#:#Der Badge konnte nicht angelegt werden, beim Verarbeiten des Bildes trat ein Fehler auf.
 badge#:#badge_criteria#:#Kriterien
 badge#:#badge_crs_merit#:#Händisch vergebenes Badge
+badge#:#badge_deletion#:#Löschen
 badge#:#badge_deletion_confirmation#:#Wollen Sie wirklich die folgenden Badges und alle ihre jeweiligen Zuweisungen löschen?
 badge#:#badge_edit_with_published#:#%s Benutzer haben dieses Badge bereits zu ihrem Backpack hinzugefügt. Badge-Attribute zu verändern führt deshalb zu Inkonsistenzen. Evtl. wäre ein neues Badge sinnvoller.
 badge#:#badge_image_from_template#:#Vorlage nutzen

@@ -261,8 +261,8 @@ class ilObjectBadgeTableGUI
                 }
                 echo($r->renderAsync([
                     $f->modal()->interruptive(
-                        'Deletion',
-                        'You are about to delete items!',
+                        $this->lng->txt('badge_deletion'),
+                        $this->lng->txt('badge_deletion_confirmation'),
                         '#'
                     )->withAffectedItems($items)
                       ->withAdditionalOnLoadCode(static fn($id) : string => "console.log('ASYNC JS');")

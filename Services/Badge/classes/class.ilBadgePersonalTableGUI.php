@@ -191,14 +191,7 @@ class ilBadgePersonalTableGUI
                     $this->lng->txt("deactivate"),
                     $url_builder->withParameter($action_parameter_token, "obj_badge_deactivate"),
                     $row_id_token
-                ),
-            'obj_badge_delete' =>
-                $f->table()->action()->multi( //in both
-                    $this->lng->txt("delete"),
-                    $url_builder->withParameter($action_parameter_token, "obj_badge_delete"),
-                    $row_id_token
                 )
-                  ->withAsync()
         ];
     }
 
@@ -250,29 +243,6 @@ class ilBadgePersonalTableGUI
                 'table_action' => $action,
                 'id' => print_r($ids, true),
             ]);
-
-            if ($action === 'delete') {
-                $items = [];
-                foreach ($ids as $id) {
-                    $items[] = $f->modal()->interruptiveItem()->keyValue($id, $row_id_token->getName(), $id);
-                }
-                echo($r->renderAsync([
-                    $f->modal()->interruptive(
-                        'Deletion',
-                        'You are about to delete items!',
-                        '#'
-                    )->withAffectedItems($items)
-                      ->withAdditionalOnLoadCode(static fn($id) : string => "console.log('ASYNC JS');")
-                ]));
-                exit();
-            }
-            if ($action === 'info') {
-                echo(
-                    $r->render($f->messageBox()->info('an info message: <br><li>' . implode('<li>', $ids)))
-                    . '<script data-replace-marker="script">console.log("ASYNC JS, too");</script>'
-                );
-
-            }
 
             $out[] = $f->divider()->horizontal();
             $out[] = $listing;

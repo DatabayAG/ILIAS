@@ -79,7 +79,6 @@ class ilBadgeProfileGUI
         switch ($ilCtrl->getNextClass()) {
 
             default:
-                $this->setTabs();
                 $cmd = $ilCtrl->getCmd("listBadges");
 
                 global $DIC;
@@ -94,36 +93,9 @@ class ilBadgeProfileGUI
                 } elseif ($action === 'obj_badge_deactivate') {
                     $this->deactivate();
                 }
-
                 $this->$cmd();
                 break;
         }
-    }
-
-    protected function setTabs(): void
-    {
-        $ilTabs = $this->tabs;
-        $lng = $this->lng;
-        $ilCtrl = $this->ctrl;
-    }
-
-    protected function getSubTabs(string $a_active): void
-    {
-        $ilTabs = $this->tabs;
-        $lng = $this->lng;
-        $ilCtrl = $this->ctrl;
-
-        $ilTabs->addTab(
-            "list",
-            $lng->txt("badge_profile_view"),
-            $ilCtrl->getLinkTarget($this, "listBadges")
-        );
-        $ilTabs->addTab(
-            "manage",
-            $lng->txt("badge_profile_manage"),
-            $ilCtrl->getLinkTarget($this, "manageBadges")
-        );
-        $ilTabs->activateTab($a_active);
     }
 
     protected function listBadges(): void
