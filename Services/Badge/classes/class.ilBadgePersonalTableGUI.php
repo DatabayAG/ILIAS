@@ -59,15 +59,10 @@ class ilBadgePersonalTableGUI
     protected function buildDataRetrievalObject(Factory $f, Renderer $r) : DataRetrieval
     {
         return new class ($f, $r) implements DataRetrieval {
-            private ilBadgeImage $badge_image_service;
-            private Factory $factory;
-            private Renderer $renderer;
-            private \ilCtrlInterface $ctrl;
-            private ilLanguage $lng;
-
-            private ILIAS\Data\Factory $data_factory;
-            private \ilAccessHandler $access;
-            private ?bool $user_has_write_permission = null;
+            private readonly ilBadgeImage $badge_image_service;
+            private readonly Factory $factory;
+            private readonly Renderer $renderer;
+            private readonly ilObjUser $user;
 
             public function __construct(
                 protected Factory $ui_factory,
@@ -77,25 +72,9 @@ class ilBadgePersonalTableGUI
                 $this->badge_image_service = new ilBadgeImage($DIC->resourceStorage(), $DIC->upload(), $DIC->ui()->mainTemplate());
                 $this->factory = $this->ui_factory;
                 $this->renderer = $this->ui_renderer;
-                $this->data_factory = new \ILIAS\Data\Factory();
-                $this->ctrl = $DIC->ctrl();
-                $this->lng = $DIC->language();
-                $this->access = $DIC->access();
-
+                $this->user = $DIC->user();
             }
 
-            protected function userHasWritePermission(int $parent_id) : bool
-            {
-                if($this->user_has_write_permission === null) {
-                    $parent_ref_id = ilObject::_getAllReferences($parent_id);
-                    if (count($parent_ref_id) > 0) {
-                        $parent_ref_id = array_pop($parent_ref_id);
-                    }
-                    $this->user_has_write_permission = $this->access->checkAccess("write", "", $parent_ref_id);
-
-                }
-                return $this->user_has_write_permission;
-            }
 
             public function getRows(
                 DataRowBuilder $row_builder,
@@ -121,23 +100,15 @@ class ilBadgePersonalTableGUI
 
             protected function getRecords(Range $range = null, Order $order = null) : array
             {
-                global $DIC;
                 $data = [];
-                $a_user_id = $DIC->user()->getId();
-                $df = $this->data_factory->dateFormat();
+                $a_user_id = $this->user->getId();
                 foreach (ilBadgeAssignment::getInstancesByUserId($a_user_id) as $ass) {
                     $image_html = '';
                     $badge = new ilBadge($ass->getBadgeId());
                     $image_src = $this->badge_image_service->getImageFromBadge($badge);
                     if($image_src != '') {
-                        $badge_template_image = $image_src;
-                        if($badge_template_image !== '') {
-                            $badge_img = $this->factory->image()->responsive(
-                                $badge_template_image,
-                                $badge->getTitle()
-                            );
-                            $image_html = $this->renderer->render($badge_img);
-                        }
+                        $badge_img = $this->factory->image()->responsive($image_src, $badge->getTitle());
+                        $image_html = $this->renderer->render($badge_img);
                     }
                     $parent = null;
                     if ($badge->getParentId()) {

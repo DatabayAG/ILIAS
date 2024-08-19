@@ -269,13 +269,6 @@ class ilObjectBadgeTableGUI
                 ]));
                 exit();
             }
-            if ($action === 'info') {
-                echo(
-                    $r->render($f->messageBox()->info('an info message: <br><li>' . implode('<li>', $ids)))
-                    . '<script data-replace-marker="script">console.log("ASYNC JS, too");</script>'
-                );
-
-            }
 
             $out[] = $f->divider()->horizontal();
             $out[] = $listing;
