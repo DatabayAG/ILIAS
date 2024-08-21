@@ -25,6 +25,7 @@ use ILIAS\Badge\ilBadgeImageTemplateTableGUI;
 use ILIAS\HTTP\Services;
 use ILIAS\Badge\ilBadgeTypesTableGUI;
 use ILIAS\Badge\ilObjectBadgeTableGUI;
+use ILIAS\Badge\ilBadgeUserTableGUI;
 
 /**
  * Badge Administration Settings.
@@ -615,6 +616,53 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
     //
     // object badges
     //
+
+ protected function applyObjectFilter(): void
+     {
+         $this->listObjectBadges();
+     }
+
+     protected function resetObjectFilter(): void
+     {
+         $this->listObjectBadges();
+     }
+
+     protected function listObjectBadgeUsers(): void
+     {
+         $ilCtrl = $this->ctrl;
+         $lng = $this->lng;
+         $tpl = $this->tpl;
+
+         $parent_obj_id = $this->badge_request->getParentId();
+         $parent_ref_ids = ilObject::_getAllReferences($parent_obj_id);
+         $parent_ref_id = array_pop($parent_ref_ids);
+         if (!$parent_obj_id) {
+             $ilCtrl->redirect($this, "listObjectBadges");
+         }
+
+         $this->assertActive();
+
+         $this->tabs_gui->clearTargets();
+         $this->tabs_gui->setBackTarget(
+             $lng->txt("back"),
+             $ilCtrl->getLinkTarget($this, "listObjectBadges")
+         );
+
+         $ilCtrl->saveParameter($this, "pid");
+
+         $tbl = new ilBadgeUserTableGUI($parent_ref_id);
+         $tbl->renderTable();
+     }
+
+     protected function applylistObjectBadgeUsers(): void
+     {
+         $this->listObjectBadges();
+     }
+
+     protected function resetlistObjectBadgeUsers(): void
+     {
+         $this->listObjectBadges();
+     }
 
      protected function listObjectBadges(): void
      {

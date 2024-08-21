@@ -124,7 +124,7 @@ class ilBadgeUserTableGUI
                     $tmp = $uquery->query();
                 }
                 foreach ($tmp["set"] as $user) {
-                    if (array_key_exists($user["usr_id"], $assignments)) {
+                    if (is_array($assignments) && array_key_exists($user["usr_id"], $assignments)) {
                         foreach ($assignments[$user["usr_id"]] as $user_ass) {
                             $idx = $user_ass->getBadgeId() . "-" . $user["usr_id"];
                             $badge = $badges[$user_ass->getBadgeId()];
