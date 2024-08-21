@@ -165,6 +165,21 @@ class ilObjectBadgeTableGUI
                         'user' => $user_url_link ?: ''
                     ];
                 }
+                if ($order) {
+                    list($order_field, $order_direction) = $order->join([],
+                        fn($ret, $key, $value) => [$key, $value]);
+                    usort($data, fn($a, $b) => $a[$order_field] <=> $b[$order_field]);
+                    if($order_field === 'active'){
+                        if($order_direction === 'ASC') {
+                            $data = array_reverse($data);
+                        }
+                    } elseif ($order_direction === 'DESC') {
+                        $data = array_reverse($data);
+                    }
+                }
+                if ($range) {
+                    $data = array_slice($data, $range->getStart(), $range->getLength());
+                }
                 return $data;
             }
         };
