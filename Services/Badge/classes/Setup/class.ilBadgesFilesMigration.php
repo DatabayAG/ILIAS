@@ -66,7 +66,7 @@ class ilBadgesFilesMigration implements Migration
         $id = (int) $d->id;
         $image = $d->image;
 
-        if($image !== '') {
+        if($image !== '' && $image !== null) {
             $image = $this->getImagePath($id, $image);
             $base_path = dirname($image);
             $pattern = '/(.+)/m';

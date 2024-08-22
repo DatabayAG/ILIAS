@@ -233,6 +233,7 @@ class ilObjectBadgeTableGUI
             'image_rid' => $f->table()->column()->text($this->lng->txt("image")),
             'type' => $f->table()->column()->text($this->lng->txt("type")),
             'container_url' => $f->table()->column()->link($this->lng->txt("container")),
+            //maybe add withOrderingLabel to the boolean column
             'active' => $f->table()->column()->boolean($this->lng->txt("active"), $this->lng->txt("yes"), $this->lng->txt("no")),
             'user' => $f->table()->column()->link($this->lng->txt("user")),
         ];
