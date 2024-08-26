@@ -52,8 +52,8 @@ class ilBadgeTableGUI
         $lng = $this->lng;
 
         return [
-            'title' => $column->text($lng->txt("title")),
             'image_rid' => $column->text($lng->txt("image")),
+            'title' => $column->text($lng->txt("title")),
             'type' => $column->text($lng->txt("type")),
             'active' => $column->boolean($lng->txt("active"), $lng->txt("yes"), $lng->txt("no")),
         ];
@@ -206,7 +206,6 @@ class ilBadgeTableGUI
                     $url_builder->withParameter($action_parameter_token, "badge_table_delete"),
                     $row_id_token
                 )
-                  ->withAsync()
         ];
     }
 

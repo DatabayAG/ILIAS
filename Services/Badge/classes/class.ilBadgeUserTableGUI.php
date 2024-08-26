@@ -254,20 +254,6 @@ class ilBadgeUserTableGUI
                    ->withRequest($request);
 
         $out = [$table];
-
-        $query = $this->http->wrapper()->query();
-        if ($query->has($action_parameter_token->getName())) {
-            $action = $query->retrieve($action_parameter_token->getName(), $refinery->to()->string());
-            $ids = $query->retrieve($row_id_token->getName(), $refinery->custom()->transformation(fn($v) => $v));
-            $listing = $f->listing()->characteristicValue()->text([
-                'table_action' => $action,
-                'id' => print_r($ids, true),
-            ]);
-
-            $out[] = $f->divider()->horizontal();
-            $out[] = $listing;
-        }
-
         $this->tpl->setContent($r->render($out));
     }
 }

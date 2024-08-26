@@ -31,6 +31,7 @@
     use ILIAS\UI\Implementation\Component\Link\Standard;
     use ILIAS\Badge\ilBadgeImage;
     use ILIAS\Badge\PresentationHeader;
+use ILIAS\Data\Link;
 
 /*
  * @ilCtrl_IsCalledBy ilObjBadgeAdministration: ilObjectBadgeTable
@@ -73,6 +74,7 @@ class ilBadgePersonalTableGUI
                 $this->factory = $this->ui_factory;
                 $this->renderer = $this->ui_renderer;
                 $this->user = $DIC->user();
+                $this->access = $DIC->access();
             }
 
 
@@ -117,21 +119,28 @@ class ilBadgePersonalTableGUI
                             $parent = null;
                         }
                     }
-                    $user_url_link = '';
+                    $awarded_by = '';
+                    if($parent !== null) {
+                        $ref_ids = ilObject::_getAllReferences($parent['id']);
+                        reset($ref_ids);
+                        $ref_id = current($ref_ids);
+
+                        if ($this->access->checkAccess('read', '', $ref_id)) {
+                            $container_url = ilLink::_getLink($ref_id);
+                            $awarded_by = $this->renderer->render(new Standard($parent['title'], new URI($container_url)));
+                        }
+                    }
                     $data[] = [
                         'id' => $badge->getId(),
                         'image' => $image_html,
-                        'user' => $user_url_link ?: '',
+                        'user' => '',
                         'badge_in_profile' => '',
                         "title" => $badge->getTitle(),
                         "badge_issued_on" =>  (new \DateTimeImmutable())->setTimestamp($ass->getTimestamp()),
-                        "awarded_by" => $parent ? $parent["title"] : null,
+                        "awarded_by" => $awarded_by,
                         "parent" => $parent,
                         "active" => (bool) $ass->getPosition()
                     ];
-
-
-
                 }
                 return $data;
             }
@@ -177,11 +186,11 @@ class ilBadgePersonalTableGUI
         $date_format = $data_format->withTime24($df->dateFormat()->germanShort());
 
         $columns = [
-            'title' => $f->table()->column()->text($this->lng->txt("title")),
             'image' => $f->table()->column()->text($this->lng->txt("image")),
+            'title' => $f->table()->column()->text($this->lng->txt("title")),
             'awarded_by' => $f->table()->column()->text($this->lng->txt("awarded_by")),
             'badge_issued_on' => $f->table()->column()->date($this->lng->txt("badge_issued_on"), $date_format),
-            'active' => $f->table()->column()->boolean($this->lng->txt("active"), $this->lng->txt("yes"), $this->lng->txt("no")),
+            'active' => $f->table()->column()->boolean($this->lng->txt("badge_in_profile"), $this->lng->txt("yes"), $this->lng->txt("no")),
         ];
 
         $table_uri = $df->uri($request->getUri()->__toString());
@@ -204,21 +213,10 @@ class ilBadgePersonalTableGUI
                    ->withActions($actions)
                    ->withRequest($request);
 
+        global $DIC;
+        $pres = new PresentationHeader($DIC, ilBadgeProfileGUI::class);
+        $pres->show($this->lng->txt('table_view'));
         $out = [$table];
-
-        $query = $this->http->wrapper()->query();
-        if ($query->has($action_parameter_token->getName())) {
-            $action = $query->retrieve($action_parameter_token->getName(), $refinery->to()->string());
-            $ids = $query->retrieve($row_id_token->getName(), $refinery->custom()->transformation(fn($v) => $v));
-            $listing = $f->listing()->characteristicValue()->text([
-                'table_action' => $action,
-                'id' => print_r($ids, true),
-            ]);
-
-            $out[] = $f->divider()->horizontal();
-            $out[] = $listing;
-        }
-
         $this->tpl->setContent($r->render($out));
     }
 

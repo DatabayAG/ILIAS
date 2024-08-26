@@ -143,13 +143,13 @@ class ilObjectBadgeTableGUI
                         $url = ILIAS_HTTP_PATH . '/' . $this->ctrl->getLinkTarget($this->parent, 'listObjectBadgeUsers');
                         $this->ctrl->setParameter($this->parent, 'bid', '');
                         $this->ctrl->setParameter($this->parent, 'pid', '');
-                        $user_url_link = new Standard($this->lng->txt('user'), new URI($url));
+                        $user_url_link = $this->renderer->render(new Standard($this->lng->txt('user'), new URI($url)));
                     }
 
                     $container_url_link = '';
                     if ($this->access->checkAccess('read', '', $ref_id)) {
                         $container_url = ilLink::_getLink($ref_id);
-                        $container_url_link = new Standard($badge_item['parent_title'], new URI($container_url));
+                        $container_url_link = $this->renderer->render(new Standard($badge_item['parent_title'], new URI($container_url)));
                     }
                     $data[] = [
                         'id' => (int) $badge_item['id'],
@@ -162,7 +162,6 @@ class ilObjectBadgeTableGUI
                         'container_deleted' => ($badge_item['deleted'] ?? false),
                         'container_id' => (int) $badge_item['parent_id'],
                         'container_type' => $badge_item['parent_type'],
-                        'user' => $user_url_link ?: ''
                     ];
                 }
                 if ($order) {
@@ -215,8 +214,13 @@ class ilObjectBadgeTableGUI
                     $this->lng->txt("delete"),
                     $url_builder->withParameter($action_parameter_token, "obj_badge_delete"),
                     $row_id_token
+                ),
+            'obj_badge_show_users' =>
+                $f->table()->action()->single(
+                    $this->lng->txt("user"),
+                    $url_builder->withParameter($action_parameter_token, "obj_badge_show_users"),
+                    $row_id_token
                 )
-                  ->withAsync()
         ];
     }
 
@@ -229,13 +233,12 @@ class ilObjectBadgeTableGUI
         $df = new \ILIAS\Data\Factory();
 
         $columns = [
-            'title' => $f->table()->column()->text($this->lng->txt("title")),
             'image_rid' => $f->table()->column()->text($this->lng->txt("image")),
+            'title' => $f->table()->column()->text($this->lng->txt("title")),
             'type' => $f->table()->column()->text($this->lng->txt("type")),
-            'container_url' => $f->table()->column()->link($this->lng->txt("container")),
+            'container_url' => $f->table()->column()->text($this->lng->txt("container")),
             //maybe add withOrderingLabel to the boolean column
             'active' => $f->table()->column()->boolean($this->lng->txt("active"), $this->lng->txt("yes"), $this->lng->txt("no")),
-            'user' => $f->table()->column()->link($this->lng->txt("user")),
         ];
 
         $table_uri = $df->uri($request->getUri()->__toString());
@@ -271,23 +274,22 @@ class ilObjectBadgeTableGUI
 
             if ($action === 'obj_badge_delete') {
                 $items = [];
-                foreach ($ids as $id) {
-                    $badge = new ilBadge($id);
-                    $items[] = $f->modal()->interruptiveItem()->keyValue($id, $badge->getId(), $badge->getTitle());
+                if(is_array($ids) && count($ids) > 0) {
+                    foreach ($ids as $id) {
+                        $badge = new ilBadge($id);
+                        $items[] = $f->modal()->interruptiveItem()->keyValue($id, $badge->getId(), $badge->getTitle());
+                    }
+                    echo($r->renderAsync([
+                        $f->modal()->interruptive(
+                            $this->lng->txt('badge_deletion'),
+                            $this->lng->txt('badge_deletion_confirmation'),
+                            '#'
+                        )->withAffectedItems($items)
+                          ->withAdditionalOnLoadCode(static fn($id) : string => "console.log('ASYNC JS');")
+                    ]));
+                    exit();
+                    }
                 }
-                echo($r->renderAsync([
-                    $f->modal()->interruptive(
-                        $this->lng->txt('badge_deletion'),
-                        $this->lng->txt('badge_deletion_confirmation'),
-                        '#'
-                    )->withAffectedItems($items)
-                      ->withAdditionalOnLoadCode(static fn($id) : string => "console.log('ASYNC JS');")
-                ]));
-                exit();
-            }
-
-            $out[] = $f->divider()->horizontal();
-            $out[] = $listing;
         }
 
         $this->tpl->setContent($r->render($out));

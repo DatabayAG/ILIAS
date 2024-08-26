@@ -109,22 +109,21 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
                     $cmd = "editSettings";
                 }
                 $render_default = true;
-                global $DIC;
                 $action_parameter_token = 'tid_id';
-                $query = $DIC->http()->wrapper()->query();
+                $query = $this->http->wrapper()->query();
                 if ($query->has($action_parameter_token)) {
                     if($query->has($action_parameter_token)) {
-                        $id = $query->retrieve($action_parameter_token, $DIC->refinery()->kindlyTo()->listOf($DIC->refinery()->kindlyTo()->string()));
+                        $id = $query->retrieve($action_parameter_token, $this->refinery->kindlyTo()->listOf($this->refinery->kindlyTo()->string()));
                        if(is_array($id)) {
                           $id =  array_pop($id);
                        }
-                        $DIC->ctrl()->setParameter($this, "tid", $id);
+                        $this->ctrl->setParameter($this, "tid", $id);
                     }
                 }
                 $action = '';
                 $parameter = 'tid_table_action';
                 if ($query->has($parameter)) {
-                    $action = $query->retrieve($parameter , $DIC->refinery()->kindlyTo()->string());
+                    $action = $query->retrieve($parameter , $this->refinery->kindlyTo()->string());
                 }
                 if($action === 'badge_type_activate') {
                     $this->activateTypes();
@@ -142,10 +141,13 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
                 } elseif($action === 'obj_badge_deactivate') {
                     $this->deactivateObjectBadges();
                     $render_default = false;
-                } /*elseif($action === 'badge_image_template_delete') {
+                } elseif($action === 'obj_badge_show_users') {
+                    $this->listObjectBadgeUsers();
+                    $render_default = false;
+                } elseif($action === 'badge_image_template_delete') {
                    $this->deleteImageTemplates();
                    $render_default = false;
-                }*/
+                }
 
                 if($render_default) {
                     $this->$cmd();
@@ -597,16 +599,14 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
                 foreach (ilBadgeImageTemplate::getInstances() as $template) {
                     $tmpl_ids[] = $template->getId();
                 }
-            } else {
-
             }
             foreach ($tmpl_ids as $tmpl_id) {
                 $tmpl = new ilBadgeImageTemplate((int) $tmpl_id);
-                //TODO: remove comments
-               # $tmpl->delete();
+                $tmpl->delete();
             }
-
-            $this->tpl->setOnScreenMessage('success', $lng->txt("settings_saved"), true);
+            $this->tpl->setOnScreenMessage('success', $lng->txt("badge_deletion"), true);
+        } else {
+            $this->tpl->setOnScreenMessage('failure', $lng->txt("badge_select_one"), true);
         }
 
         $this->ctrl->redirect($this, "listImageTemplates");
@@ -617,7 +617,7 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
     // object badges
     //
 
- protected function applyObjectFilter(): void
+    protected function applyObjectFilter(): void
      {
          $this->listObjectBadges();
      }
@@ -636,7 +636,11 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
          $parent_obj_id = $this->badge_request->getParentId();
          $parent_ref_ids = ilObject::_getAllReferences($parent_obj_id);
          $parent_ref_id = array_pop($parent_ref_ids);
-         if (!$parent_obj_id) {
+
+         if($this->http->wrapper()->query()->has('ref_id')) {
+             $parent_ref_id = $this->http->wrapper()->query()->retrieve('ref_id', $this->refinery->kindlyTo()->int());
+         }
+         if (!$parent_ref_id) {
              $ilCtrl->redirect($this, "listObjectBadges");
          }
 

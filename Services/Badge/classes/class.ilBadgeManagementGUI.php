@@ -599,12 +599,18 @@ class ilBadgeManagementGUI
 
         $badge_ids = $this->request->getMultiActionBadgeIdsFromUrl();
 
-        foreach ($badge_ids as $badge_id) {
-            $badge = new ilBadge($badge_id);
-            $badge->delete();
+        if(count($badge_ids) > 0) {
+            foreach ($badge_ids as $badge_id) {
+                $badge = new ilBadge($badge_id);
+                $badge->delete();
+            }
+            $this->tpl->setOnScreenMessage('success', $lng->txt('settings_saved'), true);
+        } else {
+            $this->tpl->setOnScreenMessage('failure', $lng->txt('badge_select_one'), true);
         }
 
-        $this->tpl->setOnScreenMessage('success', $lng->txt('settings_saved'), true);
+
+
         $ilCtrl->redirect($this, 'listBadges');
     }
 
@@ -695,24 +701,26 @@ class ilBadgeManagementGUI
 
         $badge_ids = $this->request->getMultiActionBadgeIdsFromUrl();
 
-        foreach ($badge_ids as $badge_id) {
-            if ($badge_id !== self::TABLE_ALL_OBJECTS_ACTION) {
-                $badge = new ilBadge((int) $badge_id);
-                $badge->setActive($a_status);
-                $badge->update();
-            } else {
-                if ($badge_id === self::TABLE_ALL_OBJECTS_ACTION) {
+        if(count($badge_ids) > 0) {
+            foreach ($badge_ids as $badge_id) {
+                if ($badge_id !== self::TABLE_ALL_OBJECTS_ACTION) {
+                    $badge = new ilBadge((int) $badge_id);
+                    $badge->setActive($a_status);
+                    $badge->update();
+                } elseif ($badge_id === self::TABLE_ALL_OBJECTS_ACTION) {
                     foreach (ilBadge::getInstancesByParentId($this->parent_obj_id) as $badge) {
                         $badge = new ilBadge($badge->getId());
                         $badge->setActive($a_status);
                         $badge->update();
                     }
                 }
+                $this->tpl->setOnScreenMessage('success', $lng->txt('settings_saved'), true);
             }
-
-            $this->tpl->setOnScreenMessage('success', $lng->txt('settings_saved'), true);
-            $ilCtrl->redirect($this, 'listBadges');
+        } else {
+            $this->tpl->setOnScreenMessage('failure', $lng->txt('badge_select_one'), true);
         }
+
+        $ilCtrl->redirect($this, 'listBadges');
     }
 
     protected function activateBadges() : void

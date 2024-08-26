@@ -32,6 +32,7 @@ class ilBadgeTypesTableGUI
     public function __construct() {
         global $DIC;
         $this->lng = $DIC->language();
+        $this->lng->loadLanguageModule('cmps');
         $this->tpl = $DIC->ui()->mainTemplate();
         $this->factory = $DIC->ui()->factory();
         $this->renderer = $DIC->ui()->renderer();

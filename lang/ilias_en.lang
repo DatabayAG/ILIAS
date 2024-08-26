@@ -2210,6 +2210,7 @@ badge#:#badge_profile_more#:#Show all
 badge#:#badge_profile_view#:#View
 badge#:#badge_remove_badge#:#Revoke Badge
 badge#:#badge_remove_from_profile#:#Remove from Profile
+badge#:#badge_select_one#:#You have to select at least one badge
 badge#:#badge_service_activate#:#Activate Service
 badge#:#badge_service_activate_info#:#Activate the service to make badges available.
 badge#:#badge_settings#:#Badge Settings

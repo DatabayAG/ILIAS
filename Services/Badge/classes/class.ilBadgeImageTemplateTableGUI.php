@@ -153,7 +153,6 @@ class ilBadgeImageTemplateTableGUI
                     $url_builder->withParameter($action_parameter_token, "badge_image_template_delete"),
                     $row_id_token
                 )
-                  ->withAsync()
         ];
     }
 
@@ -165,8 +164,8 @@ class ilBadgeImageTemplateTableGUI
         $df = new \ILIAS\Data\Factory();
 
         $columns = [
-            'title' => $f->table()->column()->text($this->lng->txt("title")),
             'image_rid' => $f->table()->column()->text($this->lng->txt("image")),
+            'title' => $f->table()->column()->text($this->lng->txt("title")),
         ];
 
         $table_uri = $df->uri($request->getUri()->__toString());
