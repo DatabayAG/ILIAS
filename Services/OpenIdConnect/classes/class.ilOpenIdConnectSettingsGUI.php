@@ -541,8 +541,8 @@ class ilOpenIdConnectSettingsGUI
             $this->ctrl->redirect($this, 'scopes');
         }
 
-        $this->mainTemplate->setOnScreenMessage('failure', $this->lng->txt('err_check_input'));
-        $this->scopes();
+        $this->mainTemplate->setOnScreenMessage('failure', $this->lng->txt('err_check_input'), true);
+        $this->ctrl->redirect($this, 'scopes');
     }
 
     protected function validateDiscoveryUrl(int $type, ?string $url, array $scopes) : bool {
