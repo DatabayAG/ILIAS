@@ -21,6 +21,7 @@ use ilBadgeHandler;
 use ilBadge;
 use ilBadgeAuto;
 use ILIAS\UI\Implementation\Component\Table\Column\Boolean;
+use ilBadgeRenderer;
 
 class ilBadgeTableGUI
 {
@@ -121,7 +122,7 @@ class ilBadgeTableGUI
                             : $badge->getTypeInstance()->getCaption(),
                         'manual' => (!$badge->getTypeInstance() instanceof ilBadgeAuto),
                         'image_rid' => $image_html,
-                        'renderer' => fn () => $this->tile->asTitle($this->tile->modalContent($badge)),
+                        'renderer' => ''
                     );
                 }
                 return $data;
@@ -262,9 +263,6 @@ class ilBadgeTableGUI
                 ]));
                 exit();
             }
-
-            $out[] = $f->divider()->horizontal();
-            $out[] = $listing;
         }
 
         $this->tpl->setContent($r->render($out));
