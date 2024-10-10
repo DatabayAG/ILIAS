@@ -61,6 +61,8 @@ class ilOpenIdConnectSettingsGUI
     private $request;
     private ilOpenIdAttributeMappingTemplate $attribute_mapping_template;
 
+    private string $failed_validation_messages = '';
+
     public function __construct(int $a_ref_id)
     {
         global $DIC;
@@ -541,7 +543,12 @@ class ilOpenIdConnectSettingsGUI
             $this->ctrl->redirect($this, 'scopes');
         }
 
-        $this->mainTemplate->setOnScreenMessage('failure', $this->lng->txt('err_check_input'), true);
+        if(strlen($this->failed_validation_messages) > 0) {
+            $this->failed_validation_messages = $this->lng->txt('err_check_input') . '<br/>' . $this->failed_validation_messages;
+        } else {
+            $this->failed_validation_messages = $this->lng->txt('err_check_input');
+        }
+        $this->mainTemplate->setOnScreenMessage('failure', $this->failed_validation_messages , true);
         $this->ctrl->redirect($this, 'scopes');
     }
 
@@ -577,8 +584,10 @@ class ilOpenIdConnectSettingsGUI
         } catch (ilCurlConnectionException $e) {
             $this->mainTemplate->setOnScreenMessage(
                 'failure',
-                $e->getMessage()
+                $e->getMessage(),
+                true
             );
+            $this->failed_validation_messages = $e->getMessage();
             $this->scopes();
             return false;
         }

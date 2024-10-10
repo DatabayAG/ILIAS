@@ -2073,7 +2073,7 @@ auth#:#auth_oidc_settings_user_attr#:#Attribute name of user accounts
 auth#:#auth_oidc_settings_user_sync#:#Synchronise Automatically
 auth#:#auth_oidc_settings_user_sync_info#:#Users who do not have an ILIAS account, but have successfully authenticated themselves using OpenID Connect, will have an ILIAS account created for them automatically.
 auth#:#auth_oidc_settings_validate_scope_custom#:#Use custom OpenID Connect Discovery url
-auth#:#auth_oidc_settings_validate_scope_default#:#Use :Provider-URL:/.well-known/openid-configuration
+auth#:#auth_oidc_settings_validate_scope_default#:#Use [PROVIDER_URL]/.well-known/openid-configuration
 auth#:#auth_oidc_settings_validate_scope_none#:#Do not validate Scopes on saving
 auth#:#auth_oidc_settings_validate_scopes#:#Validate Scopes upon saving
 auth#:#auth_oidc_update_field_info#:#Update Automatically
