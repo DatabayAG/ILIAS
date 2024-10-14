@@ -529,6 +529,9 @@ class ilOpenIdConnectSettingsGUI
                     }
                 }
             }
+            if($url === null && $type === ilOpenIdConnectSettings::URL_VALIDATION_PROVIDER) {
+                $url = $this->settings->getProvider();
+            }
             $validation = $this->validateDiscoveryUrl($type, $url, $custom_scopes);
         }
 
