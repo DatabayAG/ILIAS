@@ -26,19 +26,16 @@ class ilBadgePictureDefinition implements FlavourDefinition
 
     private int $quality = 50;
 
-    private array $sizes = [
-        'big' => 512,
-        'small' => 100,
-        'xsmall' => 75,
-        'xxsmall' => 30
+    private array $widths = [
+        'xl' => 1920,
+        'l' => 960,
+        'm' => 480,
+        's' => 240,
+        'xs' => 120
     ];
 
-    private int $actual_size = 0;
+    public function __construct() {
 
-    public function __construct(int $size = 0) {
-        if($size > 0) {
-            $this->actual_size = $size;
-        }
     }
 
     public function getId(): string
@@ -60,7 +57,7 @@ class ilBadgePictureDefinition implements FlavourDefinition
     {
         return json_encode([
             'quality' => $this->quality,
-            'sizes' => $this->sizes
+            'sizes' => $this->widths
         ]);
     }
 
@@ -69,13 +66,13 @@ class ilBadgePictureDefinition implements FlavourDefinition
         return true;
     }
 
-    public function getSizes(): array
-    {
-        return $this->sizes;
-    }
-
     public function getQuality(): int
     {
         return $this->quality;
+    }
+
+    public function getWidths(): array
+    {
+        return $this->widths;
     }
 }

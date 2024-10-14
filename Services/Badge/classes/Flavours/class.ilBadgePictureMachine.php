@@ -30,6 +30,9 @@ use ILIAS\ResourceStorage\Flavour\Machine\DefaultMachines\MakeGreyScale;
 use ILIAS\ResourceStorage\Flavour\Machine\FlavourMachine;
 use ILIAS\ResourceStorage\Flavour\Machine\Result;
 use ILIAS\ResourceStorage\Information\FileInformation;
+use ILIAS\ResourceStorage\Flavour\Machine\DefaultMachines\ExtractPages;
+use ILIAS\ResourceStorage\Flavour\Definition\PagesToExtract;
+use ILIAS\ResourceStorage\Flavour\Engine\ImagickEngine;
 
 /**
  * @author Fabian Schmid <fabian@sr.solutions>
@@ -43,9 +46,11 @@ class ilBadgePictureMachine extends AbstractMachine implements FlavourMachine
     private MakeGreyScale $grey;
     private ?ilBadgePictureDefinition $definition = null;
     private ?FileInformation $information = null;
+    private ExtractPages $extract_pages;
 
     public function __construct()
     {
+        $this->extract_pages = new ExtractPages();
         $this->crop = new CropSquare();
     }
 
@@ -62,7 +67,7 @@ class ilBadgePictureMachine extends AbstractMachine implements FlavourMachine
 
     public function dependsOnEngine(): ?string
     {
-        return GDEngine::class;
+        return ImagickEngine::class;
     }
 
     public function processStream(
@@ -70,15 +75,30 @@ class ilBadgePictureMachine extends AbstractMachine implements FlavourMachine
         FileStream $stream,
         FlavourDefinition $for_definition
     ): \Generator {
-        /** @var ilBadgePictureDefinition $for_definition */
         $this->definition = $for_definition;
         $this->information = $information;
 
+        $page_stream = $this->extract_pages->processStream(
+            $this->information,
+            $stream,
+            new PagesToExtract(
+                false,
+                $this->definition->getWidths()['xl'],
+                1,
+                false,
+                100
+            )
+        )->current()?->getStream();
+
+        if ($page_stream === null) {
+            return;
+        }
+
         $i = 0;
-        foreach ($for_definition->getSizes() as $size) {
+        foreach ($for_definition->getWidths() as $width) {
             yield new Result(
                 $for_definition,
-                $this->cropImage($stream, $size),
+                $this->cropImage($page_stream, $width),
                 $i,
                 true
             );

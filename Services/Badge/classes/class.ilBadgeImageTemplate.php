@@ -380,8 +380,8 @@ class ilBadgeImageTemplate
             if ($identification !== null) {
                 $flavour = $this->resource_storage->flavours()->get($identification, new \ilBadgePictureDefinition());
                 $urls = $this->resource_storage->consume()->flavourUrls($flavour)->getURLsAsArray(false);
-                if(is_array($urls) && sizeof($urls) === 4 && isset($urls[1])) {
-                    $image_src = $urls[1];
+                if(sizeof($urls) === 5 && isset($urls[4])) {
+                    $image_src = $urls[4];
                 }
             }
         } else {
