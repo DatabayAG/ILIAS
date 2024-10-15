@@ -172,9 +172,15 @@ class ilBadgeTypesTableGUI
         $columns = [
             'name' => $f->table()->column()->text($this->lng->txt("name")),
             'comp' => $f->table()->column()->text($this->lng->txt("cmps_component")),
-            'manual' => $f->table()->column()->boolean($this->lng->txt("badge_manual"), $this->lng->txt("yes"), $this->lng->txt("no")),
-            'activity' => $f->table()->column()->boolean($this->lng->txt("badge_activity_badges"), $this->lng->txt("yes"), $this->lng->txt("no")),
-            'active' => $f->table()->column()->boolean($this->lng->txt("active"), $this->lng->txt("yes"), $this->lng->txt("no")),
+            'manual' => $f->table()->column()->boolean($this->lng->txt("badge_manual"), $this->lng->txt("yes"), $this->lng->txt("no"))
+                        ->withOrderingLabels($this->lng->txt("badge_manual") . ': ' . $this->lng->txt("yes"),
+                                            $this->lng->txt("badge_manual") . ': ' . $this->lng->txt("no")),
+            'activity' => $f->table()->column()->boolean($this->lng->txt("badge_activity_badges"), $this->lng->txt("yes"), $this->lng->txt("no"))
+                ->withOrderingLabels($this->lng->txt("badge_activity_badges") . ': ' . $this->lng->txt("yes"),
+                                    $this->lng->txt("badge_activity_badges") . ': ' . $this->lng->txt("no")),
+            'active' => $f->table()->column()->boolean($this->lng->txt("active"), $this->lng->txt("yes"), $this->lng->txt("no"))
+                ->withOrderingLabels($this->lng->txt("active") . ': ' . $this->lng->txt("yes"),
+                                    $this->lng->txt("active") . ': ' . $this->lng->txt("no")),
 
         ];
 
