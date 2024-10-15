@@ -169,21 +169,24 @@ class ilBadgeTypesTableGUI
         $request = $this->request;
         $df = new \ILIAS\Data\Factory();
 
+        $badge_manual_txt = $this->lng->txt("badge_manual") . ': ' ;
+        $badge_activity_txt = $this->lng->txt("badge_activity_badges") . ': ';
+        $active_txt = $this->lng->txt("active") . ': ';
         $columns = [
             'name' => $f->table()->column()->text($this->lng->txt("name")),
             'comp' => $f->table()->column()->text($this->lng->txt("cmps_component")),
             'manual' => $f->table()->column()->boolean($this->lng->txt("badge_manual"), $this->lng->txt("yes"),
                 $this->lng->txt("no"))
-                          ->withOrderingLabels($this->lng->txt("badge_manual") . ': ' . $this->lng->txt("yes"),
-                              $this->lng->txt("badge_manual") . ': ' . $this->lng->txt("no")),
+                          ->withOrderingLabels($badge_manual_txt . $this->lng->txt("no"),
+                              $badge_manual_txt . $this->lng->txt("yes")),
             'activity' => $f->table()->column()->boolean($this->lng->txt("badge_activity_badges"),
                 $this->lng->txt("yes"), $this->lng->txt("no"))
-                            ->withOrderingLabels($this->lng->txt("badge_activity_badges") . ': ' . $this->lng->txt("yes"),
-                                $this->lng->txt("badge_activity_badges") . ': ' . $this->lng->txt("no")),
+                            ->withOrderingLabels($badge_activity_txt . $this->lng->txt("no"),
+                                $badge_activity_txt. $this->lng->txt("yes")),
             'active' => $f->table()->column()->boolean($this->lng->txt("active"), $this->lng->txt("yes"),
                 $this->lng->txt("no"))
-                          ->withOrderingLabels($this->lng->txt("active") . ': ' . $this->lng->txt("yes"),
-                              $this->lng->txt("active") . ': ' . $this->lng->txt("no")),
+                          ->withOrderingLabels($active_txt . $this->lng->txt("no"),
+                              $active_txt . $this->lng->txt("yes")),
 
         ];
 
