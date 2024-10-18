@@ -31,7 +31,7 @@ class ilBadgeImage
         return $this->getImageFromResourceId($badge, $image_rid);
     }
 
-    public function getImageFromResourceId(ilBadge|array $badge, ?string $image_rid) : string
+    public function getImageFromResourceId(ilBadge|array $badge, ?string $image_rid, $size = 4) : string
     {
         $image_src = '';
 
@@ -40,8 +40,8 @@ class ilBadgeImage
             if ($identification !== null) {
                 $flavour = $this->resource_storage->flavours()->get($identification, new \ilBadgePictureDefinition());
                 $urls = $this->resource_storage->consume()->flavourUrls($flavour)->getURLsAsArray(false);
-                if(is_array($urls) && sizeof($urls) === 5 && isset($urls[4])) {
-                    $image_src = $urls[4];
+                if(sizeof($urls) === 5 && isset($urls[$size])) {
+                    $image_src = $urls[$size];
                 }
             }
         } elseif(is_array($badge) && isset($badge['image'])) {

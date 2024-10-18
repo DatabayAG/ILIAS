@@ -94,13 +94,19 @@ class ilBadgeTableGUI
              * @param array $data
              * @return array
              */
-            protected function getBadges() : array
+            protected function getBadges(Container $DIC) : array
             {
                 $data = [];
                 $image_html = '';
+                $f = $DIC->ui()->factory();
+                $r = $DIC->ui()->renderer();
+                $badge_img_large = null;
                 foreach (ilBadge::getInstancesByParentId($this->parent_id) as $badge) {
+                    $title = $badge->getTitle();
+                    $image_html = '';
                     $badge_rid = $badge->getImageRid();
                     $image_src = $this->badge_image_service->getImageFromResourceId($badge, $badge_rid);
+                    $badge_image_large = $this->badge_image_service->getImageFromResourceId($badge, $badge_rid, 0);
                     if($badge_rid != '') {
                         $badge_template_image = $image_src;
                         if($badge_template_image !== '') {
@@ -112,10 +118,31 @@ class ilBadgeTableGUI
                         }
                     }
 
+                    if($badge_img_large !== '') {
+                        $badge_img_large = $DIC->ui()->factory()->image()->responsive(
+                            $badge_image_large,
+                            $badge->getTitle()
+                        );
+                        $badge_information = [
+                            $DIC->language()->txt("description") => $badge->getDescription(),
+                            $DIC->language()->txt("badge_criteria") => $badge->getCriteria(),
+                        ];
+                        $item = $f->item()
+                                  ->standard('')
+                                  ->withLeadImage($badge_img_large)
+                                  ->withProperties($badge_information);
+                        $card = $f->card()
+                                  ->standard($badge->getTitle())
+                                  ->withSections([$item]);
+                        $box = $f->modal()->lightboxCardPage($card);
+                        $modal = $f->modal()->lightbox($box);
+                        $title = $r->render($f->button()->shy($badge->getTitle(), $modal->getShowSignal()));
+                        $image_html = $r->render($f->button()->shy($image_html, $modal->getShowSignal())) . ' ' .  $r->render($modal);
+                    }
                     $data[] = array(
                         'id' => $badge->getId(),
                         'badge' => $badge,
-                        'title' => $badge->getTitle(),
+                        'title' =>  $title,
                         'active' => $badge->isActive(),
                         'type' => ($this->parent_type !== 'bdga')
                             ? ilBadge::getExtendedTypeCaption($badge->getTypeInstance())
@@ -152,7 +179,8 @@ class ilBadgeTableGUI
 
             protected function getRecords(Range $range = null, Order $order = null) : array
             {
-                $data = $this->getBadges();
+                global $DIC;
+                $data = $this->getBadges($DIC);
 
                 if ($order) {
                     list($order_field, $order_direction) = $order->join([],

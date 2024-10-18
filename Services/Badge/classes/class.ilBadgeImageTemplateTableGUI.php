@@ -60,10 +60,15 @@ class ilBadgeImageTemplateTableGUI
              */
             protected function getBadgeImageTemplates(Container $DIC, array $data) : array
             {
+                $f = $DIC->ui()->factory();
+                $r = $DIC->ui()->renderer();
+
                 foreach (ilBadgeImageTemplate::getInstances() as $template) {
                     $image_html = '';
+                    $image_html_large = null;
                     if ($template->getId() !== null) {
                         $badge_template_image = $template->getImageFromResourceId($template->getImageRid());
+                        $badge_template_image_large = $template->getImageFromResourceId($template->getImageRid(), null, 0);
                         if($badge_template_image !== '') {
                             $badge_img = $DIC->ui()->factory()->image()->responsive(
                                 $badge_template_image,
@@ -72,11 +77,27 @@ class ilBadgeImageTemplateTableGUI
                             $image_html = $DIC->ui()->renderer()->render($badge_img);
                         }
 
-                        $data[] =
-                            ['id' => $template->getId(),
-                             'title' => $template->getTitle(),
-                             'image_rid' => $image_html
-                            ];
+                        if($badge_template_image_large !== '') {
+                            $image_html_large = $DIC->ui()->factory()->image()->responsive(
+                                $badge_template_image_large,
+                                $template->getTitle()
+                            );
+
+                            $item = $f->item()
+                                      ->standard('')
+                                      ->withLeadImage($badge_img_large);
+                            $card = $f->card()
+                                      ->standard($template->getTitle())
+                                      ->withSections([$item]);
+                            $box = $f->modal()->lightboxCardPage($card);
+                            $modal = $f->modal()->lightbox($box);
+                            $data[] =
+                                    ['id' => $template->getId(),
+                                     'title' => $r->render($f->button()->shy($template->getTitle(), $modal->getShowSignal())),
+                                     'image_rid' => $r->render($f->button()->shy($image_html, $modal->getShowSignal())) . ' ' .  $r->render($modal),
+                                    ];
+                        }
+
                     }
                 }
                 return $data;

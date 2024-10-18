@@ -31,7 +31,7 @@
     use ILIAS\UI\Implementation\Component\Link\Standard;
     use ILIAS\Badge\ilBadgeImage;
     use ILIAS\Badge\PresentationHeader;
-use ILIAS\Data\Link;
+use ILIAS\UI\Implementation\Component\Image\Image;
 
 /*
  * @ilCtrl_IsCalledBy ilObjBadgeAdministration: ilObjectBadgeTable
@@ -64,6 +64,7 @@ class ilBadgePersonalTableGUI
             private readonly Factory $factory;
             private readonly Renderer $renderer;
             private readonly ilObjUser $user;
+            private readonly ilAccess $access;
 
             public function __construct(
                 protected Factory $ui_factory,
@@ -104,13 +105,22 @@ class ilBadgePersonalTableGUI
             {
                 $data = [];
                 $a_user_id = $this->user->getId();
+                $badge_img_large = new Image(Image::STANDARD,'', '');
                 foreach (ilBadgeAssignment::getInstancesByUserId($a_user_id) as $ass) {
                     $image_html = '';
                     $badge = new ilBadge($ass->getBadgeId());
-                    $image_src = $this->badge_image_service->getImageFromBadge($badge);
-                    if($image_src != '') {
-                        $badge_img = $this->factory->image()->responsive($image_src, $badge->getTitle());
+                    $image_rid = $this->badge_image_service->getImageFromBadge($badge);
+                    if($image_rid != '') {
+                        $badge_img = $this->factory->image()->responsive($image_rid, $badge->getTitle());
                         $image_html = $this->renderer->render($badge_img);
+
+                        $image_html_large = $this->badge_image_service->getImageFromResourceId($badge, $badge->getImageRid(), 0);
+                        if($image_html_large !== '') {
+                            $badge_img_large = $this->ui_factory->image()->responsive(
+                                $image_html_large,
+                                $badge->getTitle()
+                            );
+                        }
                     }
                     $parent = null;
                     if ($badge->getParentId()) {
@@ -130,12 +140,22 @@ class ilBadgePersonalTableGUI
                             $awarded_by = $this->renderer->render(new Standard($parent['title'], new URI($container_url)));
                         }
                     }
+
+                    $item = $this->ui_factory->item()
+                                             ->standard('')
+                                             ->withLeadImage($badge_img_large);
+                    $card = $this->ui_factory->card()
+                                             ->standard($badge->getTitle())
+                                             ->withSections([$item]);
+                    $box = $this->ui_factory->modal()->lightboxCardPage($card);
+                    $modal = $this->ui_factory->modal()->lightbox($box);
+
                     $data[] = [
                         'id' => $badge->getId(),
-                        'image' => $image_html,
+                        'image' => $this->ui_renderer->render($this->ui_factory->button()->shy($image_html, $modal->getShowSignal())) . ' ' .  $this->ui_renderer->render($modal),
+                        'title' =>  $this->ui_renderer->render($this->ui_factory->button()->shy($badge->getTitle(), $modal->getShowSignal())),
                         'user' => '',
                         'badge_in_profile' => '',
-                        "title" => $badge->getTitle(),
                         "badge_issued_on" =>  (new \DateTimeImmutable())->setTimestamp($ass->getTimestamp()),
                         "awarded_by" => $awarded_by,
                         "parent" => $parent,

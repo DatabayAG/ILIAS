@@ -115,6 +115,8 @@ class ilObjectBadgeTableGUI
             {
                 $data = [];
                 $image_html = '';
+                $image_html_large = '';
+
                 $types = ilBadgeHandler::getInstance()->getAvailableTypes(false);
                 $filter = ['type' => '' , 'title' => '', 'object' => ''];
                 foreach (ilBadge::getObjectInstances($filter) as $badge_item) {
@@ -130,8 +132,15 @@ class ilObjectBadgeTableGUI
                             );
                             $image_html = $this->renderer->render($badge_img);
                         }
+                        $image_html_large = $this->badge_image_service->getImageFromResourceId($badge_item, $badge_rid, 0);
+                        if($image_html_large !== '') {
+                            $badge_img_large = $this->ui_factory->image()->responsive(
+                                $image_html_large,
+                                $badge_item['title']
+                            );
+                        }
                     }
-                    $url = '';
+
                     $ref_ids = ilObject::_getAllReferences($badge_item['parent_id']);
                     $ref_id = array_shift($ref_ids);
                     $this->userHasWritePermission($badge_item['parent_id']);
@@ -151,14 +160,23 @@ class ilObjectBadgeTableGUI
                         $container_url = ilLink::_getLink($ref_id);
                         $container_url_link = $this->renderer->render(new Standard($badge_item['parent_title'], new URI($container_url)));
                     }
+
+                    $item = $this->ui_factory->item()
+                              ->standard('')
+                              ->withLeadImage($badge_img_large);
+                    $card = $this->ui_factory->card()
+                              ->standard($badge_item['title'])
+                              ->withSections([$item]);
+                    $box = $this->ui_factory->modal()->lightboxCardPage($card);
+                    $modal = $this->ui_factory->modal()->lightbox($box);
                     $data[] = [
                         'id' => (int) $badge_item['id'],
                         'active' => $badge_item['active'] ? true : false,
                         'type' => $type_caption,
-                        'title' => $badge_item['title'],
-                        'image_rid' => $image_html,
+                        'title' =>  $this->ui_renderer->render($this->ui_factory->button()->shy($badge_item['title'], $modal->getShowSignal())),
+                        'image_rid' => $this->ui_renderer->render($this->ui_factory->button()->shy($image_html, $modal->getShowSignal())) . ' ' .  $this->ui_renderer->render($modal),
                         'container' => $badge_item['parent_title'],
-                        'container_url' => $container_url_link ?: '',
+                        'container_url' => $container_url_link ?  : '',
                         'container_deleted' => ($badge_item['deleted'] ?? false),
                         'container_id' => (int) $badge_item['parent_id'],
                         'container_type' => $badge_item['parent_type'],
@@ -237,7 +255,6 @@ class ilObjectBadgeTableGUI
             'title' => $f->table()->column()->text($this->lng->txt("title")),
             'type' => $f->table()->column()->text($this->lng->txt("type")),
             'container_url' => $f->table()->column()->text($this->lng->txt("container")),
-            //maybe add withOrderingLabel to the boolean column
             'active' => $f->table()->column()->boolean($this->lng->txt("active"), $this->lng->txt("yes"), $this->lng->txt("no")),
         ];
 
