@@ -119,7 +119,6 @@ class ilObjectBadgeTableGUI
                 $modal_container = new ModalBuilder();
                 $badge_information = [];
 
-
                 $types = ilBadgeHandler::getInstance()->getAvailableTypes(false);
                 $filter = ['type' => '' , 'title' => '', 'object' => ''];
                 foreach (ilBadge::getObjectInstances($filter) as $badge_item) {
@@ -171,8 +170,8 @@ class ilObjectBadgeTableGUI
                         'id' => (int) $badge_item['id'],
                         'active' => $badge_item['active'] ? true : false,
                         'type' => $type_caption,
-                        'title' =>  $this->ui_renderer->render($this->ui_factory->button()->shy($badge_item['title'], $modal->getShowSignal())),
-                        'image_rid' => $this->ui_renderer->render($this->ui_factory->button()->shy($image_html, $modal->getShowSignal())) . ' ' .  $this->ui_renderer->render($modal),
+                        'image_rid' => $modal_container->renderShyButton($image_html, $modal) . ' ' .   $modal_container->renderModal($modal),
+                        'title' =>   $modal_container->renderShyButton($badge_item['title'], $modal),
                         'container' => $badge_item['parent_title'],
                         'container_url' => $container_url_link ?  : '',
                         'container_deleted' => ($badge_item['deleted'] ?? false),

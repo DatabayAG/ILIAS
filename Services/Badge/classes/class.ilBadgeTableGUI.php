@@ -140,8 +140,8 @@ class ilBadgeTableGUI
                             ? ilBadge::getExtendedTypeCaption($badge->getTypeInstance())
                             : $badge->getTypeInstance()->getCaption(),
                         'manual' => (!$badge->getTypeInstance() instanceof ilBadgeAuto),
-                        'image_rid' =>  $this->ui_renderer->render($this->ui_factory->button()->shy($image_html, $modal->getShowSignal())) . ' ' .  $this->ui_renderer->render($modal),
-                        'title' =>  $this->ui_renderer->render($this->ui_factory->button()->shy($title, $modal->getShowSignal())),
+                        'image_rid' => $modal_container->renderShyButton($image_html, $modal) . ' ' .   $modal_container->renderModal($modal),
+                        'title' =>   $modal_container->renderShyButton($title, $modal),
                         'renderer' => ''
                     );
                 }

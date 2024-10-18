@@ -3,12 +3,12 @@
 namespace ILIAS\Badge;
 
 use ILIAS\UI\Implementation\Component\Image\Image;
-use ILIAS\UI\Component\Modal\Lightbox;
+use ILIAS\UI\Component\Modal\Modal;
 
 class ModalBuilder
 {
 
-    private $ui_factory = null;
+    private ?\ILIAS\UI\Factory $ui_factory = null;
     private $ui_renderer = null;
     public function __construct()
     {
@@ -17,7 +17,7 @@ class ModalBuilder
         $this->ui_renderer = $DIC->ui()->renderer();
     }
 
-    public function constructModal(Image $badge_image, string $badge_title, array $properties = []) : Lightbox
+    public function constructModal(Image $badge_image, string $badge_title, array $properties = []) : Modal
     {
 
         $item = $this->ui_factory->item()
@@ -32,5 +32,14 @@ class ModalBuilder
         $box = $this->ui_factory->modal()->lightboxCardPage($card);
 
         return $this->ui_factory->modal()->lightbox($box);
+    }
+
+    public function renderModal(Modal $modal ) {
+        return $this->ui_renderer->render($modal);
+    }
+
+    public function renderShyButton(string $label, Modal $modal ) {
+        $button = $this->ui_factory->button()->shy($label, $modal->getShowSignal());
+        return $this->ui_renderer->render($button);
     }
 }

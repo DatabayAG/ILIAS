@@ -86,8 +86,8 @@ class ilBadgeImageTemplateTableGUI
                             $modal = $modal_container->constructModal($badge_img_large, $template->getTitle());
                             $data[] =
                                     ['id' => $template->getId(),
-                                     'title' => $r->render($f->button()->shy($template->getTitle(), $modal->getShowSignal())),
-                                     'image_rid' => $r->render($f->button()->shy($image_html, $modal->getShowSignal())) . ' ' .  $r->render($modal),
+                                     'image_rid' => $modal_container->renderShyButton($image_html, $modal) . ' ' .   $modal_container->renderModal($modal),
+                                     'title' =>   $modal_container->renderShyButton($template->getTitle(), $modal),
                                     ];
                         }
 
