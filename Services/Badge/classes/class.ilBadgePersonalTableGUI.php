@@ -32,6 +32,7 @@
     use ILIAS\Badge\ilBadgeImage;
     use ILIAS\Badge\PresentationHeader;
 use ILIAS\UI\Implementation\Component\Image\Image;
+use ILIAS\Badge\ModalBuilder;
 
 /*
  * @ilCtrl_IsCalledBy ilObjBadgeAdministration: ilObjectBadgeTable
@@ -106,6 +107,7 @@ class ilBadgePersonalTableGUI
                 $data = [];
                 $a_user_id = $this->user->getId();
                 $badge_img_large = new Image(Image::STANDARD,'', '');
+                $modal_container = new ModalBuilder();
                 foreach (ilBadgeAssignment::getInstancesByUserId($a_user_id) as $ass) {
                     $image_html = '';
                     $badge = new ilBadge($ass->getBadgeId());
@@ -141,14 +143,7 @@ class ilBadgePersonalTableGUI
                         }
                     }
 
-                    $item = $this->ui_factory->item()
-                                             ->standard('')
-                                             ->withLeadImage($badge_img_large);
-                    $card = $this->ui_factory->card()
-                                             ->standard($badge->getTitle())
-                                             ->withSections([$item]);
-                    $box = $this->ui_factory->modal()->lightboxCardPage($card);
-                    $modal = $this->ui_factory->modal()->lightbox($box);
+                    $modal = $modal_container->constructModal($badge_img_large, $badge->getTitle());
 
                     $data[] = [
                         'id' => $badge->getId(),

@@ -101,6 +101,8 @@ class ilBadgeTableGUI
                 $f = $DIC->ui()->factory();
                 $r = $DIC->ui()->renderer();
                 $badge_img_large = null;
+                $modal_container = new ModalBuilder();
+
                 foreach (ilBadge::getInstancesByParentId($this->parent_id) as $badge) {
                     $title = $badge->getTitle();
                     $image_html = '';
@@ -127,28 +129,19 @@ class ilBadgeTableGUI
                             $DIC->language()->txt("description") => $badge->getDescription(),
                             $DIC->language()->txt("badge_criteria") => $badge->getCriteria(),
                         ];
-                        $item = $f->item()
-                                  ->standard('')
-                                  ->withLeadImage($badge_img_large)
-                                  ->withProperties($badge_information);
-                        $card = $f->card()
-                                  ->standard($badge->getTitle())
-                                  ->withSections([$item]);
-                        $box = $f->modal()->lightboxCardPage($card);
-                        $modal = $f->modal()->lightbox($box);
-                        $title = $r->render($f->button()->shy($badge->getTitle(), $modal->getShowSignal()));
-                        $image_html = $r->render($f->button()->shy($image_html, $modal->getShowSignal())) . ' ' .  $r->render($modal);
+
+                        $modal = $modal_container->constructModal($badge_img_large, $badge->getTitle(), $badge_information);
                     }
                     $data[] = array(
                         'id' => $badge->getId(),
                         'badge' => $badge,
-                        'title' =>  $title,
                         'active' => $badge->isActive(),
                         'type' => ($this->parent_type !== 'bdga')
                             ? ilBadge::getExtendedTypeCaption($badge->getTypeInstance())
                             : $badge->getTypeInstance()->getCaption(),
                         'manual' => (!$badge->getTypeInstance() instanceof ilBadgeAuto),
-                        'image_rid' => $image_html,
+                        'image_rid' =>  $this->ui_renderer->render($this->ui_factory->button()->shy($image_html, $modal->getShowSignal())) . ' ' .  $this->ui_renderer->render($modal),
+                        'title' =>  $this->ui_renderer->render($this->ui_factory->button()->shy($title, $modal->getShowSignal())),
                         'renderer' => ''
                     );
                 }

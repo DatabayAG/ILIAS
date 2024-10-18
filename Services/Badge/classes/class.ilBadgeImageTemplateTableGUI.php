@@ -62,10 +62,10 @@ class ilBadgeImageTemplateTableGUI
             {
                 $f = $DIC->ui()->factory();
                 $r = $DIC->ui()->renderer();
+                $modal_container = new ModalBuilder();
 
                 foreach (ilBadgeImageTemplate::getInstances() as $template) {
                     $image_html = '';
-                    $image_html_large = null;
                     if ($template->getId() !== null) {
                         $badge_template_image = $template->getImageFromResourceId($template->getImageRid());
                         $badge_template_image_large = $template->getImageFromResourceId($template->getImageRid(), null, 0);
@@ -78,19 +78,12 @@ class ilBadgeImageTemplateTableGUI
                         }
 
                         if($badge_template_image_large !== '') {
-                            $image_html_large = $DIC->ui()->factory()->image()->responsive(
+                            $badge_img_large = $DIC->ui()->factory()->image()->responsive(
                                 $badge_template_image_large,
                                 $template->getTitle()
                             );
 
-                            $item = $f->item()
-                                      ->standard('')
-                                      ->withLeadImage($badge_img_large);
-                            $card = $f->card()
-                                      ->standard($template->getTitle())
-                                      ->withSections([$item]);
-                            $box = $f->modal()->lightboxCardPage($card);
-                            $modal = $f->modal()->lightbox($box);
+                            $modal = $modal_container->constructModal($badge_img_large, $template->getTitle());
                             $data[] =
                                     ['id' => $template->getId(),
                                      'title' => $r->render($f->button()->shy($template->getTitle(), $modal->getShowSignal())),

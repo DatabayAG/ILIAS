@@ -116,6 +116,9 @@ class ilObjectBadgeTableGUI
                 $data = [];
                 $image_html = '';
                 $image_html_large = '';
+                $modal_container = new ModalBuilder();
+                $badge_information = [];
+
 
                 $types = ilBadgeHandler::getInstance()->getAvailableTypes(false);
                 $filter = ['type' => '' , 'title' => '', 'object' => ''];
@@ -138,6 +141,7 @@ class ilObjectBadgeTableGUI
                                 $image_html_large,
                                 $badge_item['title']
                             );
+
                         }
                     }
 
@@ -161,14 +165,8 @@ class ilObjectBadgeTableGUI
                         $container_url_link = $this->renderer->render(new Standard($badge_item['parent_title'], new URI($container_url)));
                     }
 
-                    $item = $this->ui_factory->item()
-                              ->standard('')
-                              ->withLeadImage($badge_img_large);
-                    $card = $this->ui_factory->card()
-                              ->standard($badge_item['title'])
-                              ->withSections([$item]);
-                    $box = $this->ui_factory->modal()->lightboxCardPage($card);
-                    $modal = $this->ui_factory->modal()->lightbox($box);
+                    $modal = $modal_container->constructModal($badge_img_large, $badge_item['title'], $badge_information);
+
                     $data[] = [
                         'id' => (int) $badge_item['id'],
                         'active' => $badge_item['active'] ? true : false,
