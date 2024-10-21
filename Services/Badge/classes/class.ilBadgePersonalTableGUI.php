@@ -67,6 +67,8 @@ class ilBadgePersonalTableGUI
             private readonly ilObjUser $user;
             private readonly ilAccess $access;
 
+            private readonly ilLanguage $lng;
+
             public function __construct(
                 protected Factory $ui_factory,
                 protected Renderer $ui_renderer
@@ -77,6 +79,7 @@ class ilBadgePersonalTableGUI
                 $this->renderer = $this->ui_renderer;
                 $this->user = $DIC->user();
                 $this->access = $DIC->access();
+                $this->lng = $DIC->language();
             }
 
 
@@ -107,10 +110,11 @@ class ilBadgePersonalTableGUI
                 $data = [];
                 $a_user_id = $this->user->getId();
                 $badge_img_large = new Image(Image::STANDARD,'', '');
-                $modal_container = new ModalBuilder();
+
                 foreach (ilBadgeAssignment::getInstancesByUserId($a_user_id) as $ass) {
                     $image_html = '';
                     $badge = new ilBadge($ass->getBadgeId());
+                    $modal_container = new ModalBuilder($ass);
                     $image_rid = $this->badge_image_service->getImageFromBadge($badge);
                     if($image_rid != '') {
                         $badge_img = $this->factory->image()->responsive($image_rid, $badge->getTitle());
@@ -143,7 +147,11 @@ class ilBadgePersonalTableGUI
                         }
                     }
 
-                    $modal = $modal_container->constructModal($badge_img_large, $badge->getTitle());
+                    $information = [
+                       $this->lng->txt('awarded_by') => $awarded_by
+                    ];
+
+                    $modal = $modal_container->constructModal($badge_img_large, $badge->getTitle(), $information);
 
                     $data[] = [
                         'id' => $badge->getId(),

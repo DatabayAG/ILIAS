@@ -164,6 +164,12 @@ class ilObjectBadgeTableGUI
                         $container_url_link = $this->renderer->render(new Standard($badge_item['parent_title'], new URI($container_url)));
                     }
 
+                    $badge_information = [
+                        $this->lng->txt('active') => ($badge_item['active'] ? $this->lng->txt('yes') : $this->lng->txt('no')),
+                        $this->lng->txt('type') => $type_caption,
+                        $this->lng->txt('container') => $badge_item['parent_title'],
+                    ];
+
                     $modal = $modal_container->constructModal($badge_img_large, $badge_item['title'], $badge_information);
 
                     $data[] = [
