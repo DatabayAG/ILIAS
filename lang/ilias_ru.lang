@@ -3461,6 +3461,7 @@ common#:#adve_assessment_settings#:#Настройки тестов и упра�
 common#:#adve_frm_post_settings#:#Forum Posts
 common#:#adve_general_settings#:#General Settings
 common#:#adve_survey_settings#:#Survey Settings
+common#:#agree_date#:#Agreed on###27 08 2024 new variable
 common#:#all#:#All###07 02 2020 new variable
 common#:#all_global_roles#:#Глобальные статусы
 common#:#all_local_roles#:#Локальные роли (все)
@@ -3783,7 +3784,6 @@ common#:#create_stylesheet#:#Создать стиль
 common#:#created#:#Дата создания
 common#:#cron_forum_notification#:#Send forum notifications
 common#:#cron_forum_notification_crob_desc#:#If enabled, all users who have enabled forum notifications will get a daily mail about all new posts but no immediate notification for each submitted posting.
-common#:#cron_forum_notification_desc#:#If enabled, all users, who want to be informed about new posts in specified forum topics, will get notifications by e-mail.
 common#:#cron_forum_notification_disabled#:#Can't be disabled when the Cron Job is active.###30 04 2024 new variable
 common#:#cron_jobs#:#Задачи крона
 common#:#cron_lucene_index#:#Update Lucene search index
@@ -5158,6 +5158,7 @@ common#:#objs_rglo#:#ECS Glossaries
 common#:#objs_rgrp#:#ECS Groups
 common#:#objs_rlm#:#ECS Learning Modules
 common#:#objs_role#:#Роли
+common#:#objs_rolf#:#Role Folders###08 10 2024 new variable
 common#:#objs_rtst#:#ECS Tests
 common#:#objs_rwik#:#ECS вики
 common#:#objs_sahs#:#Обучающие модули SCORM/AICC
@@ -6094,6 +6095,7 @@ cont#:#cont_tile_size_3#:#extra large (up to two tiles per row)###31 03 2023 new
 cont#:#cont_tile_size_4#:#full (one tile per row)###31 03 2023 new variable
 cont#:#cont_tile_view#:#Tiles###10 11 2018 new variable
 cont#:#cont_tile_view_info#:#Display content objects as thumbnail-style tiles. Images for these tiles can be uploaded in the settings of each individual object.###16 03 2023 new variable
+cont#:#cont_trash_general_usage#:#If you want to remove a huge amount of old, deleted objects from the system it is highly advisable to start with non-container objects (i.e. Files, Glossaries, Tests,..) and thus removing all objects from the containers (Categories, Courses, Groups, Learning Sequences,...) . Using the filters "Type" and "Deleted on" helps this process. Then finally remove the containers.###08 10 2024 new variable
 contact#:#contact_awrn_ap_contacts#:#Approved Contacts###30 08 2015 new variable
 contact#:#contact_awrn_ap_contacts_info#:#All contacts approved by the user are listed.###30 08 2015 new variable
 contact#:#contact_awrn_req_contacts#:#Contact Requests###30 08 2015 new variable
@@ -9931,6 +9933,8 @@ forum#:#forums_download_attachment#:#Загрузить файл
 forum#:#forums_edit_draft#:#Edit draft###25 10 2016 new variable
 forum#:#forums_edit_post#:#Редактировать статью
 forum#:#forums_enable_notification#:#Включить уведомления об этой теме
+forum#:#forums_forum_notification#:#Send Forum Notifications###08 10 2024 new variable
+forum#:#forums_forum_notification_desc#:#If enabled, all users, who want to be informed about new posts in specified forum threads, will get notifications by mail.###08 10 2024 new variable
 forum#:#forums_forum_notification_disabled#:#You will no longer be notified about new messages in this forum.
 forum#:#forums_info_censor2_post#:#Аннулировать цензуру?
 forum#:#forums_info_censor_post#:#Вы действительно хотите скрыть эту статью?
@@ -11466,10 +11470,12 @@ mail#:#mail_smtp_user#:#User###31 08 2017 new variable
 mail#:#mail_subject_prefix#:#Mail Subject
 mail#:#mail_subject_prefix_info#:#Enter a text, which will be prepended to the subject line of outgoing auto generated e-mails
 mail#:#mail_subject_too_long#:#The subject is too long.###13 09 2023 new variable
+mail#:#mail_success_removed_user#:#User(s) successfully removed from mailing list.###08 10 2024 new variable
 mail#:#mail_sure_delete#:#Вы уверены, что хотите удалить помеченные письма
 mail#:#mail_sure_delete_entry#:#Вы уверены, что хотите удалить следующие вхождения
 mail#:#mail_sure_delete_file#:#Файл удален надолго
 mail#:#mail_sure_delete_folder#:#Папка и ее содержимое удалены
+mail#:#mail_sure_remove_user#:#Are you sure you want to remove the following user(s) from the members list?###08 10 2024 new variable
 mail#:#mail_system_sys_env_from_addr#:#Technical Sender###31 08 2017 new variable
 mail#:#mail_system_sys_env_from_addr_info#:#If you leave this field empty, the sender email address will be used if SMTP transfer is enabled. Otherwise it is the server administrator's responsibility to configure this value.###31 08 2017 new variable
 mail#:#mail_system_sys_from_addr#:#Sender Email (From)###31 08 2017 new variable
@@ -14655,6 +14661,8 @@ registration#:#reg_direct#:#Direct Registration
 registration#:#reg_direct_info#:#If this is checked, any new user registration request is automatically approved.
 registration#:#reg_disabled#:#No Registration Possible
 registration#:#reg_domain#:#Domain
+registration#:#reg_domain_already_assigned_p#:#The domains '%s' were already entered for another role.###27 08 2024 new variable
+registration#:#reg_domain_already_assigned_s#:#The domain '%s' was already entered for another role. ###27 08 2024 new variable
 registration#:#reg_email#:#Automatic Role Assignment
 registration#:#reg_email_domains#:#The following email address domains are valid: %s
 registration#:#reg_email_domains_code#:#With a registration code any E-Mail-Address is valid.
