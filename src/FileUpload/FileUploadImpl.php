@@ -356,7 +356,7 @@ final class FileUploadImpl implements FileUpload
         if ($this->moved) {
             return false;
         }
-        
+
         $uploadedFiles = $this->flattenUploadedFiles($this->globalHttpState->request()->getUploadedFiles());
 
         return ($uploadedFiles !== []);
