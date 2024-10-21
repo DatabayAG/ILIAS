@@ -328,9 +328,9 @@ class ilObjBadgeAdministrationGUI extends ilObjectGUI
                 }
             }
 
+            $res = [];
             if (current($tmpl_ids) ===  self::TABLE_ALL_OBJECTS_ACTION) {
-                $types = $handler->getAvailableTypes();
-                $res = [];
+                $types = $handler->getAvailableTypes(false);
                 foreach ($types as $id => $type) {
                         $res[] = $id;
                 }
