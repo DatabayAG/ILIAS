@@ -148,7 +148,7 @@ class ilBadgePersonalTableGUI
                     }
 
                     $information = [
-                       $this->lng->txt('awarded_by') => $awarded_by
+                       'awarded_by' => $awarded_by
                     ];
 
                     $modal = $modal_container->constructModal($badge_img_large, $badge->getTitle(), $information);

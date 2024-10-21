@@ -39,6 +39,8 @@ class ilObjectBadgeTableGUI
     private readonly Services $http;
     private readonly ilLanguage $lng;
     private readonly ilGlobalTemplateInterface $tpl;
+    private $parent_obj;
+
     public function __construct($parentObj) {
         global $DIC;
         $this->lng = $DIC->language();
@@ -115,9 +117,8 @@ class ilObjectBadgeTableGUI
             {
                 $data = [];
                 $image_html = '';
-                $image_html_large = '';
+                $badge_img_large = '';
                 $modal_container = new ModalBuilder();
-                $badge_information = [];
 
                 $types = ilBadgeHandler::getInstance()->getAvailableTypes(false);
                 $filter = ['type' => '' , 'title' => '', 'object' => ''];
@@ -165,16 +166,16 @@ class ilObjectBadgeTableGUI
                     }
 
                     $badge_information = [
-                        $this->lng->txt('active') => ($badge_item['active'] ? $this->lng->txt('yes') : $this->lng->txt('no')),
-                        $this->lng->txt('type') => $type_caption,
-                        $this->lng->txt('container') => $badge_item['parent_title'],
+                       'active' => ($badge_item['active'] ? $this->lng->txt('yes') : $this->lng->txt('no')),
+                       'type' => $type_caption,
+                       'container' => $container_url_link ?  : $badge_item['parent_title'],
                     ];
 
                     $modal = $modal_container->constructModal($badge_img_large, $badge_item['title'], $badge_information);
 
                     $data[] = [
                         'id' => (int) $badge_item['id'],
-                        'active' => $badge_item['active'] ? true : false,
+                        'active' => (bool) $badge_item['active'],
                         'type' => $type_caption,
                         'image_rid' => $modal_container->renderShyButton($image_html, $modal) . ' ' .   $modal_container->renderModal($modal),
                         'title' =>   $modal_container->renderShyButton($badge_item['title'], $modal),

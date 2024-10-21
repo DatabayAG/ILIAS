@@ -60,8 +60,6 @@ class ilBadgeImageTemplateTableGUI
              */
             protected function getBadgeImageTemplates(Container $DIC, array $data) : array
             {
-                $f = $DIC->ui()->factory();
-                $r = $DIC->ui()->renderer();
                 $modal_container = new ModalBuilder();
 
                 foreach (ilBadgeImageTemplate::getInstances() as $template) {

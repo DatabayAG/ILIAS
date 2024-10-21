@@ -97,9 +97,6 @@ class ilBadgeTableGUI
             protected function getBadges(Container $DIC) : array
             {
                 $data = [];
-                $image_html = '';
-                $f = $DIC->ui()->factory();
-                $r = $DIC->ui()->renderer();
                 $badge_img_large = null;
                 $modal_container = new ModalBuilder();
 
@@ -126,8 +123,8 @@ class ilBadgeTableGUI
                             $badge->getTitle()
                         );
                         $badge_information = [
-                            $DIC->language()->txt("description") => $badge->getDescription(),
-                            $DIC->language()->txt("badge_criteria") => $badge->getCriteria(),
+                           'description' => $badge->getDescription(),
+                           'badge_criteria' => $badge->getCriteria(),
                         ];
 
                         $modal = $modal_container->constructModal($badge_img_large, $badge->getTitle(), $badge_information);
