@@ -32,7 +32,12 @@ class ModalBuilder
         }
     }
 
-    public function constructModal(Image $badge_image, string $badge_title, array $badge_properties = []) : Modal
+    public function constructModal(
+        Image $badge_image,
+        string $badge_title,
+        string $badge_description = null,
+        array $badge_properties = []
+    ) : Modal
     {
         $modal_content[] = $badge_image;
 
@@ -41,8 +46,6 @@ class ModalBuilder
                 new ilDateTime($this->assignment->getTimestamp(), IL_CAL_UNIX)
             );
         }
-
-        $badge_properties = ['title' => $badge_title] + $badge_properties;
 
         $badge_properties = $this->translateKeysWithValidDataAttribute($badge_properties);
 

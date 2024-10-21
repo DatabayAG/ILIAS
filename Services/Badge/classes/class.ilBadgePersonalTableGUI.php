@@ -151,7 +151,7 @@ class ilBadgePersonalTableGUI
                        'awarded_by' => $awarded_by
                     ];
 
-                    $modal = $modal_container->constructModal($badge_img_large, $badge->getTitle(), $information);
+                    $modal = $modal_container->constructModal($badge_img_large, $badge->getTitle(), '', $information);
 
                     $data[] = [
                         'id' => $badge->getId(),

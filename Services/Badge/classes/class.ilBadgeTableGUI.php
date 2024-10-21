@@ -127,7 +127,8 @@ class ilBadgeTableGUI
                            'badge_criteria' => $badge->getCriteria(),
                         ];
 
-                        $modal = $modal_container->constructModal($badge_img_large, $badge->getTitle(), $badge_information);
+                        $modal = $modal_container->constructModal($badge_img_large, $badge->getTitle(), '',
+                            $badge_information);
                     }
                     $data[] = array(
                         'id' => $badge->getId(),

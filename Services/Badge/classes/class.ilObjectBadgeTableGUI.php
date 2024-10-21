@@ -163,6 +163,10 @@ class ilObjectBadgeTableGUI
                     if ($this->access->checkAccess('read', '', $ref_id)) {
                         $container_url = ilLink::_getLink($ref_id);
                         $container_url_link = $this->renderer->render(new Standard($badge_item['parent_title'], new URI($container_url)));
+                        $container_icon = '<img class="ilIcon" src="' .
+                            ilObject::_getIcon((int) $badge_item["parent_id"], "big", $badge_item["parent_type"]) .
+                            '" alt="' . $this->lng->txt("obj_" . $badge_item["parent_type"]) .
+                            '" title="' . $this->lng->txt("obj_" . $badge_item["parent_type"]) . '" /> ';
                     }
 
                     $badge_information = [
@@ -171,16 +175,18 @@ class ilObjectBadgeTableGUI
                        'container' => $container_url_link ?  : $badge_item['parent_title'],
                     ];
 
-                    $modal = $modal_container->constructModal($badge_img_large, $badge_item['title'], $badge_information);
+                    $modal = $modal_container->constructModal($badge_img_large, $badge_item['title'], '',
+                        $badge_information);
 
                     $data[] = [
                         'id' => (int) $badge_item['id'],
                         'active' => (bool) $badge_item['active'],
                         'type' => $type_caption,
                         'image_rid' => $modal_container->renderShyButton($image_html, $modal) . ' ' .   $modal_container->renderModal($modal),
-                        'title' =>   $modal_container->renderShyButton($badge_item['title'], $modal),
+                        'title' =>  $modal_container->renderShyButton($badge_item['title'], $modal),
                         'container' => $badge_item['parent_title'],
-                        'container_url' => $container_url_link ?  : '',
+                        'container_icon' => $container_icon,
+                        'container_url' => $container_icon . $container_url_link ?  : '',
                         'container_deleted' => ($badge_item['deleted'] ?? false),
                         'container_id' => (int) $badge_item['parent_id'],
                         'container_type' => $badge_item['parent_type'],
