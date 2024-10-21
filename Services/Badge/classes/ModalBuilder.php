@@ -32,19 +32,21 @@ class ModalBuilder
         }
     }
 
-    public function constructModal(Image $badge_image, string $badge_title, array $properties = []) : Modal
+    public function constructModal(Image $badge_image, string $badge_title, array $badge_properties = []) : Modal
     {
         $modal_content[] = $badge_image;
 
         if ($this->assignment) {
-            $properties['badge_issued_on'] = ilDatePresentation::formatDate(
+            $badge_properties['badge_issued_on'] = ilDatePresentation::formatDate(
                 new ilDateTime($this->assignment->getTimestamp(), IL_CAL_UNIX)
             );
         }
 
-        $properties = $this->translateKeysWithValidDataAttribute($properties);
+        $badge_properties = ['title' => $badge_title] + $badge_properties;
 
-        $modal_content[] = $this->ui_factory->listing()->descriptive($properties);
+        $badge_properties = $this->translateKeysWithValidDataAttribute($badge_properties);
+
+        $modal_content[] = $this->ui_factory->listing()->descriptive($badge_properties);
 
         return $this->ui_factory->modal()->roundtrip($badge_title, $modal_content);
     }
